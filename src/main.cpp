@@ -22,7 +22,6 @@
 #include <GLType/OGLCoreFramebuffer.h>
 
 #include <GraphicsTypes.h>
-#include <Light.h>
 #include <SkyBox.h>
 #include <Mesh.h>
 
@@ -114,6 +113,7 @@ private:
     SceneSettings m_Settings;
 	TCamera m_Camera;
     FullscreenTriangleMesh m_ScreenTraingle;
+    ProgramShader m_SkyShader;
     ProgramShader m_BlitShader;
     GraphicsTexturePtr m_ScreenColorTex;
     GraphicsFramebufferPtr m_ColorRenderTarget;
@@ -144,8 +144,12 @@ void LightScattering::startup() noexcept
 	m_Device = createDevice(deviceDesc);
 	assert(m_Device);
 
-	light::initialize(m_Device);
-	
+	m_SkyShader.setDevice(m_Device);
+	m_SkyShader.initialize();
+	m_SkyShader.addShader(GL_VERTEX_SHADER, "Scattering.Vertex");
+	m_SkyShader.addShader(GL_FRAGMENT_SHADER, "Scattering.Fragment");
+	m_SkyShader.link();
+
 	m_BlitShader.setDevice(m_Device);
 	m_BlitShader.initialize();
 	m_BlitShader.addShader(GL_VERTEX_SHADER, "BlitTexture.Vertex");
@@ -158,7 +162,6 @@ void LightScattering::startup() noexcept
 void LightScattering::closeup() noexcept
 {
     m_ScreenTraingle.destroy();
-    light::shutdown();
 }
 
 void LightScattering::update() noexcept
@@ -202,15 +205,20 @@ void LightScattering::updateHUD() noexcept
 
 void LightScattering::render() noexcept
 {
+	auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
     m_Device->setFramebuffer(m_ColorRenderTarget);
     GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-	glViewport(0, 0, getFrameWidth(), getFrameHeight());
+	glViewport(0, 0, desc.getWidth(), desc.getHeight());
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepthf(1.0f);
 	glClear(clearFlag);
 
     // color pass
     {
+		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
+        m_SkyShader.bind();
+		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);
+        m_ScreenTraingle.draw();
     }
     // Tone mapping
     {

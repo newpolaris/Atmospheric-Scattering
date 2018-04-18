@@ -82,9 +82,7 @@ vec3 toSRGB(vec3 v)
 void main() 
 {
     vec3 samples = texture(uTexSource, vTexcoords).rgb;
-
-	vec3 col = aces_fitted(samples);
-	col = toSRGB(col);
+	vec3 col = samples;
 
 	fragColor = col;
 }
