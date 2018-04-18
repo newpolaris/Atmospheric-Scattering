@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\context.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\init.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\monitor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_init.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_monitor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_time.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_tls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\winmm_joystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\wgl_context.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\glfw_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\include\GLFW\glfw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\include\GLFW\glfw3native.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\win32_tls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\winmm_joystick.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\wgl_context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\PointShadow\external\glfw-3.1.2\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6BFF4806-9BD8-350D-801E-DB8977163CD5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{02C26757-AFEC-3BE8-B164-98529D9B14E6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

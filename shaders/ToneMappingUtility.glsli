@@ -1,0 +1,184 @@
+//---------------------------------------------------------------------------
+// MiniEngine
+vec3 ToneMapACES( vec3 hdr )
+{
+    const float A = 2.51, B = 0.03, C = 2.43, D = 0.59, E = 0.14;
+    return clamp((hdr * (A * hdr + B)) / (hdr * (C * hdr + D) + E), 0, 1);
+}
+
+vec3 ApplySRGBCurve( vec3 x )
+{
+	float c = 1.0/2.2;
+	vec3 f = vec3(c, c, c); 
+	return pow(x, f);
+}
+
+//---------------------------------------------------------------------------
+// Learning OpenGL
+vec3 toFilmic(vec3 _rgb)
+{
+  _rgb = max(vec3(0.0), _rgb - 0.004);
+  _rgb = (_rgb*(6.2*_rgb + 0.5) ) / (_rgb*(6.2*_rgb + 1.7) + 0.06);
+  return _rgb;
+}
+
+vec4 toFilmic(vec4 _rgba)
+{
+  return vec4(toFilmic(_rgba.xyz), _rgba.w);
+}
+
+vec3 toAcesFilmic(vec3 _rgb)
+{
+  // Reference:
+  // ACES Filmic Tone Mapping Curve
+  // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+  float aa = 2.51f;
+  float bb = 0.03f;
+  float cc = 2.43f;
+  float dd = 0.59f;
+  float ee = 0.14f;
+  return clamp( (_rgb*(aa*_rgb + bb) )/(_rgb*(cc*_rgb + dd) + ee), 0, 1 );
+}
+
+vec4 toAcesFilmic(vec4 _rgba)
+{
+  return vec4(toAcesFilmic(_rgba.xyz), _rgba.w);
+}
+
+vec3 toLinear(vec3 _rgb)
+{
+	return pow(abs(_rgb), vec3(2.2) );
+}
+
+vec4 toLinear(vec4 _rgba)
+{
+	return vec4(toLinear(_rgba.xyz), _rgba.w);
+}
+
+vec3 toLinearAccurate(vec3 _rgb)
+{
+	vec3 lo = _rgb / 12.92;
+	vec3 hi = pow( (_rgb + 0.055) / 1.055, vec3(2.4) );
+	vec3 rgb = mix(hi, lo, vec3(lessThanEqual(_rgb, vec3(0.04045) ) ) );
+	return rgb;
+}
+
+vec4 toLinearAccurate(vec4 _rgba)
+{
+	return vec4(toLinearAccurate(_rgba.xyz), _rgba.w);
+}
+
+float toGamma(float _r)
+{
+	return pow(abs(_r), 1.0/2.2);
+}
+
+vec3 toGamma(vec3 _rgb)
+{
+	return pow(abs(_rgb), vec3(1.0/2.2) );
+}
+
+vec4 toGamma(vec4 _rgba)
+{
+	return vec4(toGamma(_rgba.xyz), _rgba.w);
+}
+
+vec3 toGammaAccurate(vec3 _rgb)
+{
+	vec3 lo  = _rgb * 12.92;
+	vec3 hi  = pow(abs(_rgb), vec3(1.0/2.4) ) * 1.055 - 0.055;
+	vec3 rgb = mix(hi, lo, vec3(lessThanEqual(_rgb, vec3(0.0031308) ) ) );
+	return rgb;
+}
+
+vec4 toGammaAccurate(vec4 _rgba)
+{
+	return vec4(toGammaAccurate(_rgba.xyz), _rgba.w);
+}
+
+// -------------------------------------------------------
+
+// From LTC source
+
+// Misc. helpers
+////////////////
+
+float saturate(float v)
+{
+    return clamp(v, 0.0, 1.0);
+}
+
+vec3 saturate(vec3 v)
+{
+    return clamp(v, 0.0, 1.0);
+}
+
+vec3 PowVec3(vec3 v, float p)
+{
+    return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p));
+}
+
+vec3 mul(mat3 m, vec3 v)
+{
+    return m * v;
+}
+
+mat3 mul(mat3 m1, mat3 m2)
+{
+    return m1 * m2;
+}
+
+mat3 transpose(mat3 v)
+{
+    mat3 tmp;
+    tmp[0] = vec3(v[0].x, v[1].x, v[2].x);
+    tmp[1] = vec3(v[0].y, v[1].y, v[2].y);
+    tmp[2] = vec3(v[0].z, v[1].z, v[2].z);
+
+    return tmp;
+}
+
+vec3 rrt_odt_fit(vec3 v)
+{
+    vec3 a = v*(         v + 0.0245786) - 0.000090537;
+    vec3 b = v*(0.983729*v + 0.4329510) + 0.238081;
+    return a/b;
+}
+
+mat3 mat3_from_rows(vec3 c0, vec3 c1, vec3 c2)
+{
+    mat3 m = mat3(c0, c1, c2);
+    m = transpose(m);
+
+    return m;
+}
+
+vec3 aces_fitted(vec3 color)
+{
+	mat3 ACES_INPUT_MAT = mat3_from_rows(
+	    vec3( 0.59719, 0.35458, 0.04823),
+	    vec3( 0.07600, 0.90834, 0.01566),
+	    vec3( 0.02840, 0.13383, 0.83777));
+
+	mat3 ACES_OUTPUT_MAT = mat3_from_rows(
+	    vec3( 1.60475,-0.53108,-0.07367),
+	    vec3(-0.10208, 1.10813,-0.00605),
+	    vec3(-0.00327,-0.07276, 1.07602));
+
+    color = mul(ACES_INPUT_MAT, color);
+
+    // Apply RRT and ODT
+    color = rrt_odt_fit(color);
+
+    color = mul(ACES_OUTPUT_MAT, color);
+
+    // Clamp to [0, 1]
+    color = saturate(color);
+
+    return color;
+}
+
+const float gamma = 2.2;
+
+vec3 ToLinear(vec3 v) { return PowVec3(v,     gamma); }
+vec3 ToSRGB(vec3 v)   { return PowVec3(v, 1.0/gamma); }

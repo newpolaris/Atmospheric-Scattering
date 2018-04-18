@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\PointShadow\CMakeFiles\898a7685a95b63ba6b19fe5499c11435\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{80A03240-D1BD-33A8-97F8-FBE44AD39E32}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
