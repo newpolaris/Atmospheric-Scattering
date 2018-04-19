@@ -268,7 +268,7 @@ public:
 
 	glm::vec3 m_SunDir;
 	glm::vec3 m_Ec = glm::vec3(0.f); // earth center
-	glm::vec3 m_BetaR = glm::vec3(3.8e-6f, 13.5e-6f, 33.1e-6f); 
+	glm::vec3 m_BetaR0 = glm::vec3(3.8e-6f, 13.5e-6f, 33.1e-6f); 
 };
 
 Atmosphere::Atmosphere(glm::vec3 sunDir) : 
@@ -292,6 +292,10 @@ glm::vec2 RaySphereIntersect(glm::vec3 pos, glm::vec3 dir, glm::vec3 c, float r)
 
 glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3& dir, float tmin, float tmax) const
 {
+	const glm::vec3 SunIntensity = glm::vec3(20.f);
+	const int numSamples = 16;
+	const int numLightSamples = 8;
+
 	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
 	tmin = std::min(t.x, 0.f);
 	tmax = t.y;
@@ -299,7 +303,36 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	auto tc = pos;
 	auto pa = tc + tmax*dir, pb = tc + tmin*dir;
 
-	return glm::vec4(pa.y / m_Ar);
+	float opticalDepthR = 0.f, opticalDepthM = 0.f;
+	float ds = (tmax - tmin) / numSamples; // delta segment
+	glm::vec3 sumR(0.f);
+	for (int s = 0; s < numSamples; s++)
+	{
+		glm::vec3 x = tb + ds*(0.5 + s)*dir;
+		float h = glm::lenth(x) - m_Er;
+		float betaR = exp(-h/m_Hr)*ds;
+		opticalDepthR += betaR;
+		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
+		float lmax = tl.y, lmin = 0.f;
+		float dsl = (lmax - lmin)/numLightSamples;
+		int l = 0;
+		float opticalDepthLightR = 0.f;
+		for (; l < numLightSamples; l++)
+		{
+			glm::vec3 xl = x + dsl*(0.5 + l)*m_SunDir;
+			float hl = glm::length(xl) - m_Er;
+			if (hl < 0) break;
+			opticalDepthLightR += exp(-hl/m_Hr)*dsl;
+		}
+		if (l < numLightSamples) continue;
+		glm::vec3 tau = m_BetaR0 * (opticalDepthR + opticalDepthLightR);
+		glm::vec3 attenuation = glm::exp(-tau);
+		sumR += attenuation * betaR;
+	}
+
+	float mu = glm::dot(m_SunDir, dir);
+	float phaseR = 3.f / (16.f*glm::pi()) * (1.f + mu*mu);
+	return SunIntensity * sumR * phaseR * m_BetaR0;
 }
 
 void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int height) const
