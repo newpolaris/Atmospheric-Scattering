@@ -311,7 +311,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	{
 		glm::vec3 x = pb + ds*(0.5f + s)*dir;
 		float h = glm::length(x) - m_Er;
-		float betaR = exp(-h/m_Hr)*ds;
+		float betaR = glm::exp(-h/m_Hr)*ds;
 		opticalDepthR += betaR;
 		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
 		float lmax = tl.y, lmin = 0.f;
@@ -323,7 +323,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 			glm::vec3 xl = x + dsl*(0.5f + l)*m_SunDir;
 			float hl = glm::length(xl) - m_Er;
 			if (hl < 0) break;
-			opticalDepthLightR += exp(-hl/m_Hr)*dsl;
+			opticalDepthLightR += glm::exp(-hl/m_Hr)*dsl;
 		}
 		if (l < numLightSamples) continue;
 		glm::vec3 tau = m_BetaR0 * (opticalDepthR + opticalDepthLightR);
