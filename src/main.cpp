@@ -295,6 +295,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	const glm::vec3 SunIntensity = glm::vec3(20.f);
 	const int numSamples = 16;
 	const int numLightSamples = 8;
+	const float pi = glm::pi<float>();
 
 	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
 	tmin = std::min(t.x, 0.f);
@@ -308,8 +309,8 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	glm::vec3 sumR(0.f);
 	for (int s = 0; s < numSamples; s++)
 	{
-		glm::vec3 x = tb + ds*(0.5 + s)*dir;
-		float h = glm::lenth(x) - m_Er;
+		glm::vec3 x = pb + ds*(0.5f + s)*dir;
+		float h = glm::length(x) - m_Er;
 		float betaR = exp(-h/m_Hr)*ds;
 		opticalDepthR += betaR;
 		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
@@ -319,7 +320,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 		float opticalDepthLightR = 0.f;
 		for (; l < numLightSamples; l++)
 		{
-			glm::vec3 xl = x + dsl*(0.5 + l)*m_SunDir;
+			glm::vec3 xl = x + dsl*(0.5f + l)*m_SunDir;
 			float hl = glm::length(xl) - m_Er;
 			if (hl < 0) break;
 			opticalDepthLightR += exp(-hl/m_Hr)*dsl;
@@ -331,13 +332,15 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	}
 
 	float mu = glm::dot(m_SunDir, dir);
-	float phaseR = 3.f / (16.f*glm::pi()) * (1.f + mu*mu);
-	return SunIntensity * sumR * phaseR * m_BetaR0;
+	float phaseR = 3.f / (16.f*pi) * (1.f + mu*mu);
+	return glm::vec4(SunIntensity * sumR * phaseR * m_BetaR0, 1.f);
 }
 
 void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int height) const
 {
 	const float inf = 9e8;
+	const glm::vec3 cameraPos(0.f, m_Er+1.f, 0.f);
+
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < height; x++)
 	{
@@ -346,7 +349,7 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
 		float z2 = 1.f - (fy*fy+fx*fx);
 		if (z2 < 0) continue;
 		glm::vec3 dir = glm::normalize(glm::vec3(fx, glm::sqrt(z2), fy));
-		image[y*width + x] = computeIncidentLight(glm::vec3(0.f), dir, 0.f, inf);
+		image[y*width + x] = computeIncidentLight(cameraPos, dir, 0.f, inf);
 	}
 }
 
