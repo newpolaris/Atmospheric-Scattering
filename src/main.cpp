@@ -298,7 +298,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	const float pi = glm::pi<float>();
 
 	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
-	tmin = std::min(t.x, 0.f);
+	tmin = std::max(t.x, 0.f);
 	tmax = t.y;
 	if (tmax < 0) return glm::vec4(0.f);
 	auto tc = pos;
@@ -315,15 +315,15 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 		opticalDepthR += betaR;
 		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
 		float lmax = tl.y, lmin = 0.f;
-		float dsl = (lmax - lmin)/numLightSamples;
+		float dls = (lmax - lmin)/numLightSamples; // delta light segment
 		int l = 0;
 		float opticalDepthLightR = 0.f;
 		for (; l < numLightSamples; l++)
 		{
-			glm::vec3 xl = x + dsl*(0.5f + l)*m_SunDir;
+			glm::vec3 xl = x + dls*(0.5f + l)*m_SunDir;
 			float hl = glm::length(xl) - m_Er;
 			if (hl < 0) break;
-			opticalDepthLightR += glm::exp(-hl/m_Hr)*dsl;
+			opticalDepthLightR += glm::exp(-hl/m_Hr)*dls;
 		}
 		if (l < numLightSamples) continue;
 		glm::vec3 tau = m_BetaR0 * (opticalDepthR + opticalDepthLightR);
@@ -348,6 +348,7 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
 		float fx = 2.f * ((float)x + 0.5f)/(height-1) - 1.f;
 		float z2 = 1.f - (fy*fy+fx*fx);
 		if (z2 < 0) continue;
+		// glm::vec3 dir = glm::normalize(glm::vec3(0.5f, 0.5f, 0.f));
 		glm::vec3 dir = glm::normalize(glm::vec3(fx, glm::sqrt(z2), fy));
 		image[y*width + x] = computeIncidentLight(cameraPos, dir, 0.f, inf);
 	}
@@ -367,9 +368,14 @@ void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
     colorDesc.setWidth(width);
     colorDesc.setHeight(height);
     colorDesc.setFormat(gli::FORMAT_RGBA32_SFLOAT_PACK32);
-	colorDesc.setStream((uint8_t*)image.data());
-	colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
+	// colorDesc.setStream((uint8_t*)image.data());
+	// colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
     m_ScreenColorTex = m_Device->createTexture(colorDesc);
+	void* data = nullptr;
+	m_ScreenColorTex->map(0, 0, width, height, 0, &data);
+	assert(data != nullptr);
+
+	memcpy(data, image.data(), width*height*sizeof(glm::vec4)); 
 
     GraphicsTextureDesc depthDesc;
     depthDesc.setWidth(width);

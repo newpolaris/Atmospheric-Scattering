@@ -11,4 +11,5 @@ namespace OGLTypes
 
     GLenum getComponent(int components);
     GLenum getInternalComponent(int components, bool bFloat);
+	GLsizei getFormatNumbytes(GLenum format, GLenum type) noexcept;
 }

@@ -22,6 +22,9 @@ public:
 	void unbind(GLuint unit) const;
 	void generateMipmap();
 
+	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept override;
+	void unmap() noexcept override;
+
     GLuint getTextureID() const noexcept;
     GLenum getFormat() const noexcept;
 
@@ -57,6 +60,8 @@ private:
 	GLuint m_TextureID;
 	GLenum m_Target;
 	GLenum m_Format;
+	GLuint m_PBO;
+	GLsizei m_PBOSize;
 	GraphicsDeviceWeakPtr m_Device;
 };
 

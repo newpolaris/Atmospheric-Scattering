@@ -109,4 +109,32 @@ namespace OGLTypes
         }
         return Base;
     }
+
+	GLsizei getFormatNumbytes(GLenum format, GLenum type) noexcept
+	{
+		GLsizei typeBytes = 0;
+		if (type == GL_UNSIGNED_BYTE || type == GL_BYTE)
+			typeBytes = 1;
+		else if (type == GL_UNSIGNED_BYTE || type == GL_SHORT || type == GL_HALF_FLOAT)
+			typeBytes = 2;
+		else if (type == GL_FLOAT || type == GL_INT || type == GL_UNSIGNED_INT)
+			typeBytes = 4;
+		else if (type == GL_DOUBLE)
+			typeBytes = 8;
+		assert(typeBytes > 0);
+		if (typeBytes == 0) 
+			return 0;
+
+		if (format == GL_RED)
+			return typeBytes;
+		else if (format == GL_RG)
+			return typeBytes * 2;
+		else if (format == GL_RGB || format == GL_BGR || format == GL_SRGB)
+			return typeBytes * 3;
+		else if (format == GL_RGBA || format == GL_BGRA || format == GL_ABGR_EXT || format == GL_SRGB_ALPHA)
+			return typeBytes * 4;
+
+		assert(false);
+		return 0;
+	}
 }

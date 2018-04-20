@@ -8,9 +8,11 @@
 __ImplementSubInterface(OGLTexture, GraphicsTexture)
 
 OGLTexture::OGLTexture()
-    : m_TextureID(0)
+    : m_TextureID(GL_NONE)
     , m_Target(GL_INVALID_ENUM)
     , m_Format(GL_INVALID_ENUM)
+	, m_PBO(GL_NONE)
+	, m_PBOSize(0)
 {
 }
 
@@ -23,9 +25,9 @@ bool OGLTexture::create(GLint width, GLint height, GLenum target, GraphicsFormat
 {
     using namespace gli;
 
-    gl GL(gl::PROFILE_GL33);
-    swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
-    auto Format = GL.translate(format, swizzle);
+    const gl GL(gl::PROFILE_GL33);
+    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
+    const auto Format = GL.translate(format, swizzle);
 
 	GLuint TextureID = 0;
 	glGenTextures(1, &TextureID);
@@ -114,7 +116,6 @@ bool OGLTexture::createFromMemoryLDR(const char* data, size_t size) noexcept
     return bSuccess;
 }
 
-// TODO: decodesize error or dds sample image have dummy data at the end. Which causes an gli assert
 bool OGLTexture::createFromMemoryZIP(const char* data, size_t dataSize) noexcept
 {
     int decodesize = 0;
@@ -154,14 +155,21 @@ GraphicsDevicePtr OGLTexture::getDevice() noexcept
 
 void OGLTexture::destroy() noexcept
 {
-	if (!m_TextureID)
+	if (m_TextureID != GL_NONE)
 	{
 		glDeleteTextures(1, &m_TextureID);
-		m_TextureID = 0;
+		m_TextureID = GL_NONE;
 
         m_Format = GL_INVALID_ENUM;
 	}
 	m_Target = GL_INVALID_ENUM;
+
+	if (m_PBO != GL_NONE)
+	{
+		glDeleteBuffers(1, &m_PBO);
+		m_PBO = GL_NONE;
+		m_PBOSize = 0;
+	}
 }
 
 void OGLTexture::bind(GLuint unit) const
@@ -401,4 +409,45 @@ bool OGLTexture::createFromMemoryHDR(const char* data, size_t size) noexcept
     bool bSuccess = create(width, height, target, format, 1, (const uint8_t*)imagedata, size);
     stbi_image_free(imagedata);
     return bSuccess;
+}
+
+bool OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+{
+    using namespace gli;
+
+	assert(data);
+
+    const gl GL(gl::PROFILE_GL33);
+    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
+    const auto Format = GL.translate(m_TextureDesc.getFormat(), swizzle);
+
+	GLsizei numBytes = OGLTypes::getFormatNumbytes(Format.External, Format.Type);
+	if (numBytes == 0)
+		return false;
+
+	if (m_PBO == GL_NONE)
+		glGenBuffers(1, &m_PBO);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBO);
+
+	GLsizei mapSize = w * h * numBytes;
+	if (m_PBOSize < mapSize)
+	{
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, mapSize, nullptr, GL_STREAM_READ);
+		m_PBOSize = mapSize;
+	}
+	glBindTexture(m_Target, m_TextureID);
+	glGetTexImage(m_Target, mipLevel, Format.External, Format.Type, 0);
+
+	*data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
+	data += (y * m_TextureDesc.getWidth() * numBytes) * x;
+
+	return *data ? true : false;
+}
+
+void OGLTexture::unmap() noexcept
+{
+	assert(m_PBO != GL_NONE);
+	glUnmapNamedBuffer(m_PBO);
+	// glBindBuffer(GL_PIXEL_PACK_BUFFER, m_PBO);
+	// glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 }

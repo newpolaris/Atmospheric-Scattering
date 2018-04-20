@@ -395,3 +395,12 @@ bool OGLCoreTexture::createFromMemoryHDR(const char* data, size_t size) noexcept
     stbi_image_free(imagedata);
     return bSuccess;
 }
+
+bool OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+{
+	return false;
+}
+
+void OGLCoreTexture::unmap() noexcept
+{
+}
