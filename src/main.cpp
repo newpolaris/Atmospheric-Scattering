@@ -136,7 +136,7 @@ void LightScattering::startup() noexcept
 	m_Camera.setMoveCoefficient(0.35f);
 
 	GraphicsDeviceDesc deviceDesc;
-#if __APPLE__
+#if !__APPLE__
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL);
 #else
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
@@ -360,9 +360,9 @@ void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 100.0f);
 
 	glm::vec3 sunDir(0, 1, 0);
-	std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
+	std::vector<glm::vec4> image(width*height, glm::vec4(1.f));
 	Atmosphere atmosphere(sunDir);
-	atmosphere.renderSkyDome(image, width, height);
+	// atmosphere.renderSkyDome(image, width, height);
 
     GraphicsTextureDesc colorDesc;
     colorDesc.setWidth(width);
@@ -376,6 +376,7 @@ void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 	assert(data != nullptr);
 
 	memcpy(data, image.data(), width*height*sizeof(glm::vec4)); 
+    m_ScreenColorTex->unmap();
 
     GraphicsTextureDesc depthDesc;
     depthDesc.setWidth(width);
