@@ -411,11 +411,14 @@ bool OGLTexture::createFromMemoryHDR(const char* data, size_t size) noexcept
     return bSuccess;
 }
 
-bool OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+bool OGLTexture::map(uint32_t mipLevel, std::uint8_t** data) noexcept
 {
     using namespace gli;
 
+    const GLsizei w = m_TextureDesc.getWidth(), h = m_TextureDesc.getHeight();
+
 	assert(data);
+    assert(m_TextureID != GL_NONE);
 
     const gl GL(gl::PROFILE_GL33);
     const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
@@ -425,41 +428,32 @@ bool OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uin
 	if (numBytes == 0)
 		return false;
 
-    glGenBuffers(1, &m_PBO);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBO);
+	if (m_PBO == GL_NONE)
+		glGenBuffers(1, &m_PBO);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, m_PBO);
 
 	GLsizei mapSize = w * h * numBytes;
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, mapSize, nullptr, GL_STREAM_DRAW);
+	if (m_PBOSize < mapSize)
+	{
+		glBufferData(GL_PIXEL_PACK_BUFFER, mapSize, nullptr, GL_STREAM_READ);
+		m_PBOSize = mapSize;
+	}
 	glBindTexture(m_Target, m_TextureID);
-	// glGetTexImage(m_Target, mipLevel, Format.External, Format.Type, 0);
+	glGetTexImage(m_Target, mipLevel, Format.External, Format.Type, nullptr);
 
-	*data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, mapSize, GL_MAP_WRITE_BIT);
-	data += (y * m_TextureDesc.getWidth() * numBytes) * x;
+	*data = (std::uint8_t*)glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, mapSize, GL_MAP_READ_BIT);
 
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	return *data ? true : false;
+}
+
+bool OGLTexture::map(uint32_t x, uint32_t y, uint32_t z, uint32_t w, uint32_t h, uint32_t d, std ::uint32_t mipLevel, std::uint8_t** data) noexcept
+{
+    assert(false);
+    return false;
 }
 
 void OGLTexture::unmap() noexcept
 {
-    using namespace gli;
-
-    const gl GL(gl::PROFILE_GL33);
-    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
-    const auto Format = GL.translate(m_TextureDesc.getFormat(), swizzle);
-
 	assert(m_PBO != GL_NONE);
-	// glUnmapNamedBuffer(m_PBO);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBO);
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-#if 1
-	glBindTexture(m_Target, m_TextureID);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBO);
-    glTexSubImage2D(m_Target, 0, 0, 0, 
-        m_TextureDesc.getWidth(), m_TextureDesc.getHeight(), Format.External, Format.Type, 0);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-#else
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    #endif
+	glUnmapNamedBuffer(m_PBO);
 }

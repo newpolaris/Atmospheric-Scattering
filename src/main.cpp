@@ -30,12 +30,14 @@
 #include <vector>
 #include <algorithm>
 #include <GameCore.h>
+#include "Atmosphere.h"
 
 struct SceneSettings
 {
     bool bUiChanged = false;
     bool bResized = false;
-    bool bSampleReset = false;
+    bool bUpdated = false;
+    glm::vec3 sunDir = glm::vec3(0, 1, 0);
 };
 
 static float Halton(int index, float base)
@@ -115,6 +117,7 @@ private:
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_SkyShader;
     ProgramShader m_BlitShader;
+    GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
     GraphicsFramebufferPtr m_ColorRenderTarget;
     GraphicsDevicePtr m_Device;
@@ -136,7 +139,7 @@ void LightScattering::startup() noexcept
 	m_Camera.setMoveCoefficient(0.35f);
 
 	GraphicsDeviceDesc deviceDesc;
-#if !__APPLE__
+#if __APPLE__
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL);
 #else
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
@@ -168,18 +171,33 @@ void LightScattering::update() noexcept
 {
     bool bCameraUpdated = m_Camera.update();
 
-    static float preWidth = 0.f;
-    static float preHeight = 0.f;
+    static int32_t preWidth = 0;
+    static int32_t preHeight = 0;
 
-    float width = (float)getFrameWidth();
-    float height = (float)getFrameHeight();
+    int32_t width = getFrameWidth();
+    int32_t height = getFrameHeight();
     bool bResized = false;
     if (preWidth != width || preHeight != height)
     {
         preWidth = width, preHeight = height;
         bResized = true;
     }
-    m_Settings.bSampleReset = (m_Settings.bUiChanged || bCameraUpdated || bResized);
+    m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
+
+    if (m_Settings.bUpdated)
+    {
+        std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
+        Atmosphere atmosphere(m_Settings.sunDir);
+        atmosphere.renderSkyDome(image, width, height);
+
+        GraphicsTextureDesc colorDesc;
+        colorDesc.setWidth(width);
+        colorDesc.setHeight(height);
+        colorDesc.setFormat(gli::FORMAT_RGBA32_SFLOAT_PACK32);
+        colorDesc.setStream((uint8_t*)image.data());
+        colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
+        m_SkyColorTex = m_Device->createTexture(colorDesc);
+    }
 }
 
 void LightScattering::updateHUD() noexcept
@@ -195,6 +213,12 @@ void LightScattering::updateHUD() noexcept
         NULL,
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::Text("Sun Direction:");
+    bUpdated |= ImGui::SliderFloat("X", &m_Settings.sunDir.x, -1.f, 1.f);
+    bUpdated |= ImGui::SliderFloat("Y", &m_Settings.sunDir.y, -1.f, 1.f);
+    bUpdated |= ImGui::SliderFloat("Z", &m_Settings.sunDir.z, -1.f, 1.f);
+
     ImGui::PushItemWidth(180.0f);
     ImGui::Indent();
     ImGui::Unindent();
@@ -227,7 +251,7 @@ void LightScattering::render() noexcept
 
         glDisable(GL_DEPTH_TEST);
         m_BlitShader.bind();
-        m_BlitShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
+        m_BlitShader.bindTexture("uTexSource", m_SkyColorTex, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }
@@ -255,128 +279,16 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 	}
 }
 
-struct Atmosphere
-{
-public:
-	Atmosphere(glm::vec3 sunDir);
-	glm::vec4 computeIncidentLight(const glm::vec3& orig, const glm::vec3& dir, float tmin, float tmax) const; 
-	void renderSkyDome(std::vector<glm::vec4>& image, int width, int height) const;
-
-	float m_Hr = 7994;
-	float m_Ar = 6420e3; // atmosphere radius
-	float m_Er = 6360e3; // earth radius
-
-	glm::vec3 m_SunDir;
-	glm::vec3 m_Ec = glm::vec3(0.f); // earth center
-	glm::vec3 m_BetaR0 = glm::vec3(3.8e-6f, 13.5e-6f, 33.1e-6f); 
-};
-
-Atmosphere::Atmosphere(glm::vec3 sunDir) : 
-	m_SunDir(sunDir)
-{
-}
-
-glm::vec2 RaySphereIntersect(glm::vec3 pos, glm::vec3 dir, glm::vec3 c, float r)
-{
-	assert(r > 0.f);
-
-	glm::vec3 tc = c - pos;
-
-	float l = glm::dot(tc, dir);
-	float d = l*l - glm::dot(tc, tc) + r*r;
-	if (d < 0) return glm::vec2(-1.0);
-	float sl = glm::sqrt(d);
-
-	return glm::vec2(l - sl, l + sl);
-}
-
-glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3& dir, float tmin, float tmax) const
-{
-	const glm::vec3 SunIntensity = glm::vec3(20.f);
-	const int numSamples = 16;
-	const int numLightSamples = 8;
-	const float pi = glm::pi<float>();
-
-	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
-	tmin = std::max(t.x, 0.f);
-	tmax = t.y;
-	if (tmax < 0) return glm::vec4(0.f);
-	auto tc = pos;
-	auto pa = tc + tmax*dir, pb = tc + tmin*dir;
-
-	float opticalDepthR = 0.f, opticalDepthM = 0.f;
-	float ds = (tmax - tmin) / numSamples; // delta segment
-	glm::vec3 sumR(0.f);
-	for (int s = 0; s < numSamples; s++)
-	{
-		glm::vec3 x = pb + ds*(0.5f + s)*dir;
-		float h = glm::length(x) - m_Er;
-		float betaR = glm::exp(-h/m_Hr)*ds;
-		opticalDepthR += betaR;
-		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
-		float lmax = tl.y, lmin = 0.f;
-		float dls = (lmax - lmin)/numLightSamples; // delta light segment
-		int l = 0;
-		float opticalDepthLightR = 0.f;
-		for (; l < numLightSamples; l++)
-		{
-			glm::vec3 xl = x + dls*(0.5f + l)*m_SunDir;
-			float hl = glm::length(xl) - m_Er;
-			if (hl < 0) break;
-			opticalDepthLightR += glm::exp(-hl/m_Hr)*dls;
-		}
-		if (l < numLightSamples) continue;
-		glm::vec3 tau = m_BetaR0 * (opticalDepthR + opticalDepthLightR);
-		glm::vec3 attenuation = glm::exp(-tau);
-		sumR += attenuation * betaR;
-	}
-
-	float mu = glm::dot(m_SunDir, dir);
-	float phaseR = 3.f / (16.f*pi) * (1.f + mu*mu);
-	return glm::vec4(SunIntensity * sumR * phaseR * m_BetaR0, 1.f);
-}
-
-void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int height) const
-{
-	const float inf = 9e8;
-	const glm::vec3 cameraPos(0.f, m_Er+1.f, 0.f);
-
-	for (int y = 0; y < height; y++)
-	for (int x = 0; x < height; x++)
-	{
-		float fy = 2.f * ((float)y + 0.5f)/(height-1) - 1.f;
-		float fx = 2.f * ((float)x + 0.5f)/(height-1) - 1.f;
-		float z2 = 1.f - (fy*fy+fx*fx);
-		if (z2 < 0) continue;
-		// glm::vec3 dir = glm::normalize(glm::vec3(0.5f, 0.5f, 0.f));
-		glm::vec3 dir = glm::normalize(glm::vec3(fx, glm::sqrt(z2), fy));
-		image[y*width + x] = computeIncidentLight(cameraPos, dir, 0.f, inf);
-	}
-}
-
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
 	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 100.0f);
 
-	glm::vec3 sunDir(0, 1, 0);
-	std::vector<glm::vec4> image(width*height, glm::vec4(1.f));
-	Atmosphere atmosphere(sunDir);
-	// atmosphere.renderSkyDome(image, width, height);
-
     GraphicsTextureDesc colorDesc;
     colorDesc.setWidth(width);
     colorDesc.setHeight(height);
-    colorDesc.setFormat(gli::FORMAT_RGBA32_SFLOAT_PACK32);
-	// colorDesc.setStream((uint8_t*)image.data());
-	// colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
+    colorDesc.setFormat(gli::FORMAT_RGBA16_SFLOAT_PACK16);
     m_ScreenColorTex = m_Device->createTexture(colorDesc);
-	void* data = nullptr;
-	m_ScreenColorTex->map(0, 0, width, height, 0, &data);
-	assert(data != nullptr);
-
-	memcpy(data, image.data(), width*height*sizeof(glm::vec4)); 
-    m_ScreenColorTex->unmap();
 
     GraphicsTextureDesc depthDesc;
     depthDesc.setWidth(width);

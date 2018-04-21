@@ -22,7 +22,8 @@ public:
 	void unbind(GLuint unit) const;
 	void generateMipmap();
 
-	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept override;
+    virtual bool map(std::uint32_t mipLevel, std::uint8_t** data) noexcept override;
+    virtual bool map(std::uint32_t x, std::uint32_t y, std::uint32_t z, std::uint32_t w, std::uint32_t h, std::uint32_t d, std::uint32_t mipLevel, std::uint8_t** data) noexcept override; 
 	void unmap() noexcept override;
 
     GLuint getTextureID() const noexcept;

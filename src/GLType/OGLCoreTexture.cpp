@@ -8,9 +8,11 @@
 __ImplementSubInterface(OGLCoreTexture, GraphicsTexture)
 
 OGLCoreTexture::OGLCoreTexture()
-    : m_TextureID(0)
+    : m_TextureID(GL_NONE)
     , m_Target(GL_INVALID_ENUM)
     , m_Format(GL_INVALID_ENUM)
+	, m_PBO(GL_NONE)
+	, m_PBOSize(0)
 {
 }
 
@@ -23,9 +25,9 @@ bool OGLCoreTexture::create(GLint width, GLint height, GLenum target, GraphicsFo
 {
     using namespace gli;
 
-    gl GL(gl::PROFILE_GL33);
-    swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
-    auto Format = GL.translate(format, swizzle);
+    const gl GL(gl::PROFILE_GL33);
+    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
+    const auto Format = GL.translate(format, swizzle);
 
 	GLuint TextureID = 0;
 	glCreateTextures(target, 1, &TextureID);
@@ -68,6 +70,7 @@ bool OGLCoreTexture::create(const GraphicsTextureDesc& desc) noexcept
     return bSuccess;
 }
 
+// TODO: check hdr image by 'stbi_is_hdr_from_memory'
 bool OGLCoreTexture::create(const std::string& filename) noexcept
 {
     static_assert(std::is_same<char, std::istream::char_type>::value, "Compatible type needed");
@@ -113,7 +116,6 @@ bool OGLCoreTexture::createFromMemoryLDR(const char* data, size_t size) noexcept
     return bSuccess;
 }
 
-// TODO: decodesize error or dds sample image have dummy data at the end. Which causes an gli assert
 bool OGLCoreTexture::createFromMemoryZIP(const char* data, size_t dataSize) noexcept
 {
     int decodesize = 0;
@@ -153,14 +155,21 @@ GraphicsDevicePtr OGLCoreTexture::getDevice() noexcept
 
 void OGLCoreTexture::destroy() noexcept
 {
-	if (!m_TextureID)
+	if (m_TextureID != GL_NONE)
 	{
 		glDeleteTextures(1, &m_TextureID);
-		m_TextureID = 0;
+		m_TextureID = GL_NONE;
 
         m_Format = GL_INVALID_ENUM;
 	}
 	m_Target = GL_INVALID_ENUM;
+
+	if (m_PBO != GL_NONE)
+	{
+		glDeleteBuffers(1, &m_PBO);
+		m_PBO = GL_NONE;
+		m_PBOSize = 0;
+	}
 }
 
 void OGLCoreTexture::bind(GLuint unit) const
@@ -371,7 +380,6 @@ bool OGLCoreTexture::createFromMemoryDDS(const char* data, size_t dataSize) noex
 	return true;
 }
 
-// TODO: stbi_is_hdr_from_memory etc
 bool OGLCoreTexture::createFromMemoryHDR(const char* data, size_t size) noexcept
 {
     stbi_set_flip_vertically_on_load(true);
@@ -396,11 +404,47 @@ bool OGLCoreTexture::createFromMemoryHDR(const char* data, size_t size) noexcept
     return bSuccess;
 }
 
-bool OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, std::uint32_t mipLevel, void** data) noexcept
+bool OGLCoreTexture::map(uint32_t mipLevel, std::uint8_t** data) noexcept
 {
-	return false;
+    const GLsizei w = m_TextureDesc.getWidth(), h = m_TextureDesc.getHeight();
+    return map(0, 0, 0, w, h, 1, mipLevel, data);
+}
+
+bool OGLCoreTexture::map(uint32_t x, uint32_t y, uint32_t z, uint32_t w, uint32_t h, uint32_t d, std ::uint32_t mipLevel, std::uint8_t** data) noexcept
+{
+    using namespace gli;
+
+	assert(data);
+    assert(w > 0 && h > 0 && d > 0);
+    assert(m_TextureID != GL_NONE);
+
+    const gl GL(gl::PROFILE_GL33);
+    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
+    const auto Format = GL.translate(m_TextureDesc.getFormat(), swizzle);
+
+	GLsizei numBytes = OGLTypes::getFormatNumbytes(Format.External, Format.Type);
+	if (numBytes == 0)
+		return false;
+
+	if (m_PBO == GL_NONE)
+		glCreateBuffers(1, &m_PBO);
+
+	GLsizei mapSize = w * h * numBytes;
+	if (m_PBOSize < mapSize)
+	{
+		glNamedBufferData(m_PBO, mapSize, nullptr, GL_STREAM_READ);
+		m_PBOSize = mapSize;
+	}
+    glGetTextureSubImage(m_TextureID, mipLevel, x, y, z, w, h, d, Format.External, Format.Type, mapSize, nullptr);
+
+	*data = (std::uint8_t*)glMapNamedBufferRange(m_PBO, 0, mapSize, GL_MAP_READ_BIT);
+
+	return *data ? true : false;
 }
 
 void OGLCoreTexture::unmap() noexcept
 {
+	assert(m_PBO != GL_NONE);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, m_PBO);
+	glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 }
