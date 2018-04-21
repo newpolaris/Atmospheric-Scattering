@@ -31,13 +31,18 @@
 #include <algorithm>
 #include <GameCore.h>
 #include "Atmosphere.h"
+#include "Atmosphere2.h"
 
 struct SceneSettings
 {
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = false;
+#ifdef _DEBUG
+    glm::vec3 sunDir = glm::vec3(0.5f, 1.f, 0.f);
+#else
     glm::vec3 sunDir = glm::vec3(0, 1, 0);
+#endif
 };
 
 static float Halton(int index, float base)
@@ -135,6 +140,8 @@ LightScattering::~LightScattering() noexcept
 
 void LightScattering::startup() noexcept
 {
+    main2();
+
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
 

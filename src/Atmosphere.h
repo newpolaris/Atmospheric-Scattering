@@ -18,5 +18,5 @@ public:
 	glm::vec3 m_SunDir;
 	glm::vec3 m_Ec = glm::vec3(0.f); // earth center
 	glm::vec3 m_BetaR0 = glm::vec3(3.8e-6f, 13.5e-6f, 33.1e-6f); 
-    glm::vec3 m_BetaM0 = glm::vec3(210e-5f);
+    glm::vec3 m_BetaM0 = glm::vec3(21e-6f);
 };

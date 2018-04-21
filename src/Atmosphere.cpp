@@ -28,6 +28,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	const int numLightSamples = 8;
     const float g = 0.76f; 
 	const float pi = glm::pi<float>();
+    const glm::vec3 sundir = glm::normalize(m_SunDir);
 
 	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
 	tmin = std::max(t.x, 0.f);
@@ -47,14 +48,14 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
         float betaM = glm::exp(-h/m_Hm)*ds;
 		opticalDepthR += betaR;
         opticalDepthM += betaM;
-		auto tl = RaySphereIntersect(x, m_SunDir, m_Ec, m_Ar);
+		auto tl = RaySphereIntersect(x, sundir, m_Ec, m_Ar);
 		float lmax = tl.y, lmin = 0.f;
 		float dls = (lmax - lmin)/numLightSamples; // delta light segment
 		int l = 0;
 		float opticalDepthLightR = 0.f, opticalDepthLightM = 0.f;
 		for (; l < numLightSamples; l++)
 		{
-			glm::vec3 xl = x + dls*(0.5f + l)*m_SunDir;
+			glm::vec3 xl = x + dls*(0.5f + l)*sundir;
 			float hl = glm::length(xl) - m_Er;
 			if (hl < 0) break;
 			opticalDepthLightR += glm::exp(-hl/m_Hr)*dls;
@@ -69,10 +70,12 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
         sumM += attenuation * betaM;
 	}
 
-	float mu = glm::dot(m_SunDir, dir);
+	float mu = glm::dot(sundir, dir);
 	float phaseR = 3.f / (16.f*pi) * (1.f + mu*mu);
 	float phaseM = 3.f / (8.f*pi) * ((1 - g*g)*(1 + mu*mu))/((2 + g*g)*pow(1 + g*g - 2*g*mu, 1.5f));
     glm::vec3 color = sumR * phaseR * m_BetaR0 + sumM * phaseM * m_BetaM0;
+    assert(!glm::any(glm::isnan(color)));
+    assert(!glm::any(glm::isinf(color)));
 	return glm::vec4(SunIntensity * color, 1.f);
 }
 
@@ -88,8 +91,11 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
 		float fx = 2.f * ((float)x + 0.5f)/(height-1) - 1.f;
 		float z2 = 1.f - (fy*fy+fx*fx);
 		if (z2 < 0) continue;
-		// glm::vec3 dir = glm::normalize(glm::vec3(0.5f, 0.5f, 0.f));
+    #ifdef _DEBUG
+		glm::vec3 dir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.f));
+    #else
 		glm::vec3 dir = glm::normalize(glm::vec3(fx, glm::sqrt(z2), fy));
+    #endif
 		image[y*width + x] = computeIncidentLight(cameraPos, dir, 0.f, inf);
 	}
 }
