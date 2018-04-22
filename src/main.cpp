@@ -38,7 +38,7 @@ struct SceneSettings
     bool bCPU = false;
     bool bUiChanged = false;
     bool bResized = false;
-    bool bUpdated = false;
+    bool bUpdated = true;
     glm::vec3 sunDir = glm::vec3(0, 1, 0);
 };
 
@@ -232,18 +232,18 @@ void LightScattering::updateHUD() noexcept
 
 void LightScattering::render() noexcept
 {
-	auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
-    m_Device->setFramebuffer(m_ColorRenderTarget);
-    GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-	glViewport(0, 0, desc.getWidth(), desc.getHeight());
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepthf(1.0f);
-	glClear(clearFlag);
-
-    // color pass
-    if (m_Settings.bCPU && m_Settings.bUpdated)
+    if (!m_Settings.bCPU && m_Settings.bUpdated)
     {
-		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
+        auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
+        m_Device->setFramebuffer(m_ColorRenderTarget);
+        GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
+        glViewport(0, 0, desc.getHeight(), desc.getHeight());
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearDepthf(1.0f);
+        glClear(clearFlag);
+
+        glDisable(GL_DEPTH_TEST);
+		glm::vec2 resolution(desc.getHeight(), desc.getHeight());
         m_SkyShader.bind();
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
         m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
@@ -252,11 +252,13 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uSunDir", glm::normalize(m_Settings.sunDir));
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
         m_ScreenTraingle.draw();
+        glEnable(GL_DEPTH_TEST);
     }
     // Tone mapping
     {
         GraphicsTexturePtr target = m_ScreenColorTex;
-        if (m_Settings.bCPU && m_SkyColorTex) target = m_SkyColorTex;
+        if (m_Settings.bCPU && m_SkyColorTex) 
+            target = m_SkyColorTex;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, getFrameWidth(), getFrameHeight());
 
