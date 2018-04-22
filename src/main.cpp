@@ -39,7 +39,11 @@ struct SceneSettings
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
+#ifdef _DEBUG
+    glm::vec3 sunDir = glm::vec3(0.5f, 1.f, 0.f);
+#else
     glm::vec3 sunDir = glm::vec3(0, 1, 0);
+#endif
 };
 
 static float Halton(int index, float base)
