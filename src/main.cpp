@@ -35,14 +35,11 @@
 
 struct SceneSettings
 {
+    bool bCPU = false;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = false;
-#ifdef _DEBUG
-    glm::vec3 sunDir = glm::vec3(0.5f, 1.f, 0.f);
-#else
     glm::vec3 sunDir = glm::vec3(0, 1, 0);
-#endif
 };
 
 static float Halton(int index, float base)
@@ -140,8 +137,6 @@ LightScattering::~LightScattering() noexcept
 
 void LightScattering::startup() noexcept
 {
-    main2();
-
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
 
@@ -190,8 +185,7 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
-
-    if (m_Settings.bUpdated)
+    if (m_Settings.bUpdated && m_Settings.bCPU)
     {
         std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
         Atmosphere atmosphere(m_Settings.sunDir);
@@ -221,6 +215,8 @@ void LightScattering::updateHUD() noexcept
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
 
+    bUpdated |= ImGui::Checkbox("Mode CPU:", &m_Settings.bCPU);
+
     ImGui::Text("Sun Direction:");
     bUpdated |= ImGui::SliderFloat("X", &m_Settings.sunDir.x, -1.f, 1.f);
     bUpdated |= ImGui::SliderFloat("Y", &m_Settings.sunDir.y, -1.f, 1.f);
@@ -242,23 +238,31 @@ void LightScattering::render() noexcept
 	glViewport(0, 0, desc.getWidth(), desc.getHeight());
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepthf(1.0f);
-	// glClear(clearFlag);
+	glClear(clearFlag);
 
     // color pass
+    if (m_Settings.bCPU && m_Settings.bUpdated)
     {
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         m_SkyShader.bind();
+        m_SkyShader.setUniform("uEarthRadius", 6360e3f);
+        m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
 		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);
-        // m_ScreenTraingle.draw();
+        m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
+        m_SkyShader.setUniform("uSunDir", glm::normalize(m_Settings.sunDir));
+        m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
+        m_ScreenTraingle.draw();
     }
     // Tone mapping
     {
+        GraphicsTexturePtr target = m_ScreenColorTex;
+        if (m_Settings.bCPU && m_SkyColorTex) target = m_SkyColorTex;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, getFrameWidth(), getFrameHeight());
 
         glDisable(GL_DEPTH_TEST);
         m_BlitShader.bind();
-        m_BlitShader.bindTexture("uTexSource", m_SkyColorTex, 0);
+        m_BlitShader.bindTexture("uTexSource", target, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }

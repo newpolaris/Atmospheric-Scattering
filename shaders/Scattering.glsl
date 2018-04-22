@@ -18,52 +18,107 @@ void main()
 
 // IN
 in vec2 vTexcoords;
-uniform vec2 uInvResolution;
 
 // OUT
 out vec3 fragColor;
 
-// h is height above the sea level
-vec3 RayleighCoeff(float h)
-{
-	float hR = 8000; // 8 km
-	vec3 rC = vec3(33.1, 13.5, 5.8); // r, g, b term
-	vec3 rgbTerm = rC * 1e-3;
-	return rgbTerm * exp(-(h/hR));
-}
+uniform float uEarthRadius;
+uniform float uAtmosphereRadius;
+uniform vec2 uInvResolution;
+uniform vec3 uEarthCenter;
+uniform vec3 uSunDir;
+uniform vec3 uSunIntensity;
 
-vec3 OpticalDepth(vec3 pa, vec3 pb, float N)
-{
-	vec3 ds = (pb - pa) / N;
-	vec3 coeff = vec3(0, 0, 0);
-	for (int i = 0; i < N; i++)
-	{
-		vec3 x = pa + ds * (i + 0.5);
-		coeff += RayleighCoeff(x.y);
-	}
-	return coeff;
-}
+const int numSamples = 16;
+const int numLightSamples = 8;
+const float inf = 9.0e8;
+const float Hr = 7994.0;
+const float Hm = 1220.0;
+const float g = 0.76f;
+const float pi = 3.1415926535897932384626433832795;
+const vec3 betaR0 = vec3(3.8e-6, 13.5e-6, 33.1e-6);
+const vec3 betaM0 = vec3(21e-6);
 
-vec2 RaySphereIntersect(vec3 o, vec3 dir, vec3 so, float sr)
+vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
 {
-    vec3 tc = so - o;
+    vec3 tc = c - pos;
+
     float l = dot(tc, dir);
-    float d = l*l - dot(tc, tc) + sr*sr;
-    if (d < 0)
-        return vec2(-1.0, -1.0);
-    float delta = sqrt(d);
-    return vec2(l - delta, l + delta);
+    float d = l*l - dot(tc, tc) + r*r;
+    if (d < 0) return vec2(-1.0, -1.0);
+    float sl = sqrt(d);
+    return vec2(l - sl, l + sl);
 }
 
-vec3 Transmittance(vec3 Pa, vec3 Pb)
+void opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 {
-    return exp(-OpticalDepth(Pa, Pb, 15));
+    float lmin = t.x;
+    float lmax = t.y;
+    float ds = (lmax - lmin) / numLightSamples;
+    float r = 0.f;
+    float m = 0.f;
+    for (int i = 0; i < numLightSamples; i++)
+    {
+        vec3 x = s + ds*(0.5 + i)*uSunDir;
+        float h = length(x) - uEarthRadius;
+        if (h < 0) return;
+        r += exp(-h/Hr)*ds;
+        m += exp(-h/Hm)*ds;
+    }
+    rayleigh = r;
+    mie = m;
 }
 
-vec3 Extinction(float h)
+vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float tmax)
 {
-    vec3 RayleighCoeff = vec3(33.1, 13.5, 5.8)*1e-6;
-    return RayleighCoeff.bgr * exp(-h/8000);
+    vec2 t = raySphereIntersect(pos, dir, uEarthCenter, uAtmosphereRadius);
+
+    tmin = max(t.x, 0.0);
+    tmax = t.y;
+
+    if (tmax < 0)
+        discard;
+
+    vec3 tc = pos;
+    vec3 pa = tc + tmax*dir;
+    vec3 pb = tc + tmin*dir;
+
+    float opticalDepthR = 0.0;
+    float opticalDepthM = 0.0;
+    float ds = (tmax - tmin) / numSamples; // delta segment
+
+    vec3 sumR = vec3(0, 0, 0);
+    vec3 sumM = vec3(0, 0, 0);
+
+    for (int s = 0; s < numSamples; s++)
+    {
+        vec3 x = pb + ds*(0.5 + s)*dir;
+        float h = length(x) - uEarthRadius;
+        float betaR = exp(-h/Hr)*ds;
+        float betaM = exp(-h/Hm)*ds;
+        opticalDepthR += betaR;
+        opticalDepthM += betaM;
+        
+        // find intersect sun lit with atmosphere
+        vec2 tl = raySphereIntersect(x, uSunDir, uEarthCenter, uAtmosphereRadius);
+
+        // light delta segment 
+        float opticalDepthLightR = 0.0;
+        float opticalDepthLightM = 0.0;
+
+        opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM);
+        
+        vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
+        vec3 tauM = betaM0 * (opticalDepthM + opticalDepthLightM);
+        vec3 attenuation = exp(-(tauR + tauM));
+        sumR += attenuation * betaR;
+        sumM += attenuation * betaM;
+    }
+
+    float mu = dot(uSunDir, dir);
+    float phaseR = 3.0 / (16.0*pi) * (1.0 + mu*mu);
+    float phaseM = 3.0 / (8.0*pi) * ((1 - g*g)*(1 + mu*mu))/((2 + g*g)*pow(1 + g*g - 2*g*mu, 1.5));
+    return intensity * (sumR*phaseR*betaR0 + sumM*phaseM*betaM0);
 }
 
 // ----------------------------------------------------------------------------
@@ -75,36 +130,9 @@ void main()
 	float y = sqrt(d);
 
 	vec3 dir = normalize(vec3(xz, y).xzy);
-	vec3 pa = vec3(0, 0, 0);
-	float Eb = 6420e3; // earth atmosphere radius in km
-	float Ea = 6360e3; // earth radius in km
 
-	// atmosphere start to end point
-	vec3 pb = pa + dir * (Eb - Ea);
+    vec3 cameraPos = vec3(0.0, uEarthRadius + 1.0, 0.0);
+    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, inf);
 
-	vec3 depth = OpticalDepth(pa, pb, 15);
-    vec2 lc = RaySphereIntersect(vec3(0, 0, 0), dir, vec3(0, 0, 0), Ea);
-
-    vec3 Pc = vec3(0, 0, 0); // camera position
-    vec3 Ec = vec3(0, 0, 0); // earth center
-    vec3 SunIntensity = vec3(20, 20, 20);
-
-    vec2 ipv = RaySphereIntersect(Pc, dir, Ec, Eb);
-    vec3 Pa = Pc + ipv.g*dir;
-    int NSliceV = 20;
-    float delta = ipv.g/NSliceV;
-    vec3 Cs = vec3(0, 0, 0);
-    vec3 L = normalize(vec3(0, 1, 0));
-    for (int i = 0; i < NSliceV; i++)
-    {
-        vec3 X = Pc + delta * (i + 0.5) * dir;
-        vec3 TrV = Transmittance(Pc, X);
-        vec2 ips = RaySphereIntersect(X, L, Ec, Eb);
-        vec3 Ps = X + L*ips.g;
-        vec3 TrS = Transmittance(X, Ps);
-        vec3 BetaS = Extinction(X.y);
-        Cs += TrV * TrS * BetaS;
-    }
-
-	fragColor = SunIntensity * Cs;
+    fragColor = color;
 }

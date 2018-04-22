@@ -91,11 +91,7 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
 		float fx = 2.f * ((float)x + 0.5f)/(height-1) - 1.f;
 		float z2 = 1.f - (fy*fy+fx*fx);
 		if (z2 < 0) continue;
-    #ifdef _DEBUG
-		glm::vec3 dir = glm::normalize(glm::vec3(0.5f, 1.0f, 0.f));
-    #else
 		glm::vec3 dir = glm::normalize(glm::vec3(fx, glm::sqrt(z2), fy));
-    #endif
 		image[y*width + x] = computeIncidentLight(cameraPos, dir, 0.f, inf);
 	}
 }
