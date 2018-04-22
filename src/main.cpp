@@ -39,11 +39,7 @@ struct SceneSettings
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
-#ifdef _DEBUG
-    glm::vec3 sunDir = glm::vec3(0.5f, 1.f, 0.f);
-#else
-    glm::vec3 sunDir = glm::vec3(0, 1, 0);
-#endif
+    float angle = 76.f;
 };
 
 static float Halton(int index, float base)
@@ -191,8 +187,10 @@ void LightScattering::update() noexcept
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
     if (m_Settings.bUpdated && m_Settings.bCPU)
     {
+        float angle = glm::radians(m_Settings.angle);
         std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
-        Atmosphere atmosphere(m_Settings.sunDir);
+        glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
+        Atmosphere atmosphere(sunDir);
         atmosphere.renderSkyDome(image, width, height);
 
         GraphicsTextureDesc colorDesc;
@@ -222,9 +220,7 @@ void LightScattering::updateHUD() noexcept
     bUpdated |= ImGui::Checkbox("Mode CPU:", &m_Settings.bCPU);
 
     ImGui::Text("Sun Direction:");
-    bUpdated |= ImGui::SliderFloat("X", &m_Settings.sunDir.x, -1.f, 1.f);
-    bUpdated |= ImGui::SliderFloat("Y", &m_Settings.sunDir.y, -1.f, 1.f);
-    bUpdated |= ImGui::SliderFloat("Z", &m_Settings.sunDir.z, -1.f, 1.f);
+    bUpdated |= ImGui::SliderFloat("X", &m_Settings.angle, 0.f, 90.f);
 
     ImGui::PushItemWidth(180.0f);
     ImGui::Indent();
@@ -247,13 +243,15 @@ void LightScattering::render() noexcept
         glClear(clearFlag);
 
         glDisable(GL_DEPTH_TEST);
+        float angle = glm::radians(m_Settings.angle);
 		glm::vec2 resolution(desc.getHeight(), desc.getHeight());
+        glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
         m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
 		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);
         m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
-        m_SkyShader.setUniform("uSunDir", glm::normalize(m_Settings.sunDir));
+        m_SkyShader.setUniform("uSunDir", sunDir);
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
