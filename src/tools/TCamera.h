@@ -43,6 +43,7 @@ protected:
 
     // Projection parameters
     float m_fov;
+    float m_aspect;
     float m_zNear;
     float m_zFar;
 
@@ -117,6 +118,8 @@ public:
     float getInertiaCoefficient() const { return m_inertiaCoef; }
     float getFar() const { return m_zFar; }
     float getNear() const { return m_zNear; }
+    float getFov() const { return m_fov; }
+    float getAspect() const { return m_aspect; }
 
     bool isXAxisLimited() const { return m_bLimitPitchAngle; }
     bool isXAxisInverted() const { return m_bInvertPitch; }

@@ -40,6 +40,7 @@ struct SceneSettings
     bool bResized = false;
     bool bUpdated = true;
     float angle = 76.f;
+    float intensity = 20.f;
 };
 
 static float Halton(int index, float base)
@@ -190,6 +191,7 @@ void LightScattering::update() noexcept
         float angle = glm::radians(m_Settings.angle);
         std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
+
         Atmosphere atmosphere(sunDir);
         atmosphere.renderSkyDome(image, width, height);
 
@@ -218,9 +220,8 @@ void LightScattering::updateHUD() noexcept
         ImGuiWindowFlags_AlwaysAutoResize);
 
     bUpdated |= ImGui::Checkbox("Mode CPU:", &m_Settings.bCPU);
-
-    ImGui::Text("Sun Direction:");
-    bUpdated |= ImGui::SliderFloat("X", &m_Settings.angle, 0.f, 90.f);
+    bUpdated |= ImGui::SliderFloat("Sun Angle:", &m_Settings.angle, 0.f, 180.f);
+    bUpdated |= ImGui::SliderFloat("Sun Intensity:", &m_Settings.intensity, 10.f, 50.f);
 
     ImGui::PushItemWidth(180.0f);
     ImGui::Indent();
@@ -237,14 +238,15 @@ void LightScattering::render() noexcept
         auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
         m_Device->setFramebuffer(m_ColorRenderTarget);
         GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-        glViewport(0, 0, desc.getHeight(), desc.getHeight());
+        glViewport(0, 0, desc.getWidth(), desc.getHeight());
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClearDepthf(1.0f);
         glClear(clearFlag);
 
         glDisable(GL_DEPTH_TEST);
         float angle = glm::radians(m_Settings.angle);
-		glm::vec2 resolution(desc.getHeight(), desc.getHeight());
+        float halfFov = m_Camera.getFov()/2.f;
+		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
@@ -252,6 +254,9 @@ void LightScattering::render() noexcept
 		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);
         m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
         m_SkyShader.setUniform("uSunDir", sunDir);
+        m_SkyShader.setUniform("uAspect", m_Camera.getAspect());
+        m_SkyShader.setUniform("uAngle", glm::tan(glm::radians(halfFov)));
+
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);

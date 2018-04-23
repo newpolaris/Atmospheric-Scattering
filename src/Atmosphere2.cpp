@@ -267,7 +267,7 @@ int main2()
     for (unsigned i = 0; i < nangles; ++i) { 
         char filename[1024]; 
         sprintf(filename, "./skydome.%04d.ppm", i); 
-        float angle = i / float(nangles - 1) * M_PI * 0.6; 
+        float angle = i / float(nangles - 1) * M_PI * 0.6f; 
         fprintf(stderr, "Rendering image %d, angle = %0.2f\n", i, angle * 180 / M_PI); 
         renderSkydome(Vec3f(0, cos(angle), -sin(angle)), filename); 
     } 

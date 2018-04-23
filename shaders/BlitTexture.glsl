@@ -78,11 +78,22 @@ vec3 toSRGB(vec3 v)
     return pow(v, vec3(1.0/2.2)); 
 }
 
+vec3 toneMapAndtoSRGB(vec3 L)
+{
+    L.r = L.r < 1.413 ? pow(L.r * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.r);
+    L.g = L.g < 1.413 ? pow(L.g * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.g);
+    L.b = L.b < 1.413 ? pow(L.b * 0.38317, 1.0 / 2.2) : 1.0 - exp(-L.b); 
+    return L;
+}
+
 // ----------------------------------------------------------------------------
 void main() 
 {
     vec3 samples = texture(uTexSource, vTexcoords).rgb;
-	vec3 col = samples;
+
+	// vec3 col = aces_fitted(samples);
+	// col = toSRGB(col);
+    vec3 col = toneMapAndtoSRGB(samples);
 
 	fragColor = col;
 }

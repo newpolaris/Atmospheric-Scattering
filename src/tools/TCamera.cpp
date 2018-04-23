@@ -18,6 +18,7 @@ TCamera::TCamera()
     , m_viewProjMatrix(1.f)
 {
     // Default projection parameters
+    m_aspect = 1.333333f;
     m_fov = 45.0f;
     m_zNear = 0.1f;
     m_zFar = 1000.0f;
@@ -64,6 +65,7 @@ void TCamera::setProjectionParams(float fov, float aspect, float zNear, float zF
     m_fov = fov;
     m_zNear = zNear;
     m_zFar = zFar;
+    m_aspect = aspect;
 
     m_projectionMatrix = glm::perspective(m_fov, aspect, m_zNear, m_zFar);
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;

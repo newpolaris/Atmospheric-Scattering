@@ -32,8 +32,8 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
     const glm::vec3 sundir = glm::normalize(m_SunDir);
 
 	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
-    if (t.x > tmin && t.x > 0) tmin = t.x;
-	tmax = std::min(tmax, t.y);
+	tmin = std::max(t.x, tmin);
+	tmax = std::min(t.y, tmax);
 	if (tmax < 0) return glm::vec4(0.f);
 	auto tc = pos;
 	auto pa = tc + tmax*dir, pb = tc + tmin*dir;
@@ -83,46 +83,22 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int height) const
 {
     const float aspect = (float)width / height;
-    const float fov = 60.f;
+    const float fov = 45.f;
 	const float inf = 9e8f;
     const float pi = glm::pi<float>();
     const float angle = glm::tan(glm::radians(fov / 2));
     const int numPixelSamples = 4;
-	const glm::vec3 cameraPos(0.f, m_Er+1000.f, 3000.f);
-
-    std::default_random_engine generator;
-    std::uniform_real_distribution<float> distribution(0, 1);
+	const glm::vec3 cameraPos(0.f, m_Er+1000.f, 30000.f);
 
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < width; x++)
 	{
-        for (int m = 0; m < numPixelSamples; m++)
-        for (int n = 0; n < numPixelSamples; n++)
-        {
-        #if 0
-            float fy = 2.f * ((float)y + 0.5f) / (height - 1) - 1.f;
-            float fx = 2.f * ((float)x + 0.5f) / (width - 1) - 1.f;
-            fx = fx * angle * aspect;
-            fy = fy * angle;
-
-            // find out intersect with ground
-            glm::vec3 dir = glm::normalize(glm::vec3(fx, fy, -1));
-            auto t = RaySphereIntersect(cameraPos, dir, m_Ec, m_Er);
-            float tmax = inf;
-            if (t.y > 0.f)
-                tmax = std::max(0.f, t.x);
-        #else
-            float rayx = (2 * (x + (m + distribution(generator)) / numPixelSamples) / float(width) - 1) * aspect * angle;
-            float rayy = (1 - (y + (n + distribution(generator)) / numPixelSamples) / float(height) * 2) * angle;
-            glm::vec3 dir(rayx, rayy, -1);
-            dir = normalize(dir);
-            float t0, t1, tmax = inf;
-            auto t = RaySphereIntersect(cameraPos, dir, m_Ec, m_Er);
-            if (t.y > 0)
-                tmax = std::max(0.f, t.x);
-        #endif
-            image[y*width + x] += computeIncidentLight(cameraPos, dir, 0.f, tmax);
-        }
-        image[y*width + x] *= 1.f / (numPixelSamples*numPixelSamples);
+        float rayx = (2 * x / float(width) - 1) * aspect * angle;
+        float rayy = (2 * y / float(height) - 1) * angle;
+        glm::vec3 dir = glm::normalize(glm::vec3(rayx, rayy, -1));
+        float tmax = inf;
+        auto t = RaySphereIntersect(cameraPos, dir, m_Ec, m_Er);
+        if (t.y > 0) tmax = std::max(0.f, t.x);
+        image[y*width + x] += computeIncidentLight(cameraPos, dir, 0.f, tmax);
 	}
 }

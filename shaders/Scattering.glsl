@@ -24,6 +24,8 @@ out vec3 fragColor;
 
 uniform float uEarthRadius;
 uniform float uAtmosphereRadius;
+uniform float uAspect;
+uniform float uAngle;
 uniform vec2 uInvResolution;
 uniform vec3 uEarthCenter;
 uniform vec3 uSunDir;
@@ -73,8 +75,8 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
 {
     vec2 t = raySphereIntersect(pos, dir, uEarthCenter, uAtmosphereRadius);
 
-    tmin = max(t.x, 0.0);
-    tmax = t.y;
+    tmin = max(t.x, tmin);
+    tmax = min(t.y, tmax);
 
     if (tmax < 0)
         discard;
@@ -109,7 +111,7 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM);
         
         vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
-        vec3 tauM = betaM0 * (opticalDepthM + opticalDepthLightM);
+        vec3 tauM = 1.1 * betaM0 * (opticalDepthM + opticalDepthLightM);
         vec3 attenuation = exp(-(tauR + tauM));
         sumR += attenuation * betaR;
         sumM += attenuation * betaM;
@@ -124,15 +126,17 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
 // ----------------------------------------------------------------------------
 void main() 
 {
-	vec2 xz = 2.0*(gl_FragCoord.xy)*uInvResolution - vec2(1.0);
-    float d = 1 - dot(xz, xz);
-    if (d < 0.0) discard;
-	float y = sqrt(d);
+	vec2 xy = 2.0*gl_FragCoord.xy*uInvResolution - vec2(1.0);
+    xy *= uAngle;
+    xy.x *= uAspect;
+    vec3 dir = normalize(vec3(xy, -1.0));
 
-	vec3 dir = normalize(vec3(xz, y).xzy);
-
-    vec3 cameraPos = vec3(0.0, uEarthRadius + 1.0, 0.0);
-    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, inf);
+    vec3 cameraPos = vec3(0.0, uEarthRadius + 1000.0, 30000.0);
+    vec2 t = raySphereIntersect(cameraPos, dir, uEarthCenter, uEarthRadius);
+    // handle ray toward ground
+    float tmax = inf;
+    if (t.y > 0) tmax = max(0.0, t.x);
+    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
 
     fragColor = color;
 }
