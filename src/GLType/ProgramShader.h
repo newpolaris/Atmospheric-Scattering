@@ -42,6 +42,7 @@ public:
     bool setUniform(const std::string& name, const glm::vec2& v) const;
     bool setUniform(const std::string& name, const glm::vec3& v) const;
     bool setUniform(const std::string& name, const glm::vec4& v) const;
+    bool setUniform(const std::string& name, const glm::vec2* v, size_t count) const;
     bool setUniform(const std::string& name, const glm::vec4* v, size_t count) const;
     bool setUniform(const std::string& name, const glm::mat3& v) const;
     bool setUniform(const std::string& name, const glm::mat4& v) const;

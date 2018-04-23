@@ -217,6 +217,22 @@ bool ProgramShader::setUniform(const std::string &name, const glm::vec4 &v) cons
     return true;
 }
 
+bool ProgramShader::setUniform(const std::string& name, const glm::vec2* v, size_t count) const
+{
+    GLint loc = glGetUniformLocation(m_ShaderID, name.c_str());
+    if (-1 == loc)
+    {
+        printf("ProgramShader : can't find uniform \"%s\".\n", name.c_str());
+        return false;
+    }
+
+    if (count == 0)
+        return true;
+
+    glUniform2fv(loc, count, glm::value_ptr(*v));
+    return true;
+}
+
 bool ProgramShader::setUniform(const std::string& name, const glm::vec4* v, size_t count) const
 {
     GLint loc = glGetUniformLocation(m_ShaderID, name.c_str());

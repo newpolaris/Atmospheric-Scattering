@@ -41,6 +41,7 @@ struct SceneSettings
     bool bUpdated = true;
     float angle = 76.f;
     float intensity = 20.f;
+    const int numSamples = 4;
 };
 
 static float Halton(int index, float base)
@@ -58,6 +59,18 @@ static float Halton(int index, float base)
         f = f/base;
     }
     return result;
+}
+
+
+static std::vector<glm::vec2> Halton2D(int size, int offset)
+{
+    std::vector<glm::vec2> s(size);
+    for (int i = 0; i < size; i++)
+    {
+        s[i][0] = Halton(i + offset, 2.0f);
+        s[i][1] = Halton(i + offset, 3.0f);
+    }
+    return s;
 }
 
 static std::vector<glm::vec4> Halton4D(int size, int offset)
@@ -115,6 +128,7 @@ public:
 
 private:
 
+    std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
 	TCamera m_Camera;
     FullscreenTriangleMesh m_ScreenTraingle;
@@ -163,6 +177,8 @@ void LightScattering::startup() noexcept
 	m_BlitShader.link();
 
     m_ScreenTraingle.create();
+
+    m_Samples = Halton2D(m_Settings.numSamples, 0);
 }
 
 void LightScattering::closeup() noexcept
@@ -256,6 +272,7 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uSunDir", sunDir);
         m_SkyShader.setUniform("uAspect", m_Camera.getAspect());
         m_SkyShader.setUniform("uAngle", glm::tan(glm::radians(halfFov)));
+        m_SkyShader.setUniform("uSamples", m_Samples.data(), 4);
 
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
         m_ScreenTraingle.draw();

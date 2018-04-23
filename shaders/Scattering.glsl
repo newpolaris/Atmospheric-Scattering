@@ -22,17 +22,9 @@ in vec2 vTexcoords;
 // OUT
 out vec3 fragColor;
 
-uniform float uEarthRadius;
-uniform float uAtmosphereRadius;
-uniform float uAspect;
-uniform float uAngle;
-uniform vec2 uInvResolution;
-uniform vec3 uEarthCenter;
-uniform vec3 uSunDir;
-uniform vec3 uSunIntensity;
-
-const int numSamples = 16;
+const int numScatteringSamples = 16;
 const int numLightSamples = 8;
+const int numSamples = 4;
 // simple scaling factor, without specific reason
 const float mieScale = 1.1;
 // big number
@@ -43,6 +35,16 @@ const float g = 0.76f;
 const float pi = 3.1415926535897932384626433832795;
 const vec3 betaR0 = vec3(3.8e-6, 13.5e-6, 33.1e-6);
 const vec3 betaM0 = vec3(21e-6);
+
+uniform float uEarthRadius;
+uniform float uAtmosphereRadius;
+uniform float uAspect;
+uniform float uAngle;
+uniform vec2 uInvResolution;
+uniform vec3 uEarthCenter;
+uniform vec3 uSunDir;
+uniform vec3 uSunIntensity;
+uniform vec2 uSamples[numSamples];
 
 vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
 {
@@ -96,12 +98,12 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
 
     float opticalDepthR = 0.0;
     float opticalDepthM = 0.0;
-    float ds = (tmax - tmin) / numSamples; // delta segment
+    float ds = (tmax - tmin) / numScatteringSamples; // delta segment
 
     vec3 sumR = vec3(0, 0, 0);
     vec3 sumM = vec3(0, 0, 0);
 
-    for (int s = 0; s < numSamples; s++)
+    for (int s = 0; s < numScatteringSamples; s++)
     {
         vec3 x = pb + ds*(0.5 + s)*dir;
         float h = length(x) - uEarthRadius;
@@ -133,20 +135,41 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     return intensity * (sumR*phaseR*betaR0 + sumM*phaseM*betaM0);
 }
 
+// From: https://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/
+vec4 FAST_32_hash(vec2 gridcell)
+{
+    // gridcell is assumed to be an integer coordinate
+    const vec2 OFFSET = vec2(26.0, 161.0);
+    const float DOMAIN = 71.0;
+    const float SOMELARGEFLOAT = 951.135664;
+    vec4 P = vec4(gridcell.xy, gridcell.xy + vec2(1, 1));
+    P = P - floor(P * (1.0 / DOMAIN)) * DOMAIN;    //    truncate the domain
+    P += OFFSET.xyxy;                              //    offset to interesting part of the noise
+    P *= P;                                        //    calculate and return the hash
+    return fract(P.xzxz * P.yyww * (1.0 / SOMELARGEFLOAT));
+}
+
 // ----------------------------------------------------------------------------
 void main() 
 {
-	vec2 xy = 2.0*gl_FragCoord.xy*uInvResolution - vec2(1.0);
-    xy *= uAngle;
-    xy.x *= uAspect;
-    vec3 dir = normalize(vec3(xy, -1.0));
+    vec2 jitter = FAST_32_hash(gl_FragCoord.xy).xy;
+    vec3 color = vec3(0, 0, 0);
+    for (int k = 0; k < numSamples; k++)
+    {
+        vec2 u = fract(jitter + uSamples[k]);
+        vec2 xy = 2.0*(gl_FragCoord.xy + u)*uInvResolution - vec2(1.0);
+        xy *= uAngle;
+        xy.x *= uAspect;
+        vec3 dir = normalize(vec3(xy, -1.0));
 
-    vec3 cameraPos = vec3(0.0, uEarthRadius + 1000.0, 30000.0);
-    vec2 t = raySphereIntersect(cameraPos, dir, uEarthCenter, uEarthRadius);
-    // handle ray toward ground
-    float tmax = inf;
-    if (t.y > 0) tmax = max(0.0, t.x);
-    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
+        vec3 cameraPos = vec3(0.0, uEarthRadius + 1.0e3, 3.0e4);
+        vec2 t = raySphereIntersect(cameraPos, dir, uEarthCenter, uEarthRadius);
+        // handle ray toward ground
+        float tmax = inf;
+        if (t.y > 0) tmax = max(0.0, t.x);
 
-    fragColor = color;
+        color += computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
+    }
+
+    fragColor = color / numSamples;
 }
