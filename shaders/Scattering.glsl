@@ -33,6 +33,9 @@ uniform vec3 uSunIntensity;
 
 const int numSamples = 16;
 const int numLightSamples = 8;
+// simple scaling factor, without specific reason
+const float mieScale = 1.1;
+// big number
 const float inf = 9.0e8;
 const float Hr = 7994.0;
 const float Hm = 1220.0;
@@ -52,9 +55,10 @@ vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
     return vec2(l - sl, l + sl);
 }
 
-void opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
+bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 {
-    float lmin = t.x;
+    // start from position 's'
+    float lmin = 0.0;
     float lmax = t.y;
     float ds = (lmax - lmin) / numLightSamples;
     float r = 0.f;
@@ -63,14 +67,19 @@ void opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
     {
         vec3 x = s + ds*(0.5 + i)*uSunDir;
         float h = length(x) - uEarthRadius;
-        if (h < 0) return;
+        if (h < 0) return false;
         r += exp(-h/Hr)*ds;
         m += exp(-h/Hm)*ds;
     }
     rayleigh = r;
     mie = m;
+    return true;
 }
 
+//
+// for detailed algorithm and description
+// https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky
+//
 vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float tmax)
 {
     vec2 t = raySphereIntersect(pos, dir, uEarthCenter, uAtmosphereRadius);
@@ -108,10 +117,11 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         float opticalDepthLightR = 0.0;
         float opticalDepthLightM = 0.0;
 
-        opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM);
+        if (!opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM))
+            continue;
         
         vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
-        vec3 tauM = 1.1 * betaM0 * (opticalDepthM + opticalDepthLightM);
+        vec3 tauM = mieScale * betaM0 * (opticalDepthM + opticalDepthLightM);
         vec3 attenuation = exp(-(tauR + tauM));
         sumR += attenuation * betaR;
         sumM += attenuation * betaM;

@@ -220,7 +220,7 @@ void LightScattering::updateHUD() noexcept
         ImGuiWindowFlags_AlwaysAutoResize);
 
     bUpdated |= ImGui::Checkbox("Mode CPU:", &m_Settings.bCPU);
-    bUpdated |= ImGui::SliderFloat("Sun Angle:", &m_Settings.angle, 0.f, 180.f);
+    bUpdated |= ImGui::SliderFloat("Sun Angle:", &m_Settings.angle, 0.f, 120.f);
     bUpdated |= ImGui::SliderFloat("Sun Intensity:", &m_Settings.intensity, 10.f, 50.f);
 
     ImGui::PushItemWidth(180.0f);
