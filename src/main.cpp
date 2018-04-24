@@ -32,6 +32,14 @@
 #include <GameCore.h>
 #include "Atmosphere.h"
 
+enum ProfilerType { ProfilerTypeRender = 0 };
+
+namespace 
+{
+    float s_CpuTick = 0.f;
+    float s_GpuTick = 0.f;
+}
+
 struct SceneSettings
 {
     bool bCPU = false;
@@ -151,6 +159,8 @@ LightScattering::~LightScattering() noexcept
 
 void LightScattering::startup() noexcept
 {
+	profiler::initialize();
+
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
 
@@ -183,6 +193,7 @@ void LightScattering::startup() noexcept
 void LightScattering::closeup() noexcept
 {
     m_ScreenTraingle.destroy();
+	profiler::shutdown();
 }
 
 void LightScattering::update() noexcept
@@ -228,16 +239,15 @@ void LightScattering::updateHUD() noexcept
     ImGui::SetNextWindowPos(
         ImVec2(width - width / 4.f - 10.f, 10.f),
         ImGuiSetCond_FirstUseEver);
-
     ImGui::Begin("Settings",
         NULL,
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
-
-    bUpdated |= ImGui::Checkbox("Mode CPU:", &m_Settings.bCPU);
-    bUpdated |= ImGui::SliderFloat("Sun Angle:", &m_Settings.angle, 0.f, 120.f);
-    bUpdated |= ImGui::SliderFloat("Sun Intensity:", &m_Settings.intensity, 10.f, 50.f);
-
+    bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
+    bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
+    bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
+    ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
+    ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
     ImGui::PushItemWidth(180.0f);
     ImGui::Indent();
     ImGui::Unindent();
@@ -248,6 +258,7 @@ void LightScattering::updateHUD() noexcept
 
 void LightScattering::render() noexcept
 {
+    profiler::start(ProfilerTypeRender);
     if (!m_Settings.bCPU && m_Settings.bUpdated)
     {
         auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
@@ -291,6 +302,9 @@ void LightScattering::render() noexcept
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }
+    profiler::stop(ProfilerTypeRender);
+    profiler::tick(ProfilerTypeRender, s_CpuTick, s_GpuTick);
+
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
