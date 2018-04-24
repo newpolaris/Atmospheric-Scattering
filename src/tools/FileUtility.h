@@ -42,6 +42,10 @@ namespace util
 
     // Reads the entire contents of a binary file.  
     BytesArray ReadFileSync(const std::string& fileName);
+    bool WriteFileSync(const std::string& fileName, const BytesArray& plainSource);
+
+    BytesArray DecompressFile(const std::string& fileName);
+    bool CompressFile(const std::string& fileName, const BytesArray& plainSource);
 
     template <typename T, typename R>
     void Read(std::basic_istream<T, std::char_traits<T>>& is, R& t, uint32_t size)

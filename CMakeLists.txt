@@ -12,6 +12,7 @@ set(APP_TARGET LightScattering.app)
 find_package(OpenGL REQUIRED)
 
 set(UseGLI TRUE)
+set(UseZlib TRUE)
 
 # Compile external dependencies 
 add_subdirectory (external)
@@ -36,6 +37,7 @@ include_directories(
 	external/assimp-3.0.1270/include/
 	external/bullet-2.81-rev2613/src/
 	external/gli/
+	external/zlib/
 	.
 )
 
@@ -45,6 +47,7 @@ set(ALL_LIBS
 	GLEW_1130
 	imgui
 	gli
+	zlibstatic
 )
 
 add_definitions(

@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp> 
 
 #include <tools/gltools.hpp>
-#include <tools/SimpleProfile.h>
+#include <tools/Profile.h>
 #include <tools/imgui.h>
 #include <tools/TCamera.h>
 
@@ -31,7 +31,6 @@
 #include <algorithm>
 #include <GameCore.h>
 #include "Atmosphere.h"
-#include "Atmosphere2.h"
 
 struct SceneSettings
 {
