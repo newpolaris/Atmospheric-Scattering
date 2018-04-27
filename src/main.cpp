@@ -46,6 +46,7 @@ struct SceneSettings
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
+	bool bChapman = false;
     float angle = 76.f;
     float intensity = 20.f;
     const int numSamples = 4;
@@ -244,6 +245,7 @@ void LightScattering::updateHUD() noexcept
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
     bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
+	bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
     bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
     bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
     ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
@@ -275,6 +277,7 @@ void LightScattering::render() noexcept
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
+        m_SkyShader.setUniform("uChapman", m_Settings.bChapman);
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
         m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
 		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);

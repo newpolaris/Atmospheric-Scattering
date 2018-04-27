@@ -36,6 +36,7 @@ const float pi = 3.1415926535897932384626433832795;
 const vec3 betaR0 = vec3(3.8e-6, 13.5e-6, 33.1e-6);
 const vec3 betaM0 = vec3(21e-6);
 
+uniform bool uChapman;
 uniform float uEarthRadius;
 uniform float uAtmosphereRadius;
 uniform float uAspect;
@@ -45,6 +46,25 @@ uniform vec3 uEarthCenter;
 uniform vec3 uSunDir;
 uniform vec3 uSunIntensity;
 uniform vec2 uSamples[numSamples];
+
+// Ref. [Schuler12](GPU PRO 2)
+//
+// this is the approximate Chapman function,
+// corrected for transitive consistency
+float chapman(float X, float h, float coschi)
+{
+	float c = sqrt(X + h);
+	if (coschi >= 0.0)
+	{
+		return	c / (c*coschi + 1.0) * exp(-h);
+	}
+	else
+	{
+		float x0 = sqrt(1.0 - coschi*coschi)*(X + h);
+		float c0 = sqrt(x0);
+		return 2.0*c0*exp(X - x0) - c/(1.0 - c*coschi)*exp(-h);
+	}
+}
 
 vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
 {
@@ -59,23 +79,41 @@ vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
 
 bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 {
-    // start from position 's'
-    float lmin = 0.0;
-    float lmax = t.y;
-    float ds = (lmax - lmin) / numLightSamples;
-    float r = 0.f;
-    float m = 0.f;
-    for (int i = 0; i < numLightSamples; i++)
-    {
-        vec3 x = s + ds*(0.5 + i)*uSunDir;
-        float h = length(x) - uEarthRadius;
-        if (h < 0) return false;
-        r += exp(-h/Hr)*ds;
-        m += exp(-h/Hm)*ds;
-    }
-    rayleigh = r;
-    mie = m;
-    return true;
+	if (!uChapman)
+	{
+		// start from position 's'
+		float lmin = 0.0;
+		float lmax = t.y;
+		float ds = (lmax - lmin) / numLightSamples;
+		float r = 0.f;
+		float m = 0.f;
+		for (int i = 0; i < numLightSamples; i++)
+		{
+			vec3 x = s + ds*(0.5 + i)*uSunDir;
+			float h = length(x) - uEarthRadius;
+			if (h < 0) return false;
+			r += exp(-h/Hr)*ds;
+			m += exp(-h/Hm)*ds;
+		}
+		rayleigh = r;
+		mie = m;
+		return true;
+	}
+	else
+	{
+		// approximate optical depth with chapman function  
+		float x = length(s);
+		float Xr = uEarthRadius / Hr; 
+		float Xm = uEarthRadius / Hm;
+		float coschi = dot(s/x, uSunDir);
+		float xr = x / Hr;
+		float xm = x / Hm;
+		float hr = xr - Xr;
+		float hm = xm - Xm;
+		rayleigh = Hr * chapman(Xr, hr, coschi);
+		mie = Hm * chapman(Xm, hm, coschi);
+		return true;
+	}
 }
 
 //
