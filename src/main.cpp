@@ -43,10 +43,11 @@ namespace
 struct SceneSettings
 {
     bool bCPU = false;
+    bool bProfile = true;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
-	bool bChapman = false;
+	bool bChapman = true;
     float angle = 76.f;
     float intensity = 20.f;
     const int numSamples = 4;
@@ -245,6 +246,7 @@ void LightScattering::updateHUD() noexcept
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
     bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
+    bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
 	bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
     bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
     bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
@@ -260,8 +262,10 @@ void LightScattering::updateHUD() noexcept
 
 void LightScattering::render() noexcept
 {
+    bool bUpdate = m_Settings.bProfile || m_Settings.bUpdated;
+
     profiler::start(ProfilerTypeRender);
-    if (!m_Settings.bCPU && m_Settings.bUpdated)
+    if (!m_Settings.bCPU && bUpdate)
     {
         auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
         m_Device->setFramebuffer(m_ColorRenderTarget);
@@ -286,8 +290,7 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uAspect", m_Camera.getAspect());
         m_SkyShader.setUniform("uAngle", glm::tan(glm::radians(halfFov)));
         m_SkyShader.setUniform("uSamples", m_Samples.data(), 4);
-
-        m_SkyShader.setUniform("uSunIntensity", glm::vec3(20.f));
+        m_SkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }

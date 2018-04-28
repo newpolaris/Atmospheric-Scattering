@@ -47,7 +47,7 @@ uniform vec3 uSunDir;
 uniform vec3 uSunIntensity;
 uniform vec2 uSamples[numSamples];
 
-// Ref. [Schuler12](GPU PRO 2)
+// Ref. [Schuler12](GPU PRO 3)
 //
 // this is the approximate Chapman function,
 // corrected for transitive consistency
@@ -117,7 +117,6 @@ bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 }
 
 //
-// for detailed algorithm and description
 // https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky
 //
 vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float tmax)
