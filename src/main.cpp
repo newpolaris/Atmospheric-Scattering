@@ -50,71 +50,9 @@ struct SceneSettings
 	bool bChapman = true;
     float angle = 76.f;
     float intensity = 20.f;
+    float altitude = 1.f;
     const int numSamples = 4;
 };
-
-static float Halton(int index, float base)
-{
-    float result = 0.0f;
-    float f = 1.0f/base;
-    float i = float(index);
-    for (;;)
-    {
-        if (i <= 0.0f)
-            break;
-
-        result += f*fmodf(i, base);
-        i = floorf(i/base);
-        f = f/base;
-    }
-    return result;
-}
-
-
-static std::vector<glm::vec2> Halton2D(int size, int offset)
-{
-    std::vector<glm::vec2> s(size);
-    for (int i = 0; i < size; i++)
-    {
-        s[i][0] = Halton(i + offset, 2.0f);
-        s[i][1] = Halton(i + offset, 3.0f);
-    }
-    return s;
-}
-
-static std::vector<glm::vec4> Halton4D(int size, int offset)
-{
-    std::vector<glm::vec4> s(size);
-    for (int i = 0; i < size; i++)
-    {
-        s[i][0] = Halton(i + offset, 2.0f);
-        s[i][1] = Halton(i + offset, 3.0f);
-        s[i][2] = Halton(i + offset, 5.0f);
-        s[i][3] = Halton(i + offset, 7.0f);
-    }
-    return s;
-}
-
-glm::mat4 jitterProjMatrix(const glm::mat4& proj, int sampleCount, float jitterAASigma, float width, float height)
-{
-    // Per-frame jitter to camera for AA
-    const int frameNum = sampleCount + 1; // Add 1 since otherwise first sample is an outlier
-
-    float u1 = Halton(frameNum, 2.0f);
-    float u2 = Halton(frameNum, 3.0f);
-
-    // Gaussian sample
-    float phi = 2.0f*glm::pi<float>()*u2;
-    float r = jitterAASigma*sqrtf(-2.0f*log(std::max(u1, 1e-7f)));
-    float x = r*cos(phi);
-    float y = r*sin(phi);
-
-    glm::mat4 ret = proj;
-    ret[0].w += x*2.0f/width;
-    ret[1].w += y*2.0f/height;
-
-    return ret;
-}
 
 class LightScattering final : public gamecore::IGameApp
 {
@@ -138,6 +76,7 @@ public:
 private:
 
     std::vector<glm::vec2> m_Samples;
+    SphereMesh m_Sphere;
     SceneSettings m_Settings;
 	TCamera m_Camera;
     FullscreenTriangleMesh m_ScreenTraingle;
@@ -151,7 +90,8 @@ private:
 
 CREATE_APPLICATION(LightScattering);
 
-LightScattering::LightScattering() noexcept
+LightScattering::LightScattering() noexcept :
+    m_Sphere(32, 1.0e5f)
 {
 }
 
@@ -163,6 +103,7 @@ void LightScattering::startup() noexcept
 {
 	profiler::initialize();
 
+    m_Camera.setFov(80.f);
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
 
@@ -190,10 +131,13 @@ void LightScattering::startup() noexcept
     m_ScreenTraingle.create();
 
     m_Samples = Halton2D(m_Settings.numSamples, 0);
+
+    m_Sphere.create();
 }
 
 void LightScattering::closeup() noexcept
 {
+    m_Sphere.destroy();
     m_ScreenTraingle.destroy();
 	profiler::shutdown();
 }
@@ -250,6 +194,7 @@ void LightScattering::updateHUD() noexcept
 	bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
     bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
     bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
+    bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
     ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
     ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
     ImGui::PushItemWidth(180.0f);
@@ -274,25 +219,22 @@ void LightScattering::render() noexcept
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClearDepthf(1.0f);
         glClear(clearFlag);
-
-        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         float angle = glm::radians(m_Settings.angle);
-        float halfFov = m_Camera.getFov()/2.f;
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
+        m_SkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
         m_SkyShader.setUniform("uChapman", m_Settings.bChapman);
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
         m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
 		m_SkyShader.setUniform("uInvResolution", 1.f/resolution);
         m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
         m_SkyShader.setUniform("uSunDir", sunDir);
-        m_SkyShader.setUniform("uAspect", m_Camera.getAspect());
-        m_SkyShader.setUniform("uAngle", glm::tan(glm::radians(halfFov)));
-        m_SkyShader.setUniform("uSamples", m_Samples.data(), 4);
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
-        m_ScreenTraingle.draw();
-        glEnable(GL_DEPTH_TEST);
+        m_SkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+        m_Sphere.draw();
+        glEnable(GL_CULL_FACE);
     }
     // Tone mapping
     {

@@ -113,6 +113,8 @@ public:
     const glm::vec3& getTarget() const { return m_target; }
     const glm::vec3& getDirection() const { return m_direction; }
 
+    void setFov(float fov) { m_fov = fov; }
+
     float getMoveCoefficient() const { return m_moveCoef; }
     float getRotationCoefficient() const { return m_rotationCoef; }
     float getInertiaCoefficient() const { return m_inertiaCoef; }
