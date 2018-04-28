@@ -130,8 +130,6 @@ void LightScattering::startup() noexcept
 
     m_ScreenTraingle.create();
 
-    m_Samples = Halton2D(m_Settings.numSamples, 0);
-
     m_Sphere.create();
 }
 
