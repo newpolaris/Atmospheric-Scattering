@@ -31,8 +31,9 @@ out vec3 fragColor;
 const int numScatteringSamples = 16;
 const int numLightSamples = 8;
 const int numSamples = 4;
-// [4] Mie coefficient ratio between (absorption + scattering) and scattering is about to 0.9
-const float mieScale = 1.11111;
+// [Hillaire16] use 1.11 factor 
+// [Preetham99] Mie coefficient ratio scattering / (absorption+scattering) is about to 0.9
+const float mieScale = 1.11;
 // big number
 const float inf = 9.0e8;
 const float Hr = 7994.0;
@@ -40,8 +41,6 @@ const float Hm = 1220.0;
 const float g = 0.760;
 const float humanHeight = 1.0;
 const float pi = 3.1415926535897932384626433832795;
-const vec3 betaR0 = vec3(5.8e-6, 13.5e-6, 33.1e-6);
-const vec3 betaM0 = vec3(21e-6);
 
 uniform bool uChapman;
 uniform float uEarthRadius;
@@ -53,8 +52,11 @@ uniform vec2 uInvResolution;
 uniform vec3 uEarthCenter;
 uniform vec3 uSunDir;
 uniform vec3 uSunIntensity;
+uniform vec3 betaR0; // vec3(5.8e-6, 13.5e-6, 33.1e-6);
+uniform vec3 betaM0; // vec3(21e-6);
 
-// Ref. [Schuler12](GPU PRO 3)
+
+// Ref. [Schuler12]
 //
 // this is the approximate Chapman function,
 // corrected for transitive consistency
