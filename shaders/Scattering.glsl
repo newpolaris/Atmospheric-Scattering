@@ -62,7 +62,7 @@ uniform vec3 betaM0; // vec3(21e-6);
 //
 // this is the approximate Chapman function,
 // corrected for transitive consistency
-float chapman(float X, float h, float coschi)
+float ChapmanApproximation(float X, float h, float coschi)
 {
 	float c = sqrt(X + h);
 	if (coschi >= 0.0)
@@ -121,8 +121,8 @@ bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 		float xm = x / Hm;
 		float hr = xr - Xr;
 		float hm = xm - Xm;
-		rayleigh = Hr * chapman(Xr, hr, coschi);
-		mie = Hm * chapman(Xm, hm, coschi);
+		rayleigh = Hr * ChapmanApproximation(Xr, hr, coschi);
+		mie = Hm * ChapmanApproximation(Xm, hm, coschi);
 		return true;
 	}
 }
@@ -140,6 +140,10 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     if (tmax < 0)
         discard;
 
+    // see pig.8 in scratchapixel
+    // tc: camera position
+    // pb: tc (tmin is 0)
+    // pa: intersection point with atmosphere
     vec3 tc = pos;
     vec3 pa = tc + tmax*dir;
     vec3 pb = tc + tmin*dir;
