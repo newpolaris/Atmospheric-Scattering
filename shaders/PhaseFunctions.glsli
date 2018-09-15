@@ -1,0 +1,12 @@
+float ComputePhaseMie(float theta, float g)
+{
+	const float pi = 3.1415926535897932384626433832795;
+    return 3.0 / (8.0*pi) * ((1 - g*g)*(1 + theta*theta)) / ((2 + g*g)*pow(1 + g*g - 2 * g*theta, 1.5));
+}
+
+float CompuatePhaseRayleigh(float theta)
+{
+	const float pi = 3.1415926535897932384626433832795;
+    return 3.0 / (16.0*pi) * (1.0 + theta*theta);
+}
+

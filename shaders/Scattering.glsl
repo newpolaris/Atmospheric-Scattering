@@ -21,6 +21,8 @@ void main()
 
 -- Fragment
 
+#include "PhaseFunctions.glsli"
+
 // IN
 in vec2 vTexcoords;
 in vec3 vNormalW;
@@ -176,8 +178,8 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     }
 
     float mu = dot(uSunDir, dir);
-    float phaseR = 3.0 / (16.0*pi) * (1.0 + mu*mu);
-    float phaseM = 3.0 / (8.0*pi) * ((1 - g*g)*(1 + mu*mu))/((2 + g*g)*pow(1 + g*g - 2*g*mu, 1.5));
+    float phaseR = CompuatePhaseRayleigh(mu);
+    float phaseM = ComputePhaseMie(mu, g);
     return intensity * (sumR*phaseR*betaR0 + sumM*phaseM*betaM0);
 }
 

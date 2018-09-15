@@ -58,7 +58,8 @@ struct SceneSettings
 //
 // ref. [Preetham99][Hillaire16]
 //
-
+// in [ray-mmd] ComputeWaveLengthRaylenigh
+//
 glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
 {
     const float n = 1.0003f; // refractive index
