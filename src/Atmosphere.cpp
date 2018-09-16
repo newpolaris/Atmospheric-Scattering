@@ -93,8 +93,8 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
 	for (int y = 0; y < height; y++)
 	for (int x = 0; x < width; x++)
 	{
-        float rayx = (2 * x / float(width) - 1) * aspect * angle;
-        float rayy = (2 * y / float(height) - 1) * angle;
+        float rayx = (2 * float(width) * 0.2 / float(width) - 1) * aspect * angle;
+        float rayy = (2 * float(height) * 0.8 / float(height) - 1) * angle;
         glm::vec3 dir = glm::normalize(glm::vec3(rayx, rayy, -1));
         float tmax = inf;
         auto t = ComputeRaySphereIntersection(cameraPos, dir, m_Ec, m_Er);

@@ -21,6 +21,7 @@ vec3 ComputeCoefficientMie(vec3 lambda, vec3 K, float turbidity)
     const float mie =  0.434f * c * pi * pow(2*pi, jungeexp - 2);
     return mie * K / pow(lambda, vec3(jungeexp - 2));
 }
+
 float ComputePhaseMie(float theta, float g)
 {
     return 3.0 / (8.0*pi) * ((1 - g*g)*(1 + theta*theta)) / ((2 + g*g)*pow(1 + g*g - 2 * g*theta, 1.5));

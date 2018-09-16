@@ -1,21 +1,20 @@
 -- Vertex
 
-layout (location = 0) in vec3 aPos;
+// IN
+layout (location = 0) in vec3 inPosition;
 
-uniform mat4 projection;
-uniform mat4 view;
-uniform mat4 model;
+uniform mat4 uModelToProj;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    vec4 position = uModelToProj*vec4(inPosition, 1.0);
+	gl_Position = position.xyww;
 }
 
 -- Fragment
 
-out vec4 FragColor;
-uniform vec3 color;
+out vec4 fragColor;
 void main()
 {           
-    FragColor = vec4(color, 1.0);
+    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

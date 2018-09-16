@@ -52,7 +52,7 @@ struct SceneSettings
     float intensity = 20.f;
     float altitude = 1.f;
     float turbidity = 1.f;
-    const int numSamples = 4;
+    float fov = 45.f;
 };
 
 //
@@ -107,6 +107,7 @@ private:
     SceneSettings m_Settings;
 	TCamera m_Camera;
     FullscreenTriangleMesh m_ScreenTraingle;
+    ProgramShader m_FlatShader;
     ProgramShader m_SkyShader;
     ProgramShader m_BlitShader;
     GraphicsTexturePtr m_SkyColorTex;
@@ -130,7 +131,6 @@ void LightScattering::startup() noexcept
 {
 	profiler::initialize();
 
-    m_Camera.setFov(80.f);
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
 
@@ -142,6 +142,12 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 	assert(m_Device);
+
+	m_FlatShader.setDevice(m_Device);
+	m_FlatShader.initialize();
+	m_FlatShader.addShader(GL_VERTEX_SHADER, "Flat.Vertex");
+	m_FlatShader.addShader(GL_FRAGMENT_SHADER, "Flat.Fragment");
+	m_FlatShader.link();
 
 	m_SkyShader.setDevice(m_Device);
 	m_SkyShader.initialize();
@@ -169,6 +175,7 @@ void LightScattering::closeup() noexcept
 
 void LightScattering::update() noexcept
 {
+    m_Camera.setFov(m_Settings.fov);
     bool bCameraUpdated = m_Camera.update();
 
     static int32_t preWidth = 0;
@@ -221,6 +228,7 @@ void LightScattering::updateHUD() noexcept
     bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
     bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
     bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1.f, 64.f);
+    bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
     ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
     ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
     ImGui::PushItemWidth(180.0f);

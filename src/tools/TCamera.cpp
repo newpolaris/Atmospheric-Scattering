@@ -67,7 +67,7 @@ void TCamera::setProjectionParams(float fov, float aspect, float zNear, float zF
     m_zFar = zFar;
     m_aspect = aspect;
 
-    m_projectionMatrix = glm::perspective(m_fov, aspect, m_zNear, m_zFar);
+    m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspect, m_zNear, m_zFar);
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;
 }
 
@@ -218,6 +218,8 @@ bool TCamera::update(float deltaT)
     m_position += cameraRotate * m_moveVelocity;
     m_target = m_position + m_direction;
     m_up = glm::cross(m_direction, worldLeft);
+
+    m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspect, m_zNear, m_zFar);
 
     m_viewMatrix = glm::lookAt(m_position, m_target, m_up);
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;

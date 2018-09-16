@@ -24,7 +24,7 @@ void main()
 #define TEST_RAY_MMD 1
 #define ATM_SAMPLES_NUMS 16
 #define ATM_CLOUD_ENABLE 1
-#define ATM_LIMADARKENING_ENABLE 1
+#define ATM_LIMADARKENING_ENABLE 0
 
 const float pi = 3.1415926535897932384626433832795;
 
@@ -64,9 +64,9 @@ const float mEarthRadius = 6360.0; // Earth radius up to 6360 km
 const float mEarthAtmoRadius = 6420.0; // Earth radius with its atmospheric height up to 6420km
 
 // [Preetham99]
-const vec3 mWaveLength = vec3(680e-9, 550e-9, 440e-9);
+const vec3 mWaveLength = vec3(680e-9, 550e-9, 440e-9); // standard earth lambda of 680nm, 550nm, 450nm
 const vec3 mMieColor = vec3(0.686282f, 0.677739f, 0.663365f); // spectrum, note that ray-mmd use SunColor
-const vec3 mRayleighColor = vec3(1.0, 1.0, 1.0); // Unkown
+const vec3 mRayleighColor = vec3(1.0, 1.0, 1.0); // Unknown
 const vec3 mCloudColor = vec3(1.0, 1.0, 1.0); // ray-mmd use SunColor instead
 // sky turbidity: (1.0 pure air to 64.0 thin fog)[Preetham99]
 const vec3 mSunTurbidityParams = vec3(100, 1e-5, 500); 	// Sun turbidity  
@@ -277,8 +277,6 @@ struct ScatteringParams
 	float earthRadius;
 	float earthAtmTopRadius;
 	vec3 earthCenter;
-
-    vec3 eyePosOrDir;
 };
 
 void clip(float b)
@@ -313,7 +311,7 @@ vec2 ComputeOpticalDepth(ScatteringParams setting, vec3 samplePoint, vec3 V, vec
     return vec2(opticalDepthSun, opticalDepthCamera);
 }
 
-void AerialPerspective(ScatteringParams setting, vec3 start, vec3 end, vec3 V, vec3 L, bool infinite, out vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
+void AerialPerspective(ScatteringParams setting, vec3 start, vec3 end, vec3 V, vec3 L, bool infinite, inout vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
 {
     float inf_neg = infinite ? 1.0 : -1.0;
 
@@ -323,7 +321,7 @@ void AerialPerspective(ScatteringParams setting, vec3 start, vec3 end, vec3 V, v
 
     float sampleLength = length(sampleStep);
 
-    vec3 scattering = vec3(0.0);
+    vec3 scattering = vec3(0.0, 0.0, 0.0);
     vec2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);   
 
     for (int i = 1; i < ATM_SAMPLES_NUMS; i++, samplePoint -= sampleStep)
@@ -345,15 +343,36 @@ void AerialPerspective(ScatteringParams setting, vec3 start, vec3 end, vec3 V, v
 	insctrRayleigh = scattering * setting.waveLambdaRayleigh * sampleLength;
 }
 
-bool ComputeSkyboxChapman(ScatteringParams setting, vec3 eye, vec3 V, vec3 L, out vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
+vec2 ComputeRaySphereIntersection2(vec3 position, vec3 dir, vec3 center, float radius)
+{
+	vec3 origin = position - center;
+	float B = dot(origin, dir);
+	float C = dot(origin, origin) - radius * radius;
+	float D = B * B - C;
+
+	vec2 minimaxIntersections;
+	if (D < 0.0)
+	{
+		minimaxIntersections = vec2(-1.0, -1.0);
+	}
+	else
+	{
+		D = sqrt(D);
+		minimaxIntersections = vec2(-B - D, -B + D);
+	}
+
+	return minimaxIntersections;
+}
+
+bool ComputeSkyboxChapman(ScatteringParams setting, vec3 eye, vec3 V, vec3 L, inout vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
 {
     bool neg = true;
 
-    vec2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
+    vec2 outerIntersections = ComputeRaySphereIntersection2(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
     clip(outerIntersections.y);
 
-    vec2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
-    if (innerIntersections.x > 0.0)
+    vec2 innerIntersections = ComputeRaySphereIntersection2(eye, V, setting.earthCenter, setting.earthRadius);
+    if (innerIntersections.x > 0.0) // if forward to the ground (not if under ground)
     {
         neg = false;
         outerIntersections.y = innerIntersections.x;
@@ -367,27 +386,59 @@ bool ComputeSkyboxChapman(ScatteringParams setting, vec3 eye, vec3 V, vec3 L, ou
 
 	AerialPerspective(setting, start, end, V, L, neg, transmittance, insctrMie, insctrRayleigh);
 
+    // ground case
 	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return intersectionTest;
 }
 
-vec4 ComputeSkyInscattering(ScatteringParams settings, vec3 eye, vec3 V, vec3 L)
+vec4 ComputeSkyInscattering(ScatteringParams setting, vec3 eye, vec3 V, vec3 L)
 {
     vec3 insctrMie = vec3(0.0);
     vec3 insctrRayleigh = vec3(0.0);
     vec3 insctrOpticalLength = vec3(1.0);
-    bool intersectionTest = ComputeSkyboxChapman(settings, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
+    bool intersectionTest = ComputeSkyboxChapman(setting, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);
-	float phaseMie = ComputePhaseMie(phaseTheta, settings.mieG);
+	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 
 	vec3 insctrTotalMie = insctrMie * phaseMie;
 	vec3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh;
 
-	vec3 sky = (insctrTotalMie + insctrTotalRayleigh) * settings.sunRadiance;
+	vec3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
 
     return vec4(sky, 1.0);
+}
+
+vec3 ComputeWaveLengthMie(vec3 density)
+{
+	return 2e-5f * density;
+}
+
+const float PI = pi;
+const float PI_2 = 2*pi;
+
+float pow2(float x)
+{
+    return x * x;
+}
+
+vec3 ComputeWaveLengthMie(vec3 lambda, vec3 K, float T, float U = 4)
+{
+	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
+	float mieConst = 0.434 * c_pi * pow(PI_2, U - 2.0);
+	return mieConst * K / pow(lambda, vec3(U - 2.0));
+}
+
+vec3 ComputeWaveLengthRayleigh(vec3 lambda)
+{
+	const float n = 1.0003;
+	const float N = 2.545e25;
+	const float pn = 0.035;
+	const float n2 = n * n;
+	const float pi3 = PI * PI * PI;
+	const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3.0 * N) * ((6.0 + 3.0 * pn) / (6.0 - 7.0 * pn));
+	return rayleighConst / (lambda * lambda * lambda * lambda);
 }
 
 // ----------------------------------------------------------------------------
@@ -395,29 +446,35 @@ void main()
 {
 #if TEST_RAY_MMD
     vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, mSunTurbidity);
-    vec3 rayleight = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
+    vec3 rayleight = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	vec3 cloud = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
 
-    ScatteringParams settings;
-    settings.mieG = g;
-    settings.sunRadiance = mSunRadiance;
-    settings.earthRadius = mEarthRadius * mUnitDistance;
-    settings.earthCenter = vec3(0, -settings.earthRadius, 0);
-    settings.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
-	settings.waveLambdaMie = mieLambda;
-	settings.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
-	settings.waveLambdaRayleigh = rayleight;
-	settings.mieHeight = mMieHeight * mUnitDistance;
-	settings.rayleighHeight = mRayleighHeight * mUnitDistance;
+    rayleight = vec3(5.80703318e-06, 1.35687360e-05, 3.31267875e-05);
+    mieLambda = vec3(2.71618246e-05, 4.10025968e-05, 6.27077752e-05);
+    rayleight = betaR0;
+    mieLambda = betaM0;
 
+    ScatteringParams setting;
+    setting.mieG = g;
+    setting.sunRadiance = mSunRadiance;
+    setting.earthRadius = mEarthRadius * mUnitDistance;
+    setting.earthCenter = vec3(0, -setting.earthRadius, 0);
+    setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
+	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
+	setting.waveLambdaRayleigh = rayleight;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+
+    vec3 L = -uSunDir;
     vec3 V = normalize(-vNormalW);
-    vec3 CameraPos = vec3(0.0, humanHeight + uEarthRadius, 0.0) + vec3(0.0, uAltitude, 0.0);
-    fragColor = ComputeSkyInscattering(settings, CameraPos, V, uSunDir);
+    vec3 CameraPos = vec3(0.0, humanHeight + uAltitude, 0.0);
+    fragColor = ComputeSkyInscattering(setting, CameraPos, V, L);
 
 #else
     vec3 dir = normalize(-vNormalW);
 
-    vec3 cameraPos = vec3(0.0, humanHeight + uAltitude, 0.0);
+    vec3 cameraPos = vec3(0.0, humanHeight + uAltitude + uEarthRadius, 0.0);
     vec2 t = ComputeRaySphereIntersection(cameraPos, dir, uEarthCenter, uEarthRadius);
     // handle ray toward ground
     float tmax = inf;
