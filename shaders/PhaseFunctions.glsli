@@ -1,12 +1,33 @@
+//
+// ref. [Preetham99][Hillaire16]
+//
+// equivalent with [ray-mmd] ComputeWaveLengthRaylenigh
+//
+vec3 ComputeCoefficientRayleigh(vec3 lambda)
+{
+    const float n = 1.0003f; // refractive index
+    const float N = 2.545e25f; // molecules per unit
+    const float p = 0.035f; // depolarization factor for standard air
+
+    const vec3 l4 = lambda*lambda*lambda*lambda;
+    return 8*pi*pi*pi*pow(n*n - 1, 2) / (3*N*l4) * ((6 + 3*p)/(6 - 7*p));
+}
+
+// turbidity: (1.0 pure air to 64.0 thin fog)[Preetham99]
+vec3 ComputeCoefficientMie(vec3 lambda, vec3 K, float turbidity)
+{
+    const float jungeexp = 4.0;
+    const float c = (0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
+    const float mie =  0.434f * c * pi * pow(2*pi, jungeexp - 2);
+    return mie * K / pow(lambda, vec3(jungeexp - 2));
+}
 float ComputePhaseMie(float theta, float g)
 {
-	const float pi = 3.1415926535897932384626433832795;
     return 3.0 / (8.0*pi) * ((1 - g*g)*(1 + theta*theta)) / ((2 + g*g)*pow(1 + g*g - 2 * g*theta, 1.5));
 }
 
-float CompuatePhaseRayleigh(float theta)
+float ComputePhaseRayleigh(float theta)
 {
-	const float pi = 3.1415926535897932384626433832795;
     return 3.0 / (16.0*pi) * (1.0 + theta*theta);
 }
 

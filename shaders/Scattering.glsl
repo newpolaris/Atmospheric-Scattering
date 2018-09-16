@@ -21,6 +21,14 @@ void main()
 
 -- Fragment
 
+#define TEST_RAY_MMD 1
+#define ATM_SAMPLES_NUMS 16
+#define ATM_CLOUD_ENABLE 1
+#define ATM_LIMADARKENING_ENABLE 1
+
+const float pi = 3.1415926535897932384626433832795;
+
+#include "Atmospheric.glsli"
 #include "PhaseFunctions.glsli"
 
 // IN
@@ -28,7 +36,7 @@ in vec2 vTexcoords;
 in vec3 vNormalW;
 
 // OUT
-out vec3 fragColor;
+out vec4 fragColor;
 
 const int numScatteringSamples = 16;
 const int numLightSamples = 8;
@@ -40,12 +48,76 @@ const float mieScale = 1.11;
 const float inf = 9.0e8;
 const float Hr = 7994.0;
 const float Hm = 1220.0;
+// mSunPhaseParams = vec3(0.76, 0.65, 1.0); 		// Sun concentration with its phase functions up to 0.76, 0.76 is standard
 const float g = 0.760;
+// 1 m
 const float humanHeight = 1.0;
-const float pi = 3.1415926535897932384626433832795;
+
+// for parameter image
+// https://github.com/gaj-cg/ray-mmd-docs-ja/wiki/
+
+// scale for km to m
+const float mUnitDistance = 1000.0;
+// const vec3 mSunRadianceParams = vec3(10, 1.0, 20.0); 	// Sun light power, 10.0 is normal
+const float mSunRadiance = 10.0;
+const float mEarthRadius = 6360.0; // Earth radius up to 6360 km
+const float mEarthAtmoRadius = 6420.0; // Earth radius with its atmospheric height up to 6420km
+
+// [Preetham99]
+const vec3 mWaveLength = vec3(680e-9, 550e-9, 440e-9);
+const vec3 mMieColor = vec3(0.686282f, 0.677739f, 0.663365f); // spectrum, note that ray-mmd use SunColor
+const vec3 mRayleighColor = vec3(1.0, 1.0, 1.0); // Unkown
+const vec3 mCloudColor = vec3(1.0, 1.0, 1.0); // ray-mmd use SunColor instead
+// sky turbidity: (1.0 pure air to 64.0 thin fog)[Preetham99]
+const vec3 mSunTurbidityParams = vec3(100, 1e-5, 500); 	// Sun turbidity  
+
+// unknown values: vec3(default, min, max)
+const vec3 mFogRangeParams = vec3(1, 1e-5, 10.0);
+const vec3 mFogIntensityParams = vec3(1, 0.0, 200.0);
+const vec3 mFogDensityParams = vec3(100, 0.1, 5000.0);
+const vec3 mFogDensityFarParams = vec3(1e-2, 1e-5, 1e-1);
+
+const vec3 mCloudSpeedParams = vec3(0.05, 0.0, 1.0);
+const vec3 mCloudTurbidityParams = vec3(80, 1e-5, 200.0);
+const vec3 mCloudDensityParams = vec3(400, 0.0, 1600.0);
+
+const vec3 mMiePhaseParams = vec3(0.76, 0.65, 1.0);		// Mie scattering with its phase functions up to 0.76, 0.76 is standard
+const vec3 mMieHeightParams = vec3(1.2, 1e-5, 2.4);		// Mie scattering with its water particles up to 1.2km, 1.2km is standard
+const vec3 mMieTurbidityParams = vec3(200, 1e-5, 500); 	// Mie scattering with its wave length param
+
+// Rayleigh scattering with its atmosphereic up to 8.0km, 8.0km is standard
+const vec3 mRayleighHeightParams = vec3(8.0, 1e-5, 24.0);
+
+// Precomputed Rayleigh scattering coefficients for wavelength lambda using the following formula
+// F(lambda) = (8.0*PI/3.0) * (n^2.0 - 1.0)^2.0 * ((6.0+3.0*p) / (6.0-7.0*p)) / (lambda^4.0 * N)
+// n : refractive index of the air (1.0003) https://en.wikipedia.org/wiki/Refractive_index
+// p : air depolarization factor (0.035)
+// N : air number density under NTP : (2.545e25 molecule * m^-3) 
+// lambda : wavelength for which scattering coefficient is computed, standard earth lambda of (680nm, 550nm, 440nm)
+const vec3 mRayleighScatteringCoeff = vec3(5.8e-6, 13.6e-6, 33.1e-6);
+
+// https://ozonewatch.gsfc.nasa.gov/facts/ozone.html
+// https://en.wikipedia.org/wiki/Number_density
+// Ozone scattering with its mass up to 0.00006%, 0.00006 is standard
+// Ozone scattering with its number density up to 2.5040, 2.5040 is standard
+const vec3 mOzoneMassParams = vec3(0.6e-6, 0.0, 0.9e-6) * 2.504;
+
+// http://www.iup.physik.uni-bremen.de/gruppen/molspec/databases/referencespectra/o3spectra2011/index.html
+// Version 22.07.2013: Fast Fourier Transform Filter applied to the initial data in the region 213.33 -317 nm 
+// Ozone scattering with wavelength (680nm, 550nm, 440nm) and 293K
+const vec3 mOzoneScatteringCoeff = vec3(1.36820899679147, 3.31405330400124, 0.13601728252538);
+
+const float mSunTurbidity = mSunTurbidityParams.x;
+const float mOzoneMass = mOzoneMassParams.x;
+const float mCloudSpeed = mCloudSpeedParams.x;
+const float mCloudTurbidity = mCloudTurbidityParams.x;
+const float mCloudDensity = mCloudDensityParams.x;
+const float mMieHeight = mMieHeightParams.x;
+const float mMieTurbidity = mMieTurbidityParams.x;
+const float mRayleighHeight = mRayleighHeightParams.x;
 
 uniform bool uChapman;
-uniform float uEarthRadius;
+uniform float uEarthRadius; 
 uniform float uAtmosphereRadius;
 uniform float uAspect;
 uniform float uAngle;
@@ -77,7 +149,7 @@ float ChapmanApproximation(float X, float h, float coschi)
 	}
 }
 
-vec2 raySphereIntersect(vec3 pos, vec3 dir, vec3 c, float r)
+vec2 ComputeRaySphereIntersection(vec3 pos, vec3 dir, vec3 c, float r)
 {
     vec3 tc = c - pos;
 
@@ -132,7 +204,7 @@ bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 //
 vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float tmax)
 {
-    vec2 t = raySphereIntersect(pos, dir, uEarthCenter, uAtmosphereRadius);
+    vec2 t = ComputeRaySphereIntersection(pos, dir, uEarthCenter, uAtmosphereRadius);
 
     tmin = max(t.x, tmin);
     tmax = min(t.y, tmax);
@@ -165,7 +237,7 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         opticalDepthM += betaM;
         
         // find intersect sun lit with atmosphere
-        vec2 tl = raySphereIntersect(x, uSunDir, uEarthCenter, uAtmosphereRadius);
+        vec2 tl = ComputeRaySphereIntersection(x, uSunDir, uEarthCenter, uAtmosphereRadius);
 
         // light delta segment 
         float opticalDepthLightR = 0.0;
@@ -182,24 +254,176 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     }
 
     float mu = dot(uSunDir, dir);
-    float phaseR = CompuatePhaseRayleigh(mu);
+    float phaseR = ComputePhaseRayleigh(mu);
     float phaseM = ComputePhaseMie(mu, g);
     return intensity * (sumR*phaseR*betaR0 + sumM*phaseM*betaM0);
+}
+
+struct ScatteringParams
+{
+#if ATM_LIMADARKENING_ENABLE
+	float sunRadius;
+#endif
+	float sunRadiance;
+
+	float mieG;
+	float mieHeight;
+    float rayleighHeight;
+
+	vec3 waveLambdaMie;
+	vec3 waveLambdaOzone;
+	vec3 waveLambdaRayleigh;
+
+	float earthRadius;
+	float earthAtmTopRadius;
+	vec3 earthCenter;
+
+    vec3 eyePosOrDir;
+};
+
+void clip(float b)
+{
+    if (b < 0)
+        discard;
+}
+
+float GetOpticalDepthSchueler(float h, float H, float earthRadius, float cosZenith)
+{
+	return H * ChapmanApproximation(earthRadius / H, h / H, cosZenith);
+}
+
+vec3 GetTransmittance(ScatteringParams setting, vec3 L, vec3 V)
+{
+	float ch = GetOpticalDepthSchueler(L.y, setting.rayleighHeight, setting.earthRadius, V.y);
+	return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
+}
+
+vec2 ComputeOpticalDepth(ScatteringParams setting, vec3 samplePoint, vec3 V, vec3 L, float neg)
+{
+    float rl = length(samplePoint);
+    float h = rl - setting.earthRadius;
+    vec3 r = samplePoint / rl;
+
+    float cos_chi_sun = dot(r, -L);
+    float cos_chi_ray = dot(r, V * neg);
+
+    float opticalDepthSun = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_sun);
+    float opticalDepthCamera = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_ray) * neg;
+
+    return vec2(opticalDepthSun, opticalDepthCamera);
+}
+
+void AerialPerspective(ScatteringParams setting, vec3 start, vec3 end, vec3 V, vec3 L, bool infinite, out vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
+{
+    float inf_neg = infinite ? 1.0 : -1.0;
+
+    vec3 sampleStep = (end - start) / ATM_SAMPLES_NUMS;
+    vec3 samplePoint = end - sampleStep;
+    vec3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh + setting.waveLambdaOzone;
+
+    float sampleLength = length(sampleStep);
+
+    vec3 scattering = vec3(0.0);
+    vec2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);   
+
+    for (int i = 1; i < ATM_SAMPLES_NUMS; i++, samplePoint -= sampleStep)
+	{
+		vec2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
+
+		vec3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x));
+		vec3 segment_t = exp(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
+		
+		transmittance *= segment_t;
+		
+		scattering = scattering * segment_t;
+		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s;
+
+		lastOpticalDepth = opticalDepth;
+	}
+
+	insctrMie = scattering * setting.waveLambdaMie * sampleLength;
+	insctrRayleigh = scattering * setting.waveLambdaRayleigh * sampleLength;
+}
+
+bool ComputeSkyboxChapman(ScatteringParams setting, vec3 eye, vec3 V, vec3 L, out vec3 transmittance, out vec3 insctrMie, out vec3 insctrRayleigh)
+{
+    bool neg = true;
+
+    vec2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
+    clip(outerIntersections.y);
+
+    vec2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
+    if (innerIntersections.x > 0.0)
+    {
+        neg = false;
+        outerIntersections.y = innerIntersections.x;
+    }
+
+    // earth center have nagative value (like relative cordinate)
+    eye -= setting.earthCenter;
+
+    vec3 start = eye + V * max(0.0, outerIntersections.x);
+    vec3 end = eye + V * outerIntersections.y;
+
+	AerialPerspective(setting, start, end, V, L, neg, transmittance, insctrMie, insctrRayleigh);
+
+	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
+	return intersectionTest;
+}
+
+vec4 ComputeSkyInscattering(ScatteringParams settings, vec3 eye, vec3 V, vec3 L)
+{
+    vec3 insctrMie = vec3(0.0);
+    vec3 insctrRayleigh = vec3(0.0);
+    vec3 insctrOpticalLength = vec3(1.0);
+    bool intersectionTest = ComputeSkyboxChapman(settings, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseMie = ComputePhaseMie(phaseTheta, settings.mieG);
+	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+
+	vec3 insctrTotalMie = insctrMie * phaseMie;
+	vec3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh;
+
+	vec3 sky = (insctrTotalMie + insctrTotalRayleigh) * settings.sunRadiance;
+
+    return vec4(sky, 1.0);
 }
 
 // ----------------------------------------------------------------------------
 void main() 
 {
-    vec3 color = vec3(0, 0, 0);
+#if TEST_RAY_MMD
+    vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, mSunTurbidity);
+    vec3 rayleight = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
+	vec3 cloud = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
+
+    ScatteringParams settings;
+    settings.mieG = g;
+    settings.sunRadiance = mSunRadiance;
+    settings.earthRadius = mEarthRadius * mUnitDistance;
+    settings.earthCenter = vec3(0, -settings.earthRadius, 0);
+    settings.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
+	settings.waveLambdaMie = mieLambda;
+	settings.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
+	settings.waveLambdaRayleigh = rayleight;
+	settings.mieHeight = mMieHeight * mUnitDistance;
+	settings.rayleighHeight = mRayleighHeight * mUnitDistance;
+
+    vec3 V = normalize(-vNormalW);
+    vec3 CameraPos = vec3(0.0, humanHeight + uEarthRadius, 0.0) + vec3(0.0, uAltitude, 0.0);
+    fragColor = ComputeSkyInscattering(settings, CameraPos, V, uSunDir);
+
+#else
     vec3 dir = normalize(-vNormalW);
 
-    vec3 cameraPos = vec3(0.0, humanHeight + uEarthRadius, 0.0) + vec3(0.0, uAltitude, 0.0);
-    vec2 t = raySphereIntersect(cameraPos, dir, uEarthCenter, uEarthRadius);
+    vec3 cameraPos = vec3(0.0, humanHeight + uAltitude, 0.0);
+    vec2 t = ComputeRaySphereIntersection(cameraPos, dir, uEarthCenter, uEarthRadius);
     // handle ray toward ground
     float tmax = inf;
     if (t.y > 0) tmax = max(0.0, t.x);
 
-    color += computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
-
-    fragColor = color;
+    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
+    fragColor = vec4(color, 1.0);
+#endif
 }

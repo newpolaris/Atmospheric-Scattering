@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <random>
 
-glm::vec2 RaySphereIntersect(glm::vec3 pos, glm::vec3 dir, glm::vec3 c, float r)
+glm::vec2 ComputeRaySphereIntersection(glm::vec3 pos, glm::vec3 dir, glm::vec3 c, float r)
 {
 	assert(r > 0.f);
 
@@ -31,7 +31,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
 	const float pi = glm::pi<float>();
     const glm::vec3 sundir = glm::normalize(m_SunDir);
 
-	auto t = RaySphereIntersect(pos, dir, m_Ec, m_Ar);
+	auto t = ComputeRaySphereIntersection(pos, dir, m_Ec, m_Ar);
 	tmin = std::max(t.x, tmin);
 	tmax = std::min(t.y, tmax);
 	if (tmax < 0) return glm::vec4(0.f);
@@ -49,7 +49,7 @@ glm::vec4 Atmosphere::computeIncidentLight(const glm::vec3& pos, const glm::vec3
         float betaM = glm::exp(-h/m_Hm)*ds;
 		opticalDepthR += betaR;
         opticalDepthM += betaM;
-		auto tl = RaySphereIntersect(x, sundir, m_Ec, m_Ar);
+		auto tl = ComputeRaySphereIntersection(x, sundir, m_Ec, m_Ar);
 		float lmax = tl.y, lmin = 0.f;
 		float dls = (lmax - lmin)/numLightSamples; // delta light segment
 		int l = 0;
@@ -97,7 +97,7 @@ void Atmosphere::renderSkyDome(std::vector<glm::vec4>& image, int width, int hei
         float rayy = (2 * y / float(height) - 1) * angle;
         glm::vec3 dir = glm::normalize(glm::vec3(rayx, rayy, -1));
         float tmax = inf;
-        auto t = RaySphereIntersect(cameraPos, dir, m_Ec, m_Er);
+        auto t = ComputeRaySphereIntersection(cameraPos, dir, m_Ec, m_Er);
         if (t.y > 0) tmax = std::max(0.f, t.x);
         image[y*width + x] += computeIncidentLight(cameraPos, dir, 0.f, tmax);
 	}

@@ -58,7 +58,7 @@ struct SceneSettings
 //
 // ref. [Preetham99][Hillaire16]
 //
-// in [ray-mmd] ComputeWaveLengthRaylenigh
+// equivalent with [ray-mmd] ComputeWaveLengthRaylenigh
 //
 glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
 {
