@@ -255,6 +255,9 @@ void LightScattering::render() noexcept
         glClearDepthf(1.0f);
         glClear(clearFlag);
         glDisable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
+        // glCullFace(GL_BACK);
+        // glDepthMask(GL_FALSE);
         float angle = glm::radians(m_Settings.angle);
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
@@ -271,7 +274,14 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("betaR0", rayleigh);
         m_SkyShader.setUniform("betaM0", mie);
         m_Sphere.draw();
-        glEnable(GL_CULL_FACE);
+	#if 1
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        m_FlatShader.bind();
+        m_FlatShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_Sphere.draw();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    #endif
+		glEnable(GL_CULL_FACE);
     }
     // Tone mapping
     {

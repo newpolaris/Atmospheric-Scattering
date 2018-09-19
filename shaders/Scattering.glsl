@@ -1,4 +1,4 @@
--- Vertex
+--Vertex
 
 // IN
 layout (location = 0) in vec3 inPosition;
@@ -14,9 +14,10 @@ uniform mat4 uModelToProj;
 void main()
 {
     vec4 position = uModelToProj*vec4(inPosition, 1.0);
-	vTexcoords = inTexcoords;
-    vNormalW = -inNormal;
-	gl_Position = position.xyww;
+    vTexcoords = inTexcoords;
+    // vNormalW = -inNormal;
+    vNormalW = -inPosition;
+    gl_Position = position.xyww;
 }
 
 -- Fragment
@@ -58,8 +59,6 @@ const float humanHeight = 1.0;
 
 // scale for km to m
 const float mUnitDistance = 1000.0;
-// const vec3 mSunRadianceParams = vec3(10, 1.0, 20.0); 	// Sun light power, 10.0 is normal
-const float mSunRadiance = 10.0;
 const float mEarthRadius = 6360.0; // Earth radius up to 6360 km
 const float mEarthAtmoRadius = 6420.0; // Earth radius with its atmospheric height up to 6420km
 
@@ -68,6 +67,10 @@ const vec3 mWaveLength = vec3(680e-9, 550e-9, 440e-9); // standard earth lambda 
 const vec3 mMieColor = vec3(0.686282f, 0.677739f, 0.663365f); // spectrum, note that ray-mmd use SunColor
 const vec3 mRayleighColor = vec3(1.0, 1.0, 1.0); // Unknown
 const vec3 mCloudColor = vec3(1.0, 1.0, 1.0); // ray-mmd use SunColor instead
+
+const vec3 mSunRadiusParams = vec3(5000, 100000, 100);	// Sun Radius, How much size that simulates the sun size
+const vec3 mSunRadianceParams = vec3(10, 1.0, 20.0); 	// Sun light power, 10.0 is normal
+
 // sky turbidity: (1.0 pure air to 64.0 thin fog)[Preetham99]
 const vec3 mSunTurbidityParams = vec3(100, 1e-5, 500); 	// Sun turbidity  
 
@@ -115,6 +118,8 @@ const float mCloudDensity = mCloudDensityParams.x;
 const float mMieHeight = mMieHeightParams.x;
 const float mMieTurbidity = mMieTurbidityParams.x;
 const float mRayleighHeight = mRayleighHeightParams.x;
+const float mSunRadius = mSunRadiusParams.x;
+const float mSunRadiance = mSunRadianceParams.x;
 
 uniform bool uChapman;
 uniform float uEarthRadius; 
@@ -415,13 +420,12 @@ vec4 ComputeSkyInscattering(ScatteringParams setting, vec3 eye, vec3 V, vec3 L)
 
 #if ATM_LIMADARKENING_ENABLE
     float angle = saturate((1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius);
-    float cosAngle = max(0.0, cos(angle * pi * 0.5));
+    float cosAngle = cos(angle * pi * 0.5);
     float edge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);
 
     vec3 limbDarkening = GetTransmittance(setting, -L, V);
     limbDarkening *= pow(vec3(cosAngle), vec3(0.420, 0.503, 0.652)) * mix(vec3(1.0), vec3(1.2,0.9,0.5), edge) * float(intersectionTest);
-
-    // sky += limbDarkening;
+    sky += limbDarkening;
 #endif
     return vec4(sky, 1.0);
 }
@@ -441,6 +445,7 @@ void main()
 
     ScatteringParams setting;
     setting.mieG = g;
+    setting.sunRadius = mSunRadius;
     setting.sunRadiance = mSunRadiance;
     setting.earthRadius = mEarthRadius * mUnitDistance;
     setting.earthCenter = vec3(0, -setting.earthRadius, 0);
