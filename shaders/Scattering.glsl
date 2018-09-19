@@ -24,7 +24,7 @@ void main()
 #define TEST_RAY_MMD 1
 #define ATM_SAMPLES_NUMS 16
 #define ATM_CLOUD_ENABLE 1
-#define ATM_LIMADARKENING_ENABLE 0
+#define ATM_LIMADARKENING_ENABLE 1
 
 const float pi = 3.1415926535897932384626433832795;
 
@@ -122,6 +122,7 @@ uniform float uAtmosphereRadius;
 uniform float uAspect;
 uniform float uAngle;
 uniform float uAltitude;
+uniform float uTurbidity;
 uniform vec2 uInvResolution;
 uniform vec3 uEarthCenter;
 uniform vec3 uSunDir;
@@ -391,6 +392,11 @@ bool ComputeSkyboxChapman(ScatteringParams setting, vec3 eye, vec3 V, vec3 L, in
 	return intersectionTest;
 }
 
+float saturate(float x)
+{
+    return clamp(x, 0.0, 1.0);
+}
+
 vec4 ComputeSkyInscattering(ScatteringParams setting, vec3 eye, vec3 V, vec3 L)
 {
     vec3 insctrMie = vec3(0.0);
@@ -407,6 +413,16 @@ vec4 ComputeSkyInscattering(ScatteringParams setting, vec3 eye, vec3 V, vec3 L)
 
 	vec3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
 
+#if ATM_LIMADARKENING_ENABLE
+    float angle = saturate((1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius);
+    float cosAngle = max(0.0, cos(angle * pi * 0.5));
+    float edge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);
+
+    vec3 limbDarkening = GetTransmittance(setting, -L, V);
+    limbDarkening *= pow(vec3(cosAngle), vec3(0.420, 0.503, 0.652)) * mix(vec3(1.0), vec3(1.2,0.9,0.5), edge) * float(intersectionTest);
+
+    // sky += limbDarkening;
+#endif
     return vec4(sky, 1.0);
 }
 
@@ -415,44 +431,13 @@ vec3 ComputeWaveLengthMie(vec3 density)
 	return 2e-5f * density;
 }
 
-const float PI = pi;
-const float PI_2 = 2*pi;
-
-float pow2(float x)
-{
-    return x * x;
-}
-
-vec3 ComputeWaveLengthMie(vec3 lambda, vec3 K, float T, float U = 4)
-{
-	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
-	float mieConst = 0.434 * c_pi * pow(PI_2, U - 2.0);
-	return mieConst * K / pow(lambda, vec3(U - 2.0));
-}
-
-vec3 ComputeWaveLengthRayleigh(vec3 lambda)
-{
-	const float n = 1.0003;
-	const float N = 2.545e25;
-	const float pn = 0.035;
-	const float n2 = n * n;
-	const float pi3 = PI * PI * PI;
-	const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3.0 * N) * ((6.0 + 3.0 * pn) / (6.0 - 7.0 * pn));
-	return rayleighConst / (lambda * lambda * lambda * lambda);
-}
-
 // ----------------------------------------------------------------------------
 void main() 
 {
 #if TEST_RAY_MMD
-    vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, mSunTurbidity);
-    vec3 rayleight = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+    vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, uTurbidity);
+    vec3 rayleight = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
 	vec3 cloud = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
-
-    rayleight = vec3(5.80703318e-06, 1.35687360e-05, 3.31267875e-05);
-    mieLambda = vec3(2.71618246e-05, 4.10025968e-05, 6.27077752e-05);
-    rayleight = betaR0;
-    mieLambda = betaM0;
 
     ScatteringParams setting;
     setting.mieG = g;
@@ -468,7 +453,7 @@ void main()
 
     vec3 L = -uSunDir;
     vec3 V = normalize(-vNormalW);
-    vec3 CameraPos = vec3(0.0, humanHeight + uAltitude, 0.0);
+    vec3 CameraPos = vec3(0.0, humanHeight*mUnitDistance + uAltitude, 0.0);
     fragColor = ComputeSkyInscattering(setting, CameraPos, V, L);
 
 #else

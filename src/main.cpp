@@ -51,15 +51,10 @@ struct SceneSettings
     float angle = 76.f;
     float intensity = 20.f;
     float altitude = 1.f;
-    float turbidity = 1.f;
-    float fov = 45.f;
+    float turbidity = 10.f;
+    float fov = 75.f;
 };
 
-//
-// ref. [Preetham99][Hillaire16]
-//
-// equivalent with [ray-mmd] ComputeWaveLengthRaylenigh
-//
 glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
 {
     const float n = 1.0003f; // refractive index
@@ -71,14 +66,13 @@ glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
     return 8*pi*pi*pi*glm::pow(n*n - 1, 2) / (3*N*l4) * ((6 + 3*p)/(6 - 7*p));
 }
 
-// turbidity: (1.0 pure air to 64.0 thin fog)[Preetham99]
 glm::vec3 ComputeCoefficientMie(const glm::vec3& lambda, const glm::vec3& K, float turbidity)
 {
     const int jungeexp = 4;
     const float pi = glm::pi<float>();
-    const float c = (0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
+    const float c = glm::max(0.f, 0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
     const float mie =  0.434f * c * pi * glm::pow(2*pi, jungeexp - 2);
-    return mie * K / glm::pow(lambda, glm::vec3(jungeexp - 2));
+    return mie * K / lambda;
 }
 
 class LightScattering final : public gamecore::IGameApp
@@ -227,7 +221,7 @@ void LightScattering::updateHUD() noexcept
     bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
     bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
     bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
-    bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1.f, 64.f);
+    bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
     bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
     ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
     ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
@@ -270,9 +264,10 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
         m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
         m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
-        m_SkyShader.setUniform("uSunDir", sunDir);
+        m_SkyShader.setUniform("uSunDir", glm::normalize(sunDir));
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
         m_SkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+        m_SkyShader.setUniform("uTurbidity", m_Settings.turbidity);
         m_SkyShader.setUniform("betaR0", rayleigh);
         m_SkyShader.setUniform("betaM0", mie);
         m_Sphere.draw();
