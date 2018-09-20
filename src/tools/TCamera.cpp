@@ -20,8 +20,8 @@ TCamera::TCamera()
     // Default projection parameters
     m_aspect = 1.333333f;
     m_fov = 45.0f;
-    m_zNear = 0.1f;
-    m_zFar = 1000.0f;
+    m_zNear = 1.0f;
+    m_zFar = 10000.0f;
     setProjectionParams(m_fov, 1.0f, m_zNear, m_zFar);
 
     // Default view parameters

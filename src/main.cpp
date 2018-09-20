@@ -106,6 +106,7 @@ private:
     ProgramShader m_BlitShader;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
+	GraphicsTexturePtr m_NoiseMapSamp;
     GraphicsFramebufferPtr m_ColorRenderTarget;
     GraphicsDevicePtr m_Device;
 };
@@ -156,8 +157,16 @@ void LightScattering::startup() noexcept
 	m_BlitShader.link();
 
     m_ScreenTraingle.create();
-
     m_Sphere.create();
+
+    GraphicsTextureDesc noise;
+    noise.setWrapS(GL_REPEAT);
+    noise.setWrapT(GL_REPEAT);
+    noise.setMinFilter(GL_LINEAR);
+    noise.setMagFilter(GL_LINEAR);
+
+    noise.setFilename("resources/Skybox/cloud.tga");
+    m_NoiseMapSamp = m_Device->createTexture(noise);
 }
 
 void LightScattering::closeup() noexcept
@@ -273,6 +282,7 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uTurbidity", m_Settings.turbidity);
         m_SkyShader.setUniform("betaR0", rayleigh);
         m_SkyShader.setUniform("betaM0", mie);
+        m_SkyShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
         m_Sphere.draw();
 	#if 1
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
