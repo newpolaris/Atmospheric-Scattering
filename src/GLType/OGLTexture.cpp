@@ -78,7 +78,7 @@ bool OGLTexture::create(const std::string& filename) noexcept
     if (filename.empty()) 
         return false;
 
-    auto data = util::ReadFileSync(filename);
+    auto data = util::ReadFileSync(filename, std::ios::binary);
     if (data == util::NullFile)
         return false;
 

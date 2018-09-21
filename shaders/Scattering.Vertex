@@ -1,0 +1,21 @@
+#version 450 core
+
+// IN
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec2 inTexcoords;
+
+// Out
+out vec2 vTexcoords;
+out vec3 vNormalW;
+
+uniform mat4 uModelToProj;
+
+void main()
+{
+    vec4 position = uModelToProj*vec4(inPosition, 1.0);
+    vTexcoords = inTexcoords;
+    // vNormalW = -inNormal;
+    vNormalW = -inPosition;
+    gl_Position = position.xyww;
+}

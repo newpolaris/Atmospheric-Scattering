@@ -13,7 +13,7 @@
  * Include windows.h without Windows Sockets 1.1 to prevent conflicts with
  * Windows Sockets 2.0.
  */
-#if not defined(_WIN32)
+#if !defined(_WIN32)
 #include <dirent.h>
 #else
 #ifndef WIN32_LEAN_AND_MEAN

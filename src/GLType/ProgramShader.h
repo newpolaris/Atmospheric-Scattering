@@ -7,6 +7,7 @@
 #include <GraphicsTypes.h>
 #include <vector>
 #include <map>
+#include <string_view>
 
 class ProgramShader
 {
@@ -61,6 +62,8 @@ public:
     static std::vector<char> readTextFile(const std::string &filename);
 
 protected:
+
+    void buildShader(GLenum shaderType, const std::string& tag, const std::string& content);
 
     static std::vector<std::string> directory;
 

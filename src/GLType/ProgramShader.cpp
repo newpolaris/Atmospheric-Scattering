@@ -14,6 +14,7 @@
 
 #include <tools/gltools.hpp>
 #include <tools/Logger.hpp>
+#include <tools/FileUtility.h>
 #include <GLType/ProgramManager.h>
 #include <GLType/GraphicsDevice.h>
 #include <GLType/OGLGraphicsData.h>
@@ -69,20 +70,33 @@ void ProgramShader::addShader(GLenum shaderType, const std::string &tag)
     }
     assert(glswGetError() == 0);
 
-    const char* cTag = tag.c_str();
-    const GLchar *source = glswGetShader(cTag);
-
-    if (0 == source)
+    util::BytesArray source = util::ReadFileSync("./shaders/" + tag);
+    if (source != util::NullFile)
     {
-        fprintf(stderr, "Error : shader \"%s\" not found, check your directory.\n", cTag);
-        fprintf(stderr, "Execution terminated.\n");
-        exit(EXIT_FAILURE);
+        std::string content((const char*)source->data());
+        buildShader(shaderType, tag, content);
+        return;
+    }
+    else
+    {
+        const GLchar *source = glswGetShader(tag.c_str());
+        if (0 != source)
+        {
+            std::string content(source);
+            buildShader(shaderType, tag, content);
+            return;
+        }
     }
 
-    // HACK
+    fprintf(stderr, "Error : shader \"%s\" not found, check your directory.\n", tag.c_str());
+    fprintf(stderr, "Execution terminated.\n");
+    exit(EXIT_FAILURE);
+}
+
+void ProgramShader::buildShader(GLenum shaderType, const std::string& tag, const std::string& content)
+{
     static nv_helpers_gl::IncludeRegistry m_includes;
     static std::vector<std::string> directory = { ".", "./shaders" };
-    const std::string content(source);
     const std::string preprocessed = nv_helpers_gl::manualInclude(tag, content, "", directory, m_includes);
     char const* sourcePointer = preprocessed.c_str();
     GLuint shader = glCreateShader(shaderType);
@@ -95,19 +109,17 @@ void ProgramShader::addShader(GLenum shaderType, const std::string &tag)
     if(status != GL_TRUE)
     {
         //Logger::getInstance().write( "shader \"%s\" compilation failed.\n", cTag);
-        fprintf(stderr, "%s compilation failed.\n", cTag);
+        fprintf(stderr, "%s compilation failed.\n", tag.c_str());
         gltools::printShaderLog(shader);
         exit(EXIT_FAILURE);
     }
 
     //Logger::getInstance().write( "%s compiled.\n", cTag);
-    fprintf(stderr, "%s compiled.\n", cTag);
+    fprintf(stderr, "%s compiled.\n", tag.c_str());
 
     glAttachShader(m_ShaderID, shader);
     glDeleteShader(shader);     //flag for deletion
 }
-
-
 
 bool ProgramShader::link()
 {

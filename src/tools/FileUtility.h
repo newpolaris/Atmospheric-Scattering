@@ -41,7 +41,7 @@ namespace util
     extern BytesArray NullFile;
 
     // Reads the entire contents of a binary file.  
-    BytesArray ReadFileSync(const std::string& fileName);
+    BytesArray ReadFileSync(const std::string& fileName, std::ios_base::openmode mode = 0);
     bool WriteFileSync(const std::string& fileName, const BytesArray& plainSource);
 
     BytesArray DecompressFile(const std::string& fileName);

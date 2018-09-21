@@ -9,11 +9,11 @@ namespace util
 {
     BytesArray NullFile = std::make_shared<FileContainer>(FileContainer());
 
-    BytesArray ReadFileSync(const std::string& fileName)
+    BytesArray ReadFileSync(const std::string& fileName, std::ios_base::openmode mode)
     {
         std::ifstream inputFile;
-        inputFile.open(fileName, std::ios::binary | std::ios::ate);
-        if(!inputFile.is_open())
+        inputFile.open(fileName, mode | std::ios::ate);
+        if (!inputFile.is_open())
             return NullFile;
         auto filesize = static_cast<size_t>(inputFile.tellg());
         BytesArray buf = std::make_shared<FileContainer>(filesize * sizeof(char));
@@ -132,7 +132,7 @@ namespace util
 
     BytesArray DecompressFile(const std::string& fileName)
     {
-        BytesArray compressed = ReadFileSync(fileName);
+        BytesArray compressed = ReadFileSync(fileName, std::ios::binary);
         if (compressed == NullFile)
             return NullFile;
 
