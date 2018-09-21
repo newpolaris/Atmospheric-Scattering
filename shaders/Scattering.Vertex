@@ -9,13 +9,13 @@ layout (location = 2) in vec2 inTexcoords;
 out vec2 vTexcoords;
 out vec3 vNormalW;
 
+uniform vec3 uCameraPosition;
 uniform mat4 uModelToProj;
 
 void main()
 {
-    vec4 position = uModelToProj*vec4(inPosition, 1.0);
+    vec4 position = uModelToProj*vec4(inPosition + uCameraPosition, 1.0);
+    gl_Position = position;
     vTexcoords = inTexcoords;
-    // vNormalW = -inNormal;
     vNormalW = -inPosition;
-    gl_Position = position.xyww;
 }

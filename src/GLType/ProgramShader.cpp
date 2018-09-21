@@ -1,10 +1,3 @@
-/**
- *
- *    \file ProgramShader.cpp
- *
- */
-
-
 #include <cstdio>
 #include <cassert>
 
@@ -106,7 +99,7 @@ void ProgramShader::buildShader(GLenum shaderType, const std::string& tag, const
     GLint status = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
-    if(status != GL_TRUE)
+    if (status != GL_TRUE)
     {
         //Logger::getInstance().write( "shader \"%s\" compilation failed.\n", cTag);
         fprintf(stderr, "%s compilation failed.\n", tag.c_str());

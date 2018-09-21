@@ -52,7 +52,7 @@ struct SceneSettings
     float intensity = 20.f;
     float altitude = 1.f;
     float turbidity = 10.f;
-    float fov = 75.f;
+    float fov = 45.f;
 };
 
 glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
@@ -114,7 +114,7 @@ private:
 CREATE_APPLICATION(LightScattering);
 
 LightScattering::LightScattering() noexcept :
-    m_Sphere(32, 1.0e5f)
+    m_Sphere(32, 1.0e2f)
 {
 }
 
@@ -126,8 +126,8 @@ void LightScattering::startup() noexcept
 {
 	profiler::initialize();
 
-	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	m_Camera.setMoveCoefficient(0.35f);
+	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 
 	GraphicsDeviceDesc deviceDesc;
 #if __APPLE__
@@ -164,7 +164,6 @@ void LightScattering::startup() noexcept
     noise.setWrapT(GL_REPEAT);
     noise.setMinFilter(GL_LINEAR);
     noise.setMagFilter(GL_LINEAR);
-
     noise.setFilename("resources/Skybox/cloud.tga");
     m_NoiseMapSamp = m_Device->createTexture(noise);
 }
@@ -263,14 +262,15 @@ void LightScattering::render() noexcept
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClearDepthf(1.0f);
         glClear(clearFlag);
+
+        // sky box
         glDisable(GL_CULL_FACE);
-        // glEnable(GL_CULL_FACE);
-        // glCullFace(GL_BACK);
-        // glDepthMask(GL_FALSE);
+        glDepthMask(GL_FALSE);
         float angle = glm::radians(m_Settings.angle);
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
+        m_SkyShader.setUniform("uCameraPosition", m_Camera.getPosition());
         m_SkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
         m_SkyShader.setUniform("uChapman", m_Settings.bChapman);
         m_SkyShader.setUniform("uEarthRadius", 6360e3f);
@@ -284,14 +284,8 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("betaM0", mie);
         m_SkyShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
         m_Sphere.draw();
-	#if 1
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        m_FlatShader.bind();
-        m_FlatShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_Sphere.draw();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    #endif
 		glEnable(GL_CULL_FACE);
+        glDepthMask(GL_TRUE);
     }
     // Tone mapping
     {
@@ -337,7 +331,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 100.0f);
+	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 10000.f);
 
     GraphicsTextureDesc colorDesc;
     colorDesc.setWidth(width);
