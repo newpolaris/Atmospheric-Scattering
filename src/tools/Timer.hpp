@@ -1,15 +1,3 @@
-/**
- * 
- *        \file Timer.hpp
- * 
- *
- *      Time is in millisecond.
- * 
- *      \todo # implements FPS control ?
- * 
- */
- 
-
 #pragma once
 
 #ifndef TIMER_HPP
@@ -17,12 +5,11 @@
 
 #include "Singleton.hpp"
 
-
 class Timer : public Singleton<Timer>
 {
-  friend class Singleton<Timer>;
-  
-  protected:
+friend class Singleton<Timer>;
+
+protected:
     double m_startTime;
     double m_frameTime;
     double m_elapsedTime;
@@ -34,7 +21,7 @@ class Timer : public Singleton<Timer>
     
     bool m_bEnable;
     
-  public:  
+public:  
     Timer() : m_startTime(0.0),
               m_frameTime(0.0),
               m_elapsedTime(0.0),
@@ -48,7 +35,6 @@ class Timer : public Singleton<Timer>
     
     /** Update per-frame time values */
     void update();
-    
     
     /** Get time from the system */
     double getAbsoluteTime();
@@ -77,8 +63,8 @@ class Timer : public Singleton<Timer>
     inline
     bool isEnable() { return m_bEnable; }
 
+private:
 
-  private:
     Timer(const Timer&);
 };
 

@@ -10,6 +10,7 @@
 #include <tools/Profile.h>
 #include <tools/imgui.h>
 #include <tools/TCamera.h>
+#include <tools/Timer.hpp>
 
 #include <GLType/GraphicsDevice.h>
 #include <GLType/GraphicsData.h>
@@ -40,6 +41,43 @@ namespace
     float s_GpuTick = 0.f;
 }
 
+struct FloatSetting
+{
+    const char* name;
+
+    bool updateGUI()
+    {
+        return ImGui::SliderFloat(name, &_value.r, _value.g, _value.b);
+    }
+
+    float value()
+    {
+        return _value.x;
+    }
+
+    glm::vec3 _value;
+};
+
+struct Duration
+{
+    void initialize()
+    {
+        _last = _first = std::chrono::steady_clock::now();
+    }
+
+    void update()
+    {
+        _last = std::chrono::steady_clock::now();
+    }
+
+    float duration()
+    {
+        return float(std::chrono::duration_cast<std::chrono::milliseconds>(_last - _first).count()) / 1000;
+    }
+
+    std::chrono::time_point<std::chrono::steady_clock> _first, _last;
+};
+
 struct SceneSettings
 {
     bool bCPU = false;
@@ -53,6 +91,8 @@ struct SceneSettings
     float altitude = 1.f;
     float turbidity = 10.f;
     float fov = 45.f;
+    FloatSetting cloudSpeedParams = {"Cloud Speed", glm::vec3(0.05, 0.0, 1.0)};
+    FloatSetting cloudDensityParams = {"Cloud Density", glm::vec3(400, 0.0, 1600.0)};
 };
 
 glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
@@ -100,6 +140,7 @@ private:
     SphereMesh m_Sphere;
     SceneSettings m_Settings;
 	TCamera m_Camera;
+    Duration m_Duration;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_FlatShader;
     ProgramShader m_SkyShader;
@@ -125,7 +166,7 @@ LightScattering::~LightScattering() noexcept
 void LightScattering::startup() noexcept
 {
 	profiler::initialize();
-
+    m_Duration.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 
@@ -146,8 +187,8 @@ void LightScattering::startup() noexcept
 
 	m_SkyShader.setDevice(m_Device);
 	m_SkyShader.initialize();
-	m_SkyShader.addShader(GL_VERTEX_SHADER, "Scattering.Vertex");
-	m_SkyShader.addShader(GL_FRAGMENT_SHADER, "Scattering.Fragment");
+	m_SkyShader.addShader(GL_VERTEX_SHADER, "Time of day/Time of day.Vertex");
+	m_SkyShader.addShader(GL_FRAGMENT_SHADER, "Time of day/Time of day.Fragment");
 	m_SkyShader.link();
 
 	m_BlitShader.setDevice(m_Device);
@@ -177,6 +218,7 @@ void LightScattering::closeup() noexcept
 
 void LightScattering::update() noexcept
 {
+    m_Duration.update();
     m_Camera.setFov(m_Settings.fov);
     bool bCameraUpdated = m_Camera.update();
 
@@ -231,6 +273,8 @@ void LightScattering::updateHUD() noexcept
     bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
     bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
     bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+    bUpdated |= m_Settings.cloudSpeedParams.updateGUI();
+    bUpdated |= m_Settings.cloudDensityParams.updateGUI();
     ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
     ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
     ImGui::PushItemWidth(180.0f);
@@ -266,7 +310,9 @@ void LightScattering::render() noexcept
         // sky box
         glDisable(GL_CULL_FACE);
         glDepthMask(GL_FALSE);
-        float angle = glm::radians(m_Settings.angle);
+
+        const float time = m_Duration.duration();
+        const float angle = glm::radians(m_Settings.angle);
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         m_SkyShader.bind();
@@ -280,8 +326,9 @@ void LightScattering::render() noexcept
         m_SkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
         m_SkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
         m_SkyShader.setUniform("uTurbidity", m_Settings.turbidity);
-        m_SkyShader.setUniform("betaR0", rayleigh);
-        m_SkyShader.setUniform("betaM0", mie);
+        m_SkyShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
+        m_SkyShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
+        m_SkyShader.setUniform("uTime", time);
         m_SkyShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
         m_Sphere.draw();
 		glEnable(GL_CULL_FACE);
