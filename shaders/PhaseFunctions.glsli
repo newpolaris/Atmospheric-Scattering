@@ -20,7 +20,7 @@ vec3 ComputeCoefficientRayleigh(vec3 lambda)
     const float p = 0.035f; // depolarization factor for standard air
 
     const vec3 l4 = lambda*lambda*lambda*lambda;
-    return 8*pi*pi*pi*pow(n*n - 1, 2) / (3*N*l4) * ((6 + 3*p)/(6 - 7*p));
+    return 8*PI*PI*PI*pow(n*n - 1, 2) / (3*N*l4) * ((6 + 3*p)/(6 - 7*p));
 }
 
 // Turbidity: (pure air to thin fog)[Preetham99] A.3
@@ -28,7 +28,7 @@ vec3 ComputeCoefficientMie(vec3 lambda, vec3 K, float turbidity)
 {
     const float c = max(0.f, 0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
     // let jungeexp = 4.0
-    const float mie =  0.434f * c * pi * pow2(2*pi);
+    const float mie =  0.434f * c * PI * pow2(2*PI);
     // original equation use pow equation, but it has high sensitivy 
     // with turbidity so just use linear
     // return mie * K / pow(lambda, vec3(jungeexp - 2));
@@ -37,11 +37,11 @@ vec3 ComputeCoefficientMie(vec3 lambda, vec3 K, float turbidity)
 
 float ComputePhaseMie(float theta, float g)
 {
-    return 3.0 / (8.0*pi) * ((1 - g*g)*(1 + theta*theta)) / ((2 + g*g)*pow(1 + g*g - 2 * g*theta, 1.5));
+    return 3.0 / (8.0*PI) * ((1 - g*g)*(1 + theta*theta)) / ((2 + g*g)*pow(1 + g*g - 2 * g*theta, 1.5));
 }
 
 float ComputePhaseRayleigh(float theta)
 {
-    return 3.0 / (16.0*pi) * (1.0 + theta*theta);
+    return 3.0 / (16.0*PI) * (1.0 + theta*theta);
 }
 

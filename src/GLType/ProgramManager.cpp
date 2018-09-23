@@ -128,7 +128,6 @@ namespace nv_helpers_gl
         const IncludeRegistry &includes)
     {
         std::string filename = filenameorig;
-        // std::string source = getContent(filenameorig, directories, includes, filename);
 
         if(source.empty()){
             return std::string();
@@ -173,8 +172,14 @@ namespace nv_helpers_gl
                 std::string Include = parseInclude(line, Offset);
 
                 {
+                    size_t it = filename.find_last_of("/");
+                    std::string path = filename.substr(0, it);
+                    std::vector<std::string> dirs;
+                    for (auto it : directories)
+                        dirs.push_back(it + "/" + path);
+                    dirs.insert(dirs.end(), directories.begin(), directories.end());
                     std::string PathName;
-                    std::string Source = getContent(Include, directories, includes, PathName);
+                    std::string Source = getContent(Include, dirs, includes, PathName);
 
                     assert(!Source.empty());
 

@@ -1,0 +1,37 @@
+#define InvLog2 3.32192809489f
+
+#define InvPIE 0.318309886142f
+#define InvPIE8 0.039788735767f
+#define InvPIE4 0.079577471535f
+
+#define PI 3.1415926535f
+#define PI_2 (3.1415926535f * 2.0)
+
+#define ALN2I 1.442695022
+
+#define EPSILON 1e-5f
+
+vec2 ComputeRaySphereIntersection(vec3 pos, vec3 dir, vec3 c, float r)
+{
+    vec3 tc = c - pos;
+
+    float l = dot(tc, dir);
+    float d = l*l - dot(tc, tc) + r*r;
+    if (d < 0) return vec2(-1.0, -1.0);
+    float sl = sqrt(d);
+    return vec2(l - sl, l + sl);
+}
+
+float ComputeRayPlaneIntersection(vec3 position, vec3 viewdir, vec3 n, float dist)
+{
+    float a = dot(n, viewdir);
+    if (a > 0.0)
+    {
+        return -1;
+    }
+    else
+    {
+        float t = -(dot(position, n) + dist) / a;
+        return t;
+    }
+}

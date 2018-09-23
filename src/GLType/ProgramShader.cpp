@@ -89,7 +89,7 @@ void ProgramShader::addShader(GLenum shaderType, const std::string &tag)
 void ProgramShader::buildShader(GLenum shaderType, const std::string& tag, const std::string& content)
 {
     static nv_helpers_gl::IncludeRegistry m_includes;
-    static std::vector<std::string> directory = {"./shaders" };
+    static std::vector<std::string> directory = { ".", "./shaders" };
     const std::string preprocessed = nv_helpers_gl::manualInclude(tag, content, "", directory, m_includes);
     char const* sourcePointer = preprocessed.c_str();
     GLuint shader = glCreateShader(shaderType);

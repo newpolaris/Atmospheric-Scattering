@@ -318,17 +318,11 @@ void LightScattering::render() noexcept
         m_SkyShader.bind();
         m_SkyShader.setUniform("uCameraPosition", m_Camera.getPosition());
         m_SkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_SkyShader.setUniform("uChapman", m_Settings.bChapman);
-        m_SkyShader.setUniform("uEarthRadius", 6360e3f);
-        m_SkyShader.setUniform("uAtmosphereRadius", 6420e3f);
-        m_SkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
         m_SkyShader.setUniform("uSunDir", glm::normalize(sunDir));
-        m_SkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
         m_SkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
         m_SkyShader.setUniform("uTurbidity", m_Settings.turbidity);
         m_SkyShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
         m_SkyShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
-        m_SkyShader.setUniform("uTime", time);
         m_SkyShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
         m_Sphere.draw();
 		glEnable(GL_CULL_FACE);
