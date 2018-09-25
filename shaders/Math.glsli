@@ -11,6 +11,16 @@
 
 #define EPSILON 1e-5f
 
+float pow2(float x)
+{
+    return x*x;
+}
+
+vec3 pow2(vec3 x)
+{
+    return x*x;
+}
+
 vec2 ComputeRaySphereIntersection(vec3 pos, vec3 dir, vec3 c, float r)
 {
     vec3 tc = c - pos;

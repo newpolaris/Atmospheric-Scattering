@@ -10,7 +10,8 @@
 #include <tools/Profile.h>
 #include <tools/imgui.h>
 #include <tools/TCamera.h>
-#include <tools/Timer.hpp>
+#include <tools/SimpleTimer.h>
+#include <tools/GuiHelper.h>
 
 #include <GLType/GraphicsDevice.h>
 #include <GLType/GraphicsData.h>
@@ -24,6 +25,7 @@
 
 #include <GraphicsTypes.h>
 #include <SkyBox.h>
+#include <PhaseFunctions.h>
 #include <Mesh.h>
 
 #include <fstream>
@@ -41,46 +43,10 @@ namespace
     float s_GpuTick = 0.f;
 }
 
-struct FloatSetting
-{
-    const char* name;
-
-    bool updateGUI()
-    {
-        return ImGui::SliderFloat(name, &_value.r, _value.g, _value.b);
-    }
-
-    float value()
-    {
-        return _value.x;
-    }
-
-    glm::vec3 _value;
-};
-
-struct Duration
-{
-    void initialize()
-    {
-        _last = _first = std::chrono::steady_clock::now();
-    }
-
-    void update()
-    {
-        _last = std::chrono::steady_clock::now();
-    }
-
-    float duration()
-    {
-        return float(std::chrono::duration_cast<std::chrono::milliseconds>(_last - _first).count()) / 1000;
-    }
-
-    std::chrono::time_point<std::chrono::steady_clock> _first, _last;
-};
+enum EnumSkyModel { kNishita = 0, kTimeOfDay, kTimeOfNight, };
 
 struct SceneSettings
 {
-    bool bCPU = false;
     bool bProfile = true;
     bool bUiChanged = false;
     bool bResized = false;
@@ -91,29 +57,16 @@ struct SceneSettings
     float altitude = 1.f;
     float turbidity = 10.f;
     float fov = 45.f;
+
+    EnumSkyModel kModel = kNishita;
+
+    // Nishita Sky model
+    bool bCPU = false;
+
+    // Time of Day
     FloatSetting cloudSpeedParams = {"Cloud Speed", glm::vec3(0.05, 0.0, 1.0)};
     FloatSetting cloudDensityParams = {"Cloud Density", glm::vec3(400, 0.0, 1600.0)};
 };
-
-glm::vec3 ComputeCoefficientRayleigh(const glm::vec3& lambda)
-{
-    const float n = 1.0003f; // refractive index
-    const float N = 2.545e25f; // molecules per unit
-    const float p = 0.035f; // depolarization factor for standard air
-    const float pi = glm::pi<float>();
-
-    const glm::vec3 l4 = lambda*lambda*lambda*lambda;
-    return 8*pi*pi*pi*glm::pow(n*n - 1, 2) / (3*N*l4) * ((6 + 3*p)/(6 - 7*p));
-}
-
-glm::vec3 ComputeCoefficientMie(const glm::vec3& lambda, const glm::vec3& K, float turbidity)
-{
-    const int jungeexp = 4;
-    const float pi = glm::pi<float>();
-    const float c = glm::max(0.f, 0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
-    const float mie =  0.434f * c * pi * glm::pow(2*pi, jungeexp - 2);
-    return mie * K / lambda;
-}
 
 class LightScattering final : public gamecore::IGameApp
 {
@@ -140,10 +93,11 @@ private:
     SphereMesh m_Sphere;
     SceneSettings m_Settings;
 	TCamera m_Camera;
-    Duration m_Duration;
+    SimpleTimer m_Timer;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_FlatShader;
-    ProgramShader m_SkyShader;
+    ProgramShader m_NishitaSkyShader;
+    ProgramShader m_TimeOfDayShader;
     ProgramShader m_BlitShader;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
@@ -166,7 +120,7 @@ LightScattering::~LightScattering() noexcept
 void LightScattering::startup() noexcept
 {
 	profiler::initialize();
-    m_Duration.initialize();
+    m_Timer.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 
@@ -185,11 +139,17 @@ void LightScattering::startup() noexcept
 	m_FlatShader.addShader(GL_FRAGMENT_SHADER, "Flat.Fragment");
 	m_FlatShader.link();
 
-	m_SkyShader.setDevice(m_Device);
-	m_SkyShader.initialize();
-	m_SkyShader.addShader(GL_VERTEX_SHADER, "Time of day/Time of day.Vertex");
-	m_SkyShader.addShader(GL_FRAGMENT_SHADER, "Time of day/Time of day.Fragment");
-	m_SkyShader.link();
+	m_NishitaSkyShader.setDevice(m_Device);
+	m_NishitaSkyShader.initialize();
+	m_NishitaSkyShader.addShader(GL_VERTEX_SHADER, "Nishita.Vertex");
+	m_NishitaSkyShader.addShader(GL_FRAGMENT_SHADER, "Nishita.Fragment");
+	m_NishitaSkyShader.link();
+
+	m_TimeOfDayShader.setDevice(m_Device);
+	m_TimeOfDayShader.initialize();
+	m_TimeOfDayShader.addShader(GL_VERTEX_SHADER, "Time of day/Time of day.Vertex");
+	m_TimeOfDayShader.addShader(GL_FRAGMENT_SHADER, "Time of day/Time of day.Fragment");
+	m_TimeOfDayShader.link();
 
 	m_BlitShader.setDevice(m_Device);
 	m_BlitShader.initialize();
@@ -218,7 +178,7 @@ void LightScattering::closeup() noexcept
 
 void LightScattering::update() noexcept
 {
-    m_Duration.update();
+    m_Timer.update();
     m_Camera.setFov(m_Settings.fov);
     bool bCameraUpdated = m_Camera.update();
 
@@ -265,20 +225,41 @@ void LightScattering::updateHUD() noexcept
         NULL,
         ImVec2(width / 4.0f, height - 20.0f),
         ImGuiWindowFlags_AlwaysAutoResize);
-    bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
-    bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
-	bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
-    bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
-    bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
-    bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
-    bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
-    bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
-    bUpdated |= m_Settings.cloudSpeedParams.updateGUI();
-    bUpdated |= m_Settings.cloudDensityParams.updateGUI();
-    ImGui::Text("CPU %s: %10.5f ms\n", "main", s_CpuTick);
-    ImGui::Text("GPU %s: %10.5f ms\n", "main", s_GpuTick);
     ImGui::PushItemWidth(180.0f);
     ImGui::Indent();
+    {
+        // global
+        {
+            ImGui::Text("CPU %s: %10.5f ms\n", "Main", s_CpuTick);
+            ImGui::Text("GPU %s: %10.5f ms\n", "Main", s_GpuTick);
+            ImGui::Separator();
+
+            ImGui::Text("Sky Models:");
+            int kModel = m_Settings.kModel;
+            ImGui::RadioButton("Nishita", &kModel, 0);
+            ImGui::RadioButton("Time of Day", &kModel, 1);
+            m_Settings.kModel = EnumSkyModel(kModel);
+            ImGui::Separator();
+
+            bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
+            bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
+            bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
+            bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
+            bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+        }
+        ImGui::Separator();
+        if (m_Settings.kModel == kNishita)
+        {
+            bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
+            bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
+            bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
+        }
+        if (m_Settings.kModel == kTimeOfDay)
+        {
+            bUpdated |= m_Settings.cloudSpeedParams.updateGUI();
+            bUpdated |= m_Settings.cloudDensityParams.updateGUI();
+        }
+    }
     ImGui::Unindent();
     ImGui::End();
 
@@ -296,9 +277,6 @@ void LightScattering::render() noexcept
         const glm::vec3 K = glm::vec3(0.686282f, 0.677739f, 0.663365f); // spectrum
         const glm::vec3 lambda = glm::vec3(680e-9f, 550e-9f, 440e-9f);
 
-        glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity);
-        glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
-
         auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
         m_Device->setFramebuffer(m_ColorRenderTarget);
         GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
@@ -311,19 +289,42 @@ void LightScattering::render() noexcept
         glDisable(GL_CULL_FACE);
         glDepthMask(GL_FALSE);
 
-        const float time = m_Duration.duration();
+        const float time = m_Timer.duration();
         const float angle = glm::radians(m_Settings.angle);
 		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
-        m_SkyShader.bind();
-        m_SkyShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_SkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_SkyShader.setUniform("uSunDir", glm::normalize(sunDir));
-        m_SkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-        m_SkyShader.setUniform("uTurbidity", m_Settings.turbidity);
-        m_SkyShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
-        m_SkyShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
-        m_SkyShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
+        if (m_Settings.kModel == kNishita)
+        {
+            glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity);
+            glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
+
+            m_NishitaSkyShader.bind();
+            m_NishitaSkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+            m_NishitaSkyShader.setUniform("uChapman", m_Settings.bChapman);
+            m_NishitaSkyShader.setUniform("uEarthRadius", 6360e3f);
+            m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
+            m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
+            m_NishitaSkyShader.setUniform("uSunDir", glm::normalize(sunDir));
+            m_NishitaSkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
+            m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+            m_NishitaSkyShader.setUniform("betaR0", rayleigh);
+            m_NishitaSkyShader.setUniform("betaM0", mie);
+        }
+        if (m_Settings.kModel == kTimeOfDay)
+        {
+            m_TimeOfDayShader.bind();
+            m_TimeOfDayShader.setUniform("uCameraPosition", m_Camera.getPosition());
+            m_TimeOfDayShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+            m_TimeOfDayShader.setUniform("uSunDir", glm::normalize(sunDir));
+            m_TimeOfDayShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+            m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.turbidity);
+            m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
+            m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
+            m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
+        }
+        if (m_Settings.kModel == kTimeOfNight)
+        {
+        }
         m_Sphere.draw();
 		glEnable(GL_CULL_FACE);
         glDepthMask(GL_TRUE);

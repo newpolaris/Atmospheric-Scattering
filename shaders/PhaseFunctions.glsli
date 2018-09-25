@@ -1,13 +1,3 @@
-float pow2(float x)
-{
-    return x*x;
-}
-
-vec3 pow2(vec3 x)
-{
-    return x*x;
-}
-
 //
 // ref. [Preetham99][Hillaire16]
 //
