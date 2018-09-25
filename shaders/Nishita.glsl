@@ -22,6 +22,8 @@ void main()
 
 -- Fragment
 
+#define RAYLEIGH_SCTR_ONLY_ENABLE 0
+
 #include "Math.glsli"
 #include "PhaseFunctions.glsli"
 
@@ -38,6 +40,7 @@ const int numSamples = 4;
 
 // [Hillaire16] use 1.11 factor 
 // [Preetham99] Mie coefficient ratio scattering / (absorption+scattering) is about to 0.9
+// http://publications.lib.chalmers.se/records/fulltext/203057/203057.pdf use 1/0.9
 const float mieScale = 1.11;
 
 // big number
@@ -53,6 +56,7 @@ const float humanHeight = 1.0;
 // Ozone scattering with its mass up to 0.00006%, 0.00006 is standard
 // Ozone scattering with its number density up to 2.5040, 2.5040 is standard
 const vec3 mOzoneMassParams = vec3(0.6e-6, 0.0, 0.9e-6) * 2.504;
+const float mOzoneMass = mOzoneMassParams.x;
 
 // http://www.iup.physik.uni-bremen.de/gruppen/molspec/databases/referencespectra/o3spectra2011/index.html
 // Version 22.07.2013: Fast Fourier Transform Filter applied to the initial data in the region 213.33 -317 nm 
@@ -135,9 +139,7 @@ bool opticalDepthLight(vec3 s, vec2 t, out float rayleigh, out float mie)
 	}
 }
 
-//
-// https://www.scratchapixel.com/lessons/procedural-generation-virtual-worlds/simulating-sky
-//
+// [ScratchPixel]
 vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float tmax)
 {
     vec2 t = ComputeRaySphereIntersection(pos, dir, uEarthCenter, uAtmosphereRadius);
@@ -163,6 +165,17 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     vec3 sumR = vec3(0, 0, 0);
     vec3 sumM = vec3(0, 0, 0);
 
+    vec3 lambda = betaR0 + betaM0 + mOzoneScatteringCoeff * mOzoneMass;
+
+    //
+    // equation 2 through 4
+    // 
+    // note: beta = extinction coefficients
+    //
+    // T(Pa, Pb) = La/Lb = exp(-integral(beta(h) * ds)))
+    //
+    // beta(h) = beta(0)*exp(-h/H)
+    //
     for (int s = 0; s < numScatteringSamples; s++)
     {
         vec3 x = pb + ds*(0.5 + s)*dir;
@@ -182,12 +195,21 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         if (!opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM))
             continue;
         
-        vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
-        vec3 tauM = mieScale * betaM0 * (opticalDepthM + opticalDepthLightM);
-        // [KJH17][Hillaire16] Ozone has 0 scattering(absorption only) and similar betaR (distribution)
+    #if RAYLEIGH_SCTR_ONLY_ENABLE
+        // But, in 'Time of day.conf' state that ozone also has small scattering factor
+        // And use rayleigh beta only
+        vec3 tau = lambda * (opticalDepthR + opticalDepthLightR);
+        vec3 attenuation = exp(-(tau));
+    #else
+        // It claims that ozone has 0 scattering (absorption only) [Gustav14](above eq.8)
+        // and beta is similar to betaR (= with similar distribution) [Hillaire16]
         // so, reuse optical depth for rayleigh
         vec3 tauO = betaO0 * (opticalDepthR + opticalDepthLightR);
+        vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
+        vec3 tauM = mieScale * betaM0 * (opticalDepthM + opticalDepthLightM);
+
         vec3 attenuation = exp(-(tauR + tauM + tauO));
+    #endif
         sumR += attenuation * betaR;
         sumM += attenuation * betaM;
     }
@@ -213,10 +235,21 @@ void main()
 
 	float intersectionTest = float(t.x < 0.0 && t.y < 0.0);
     float angle = dot(dir, uSunDir);
-    float edge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);
-    if (edge > cos(radians(10)))
-        color += vec3(1.0) * intersectionTest;
+    float centerToEdge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);
+    if (centerToEdge > cos(radians(10)))
+    {
+    #if 0
+        // Model from http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf
+        vec3 u = vec3(1.0, 1.0, 1.0) ; // some models have u!=1
+        vec3 a = vec3(0.397, 0.503, 0.652) ; // coefficient for RGB wavelength (680 ,550 ,440)
 
+        centerToEdge = 1.0 - centerToEdge;
+        float mu = sqrt (1.0 - centerToEdge * centerToEdge);
+
+        vec3 factor = 1.0 - u * (1.0 - pow(vec3(mu), a));
+    #endif
+        color += vec3(1.0) * intersectionTest;
+    }
     fragColor = vec4(color, 1.0);
 }
 
