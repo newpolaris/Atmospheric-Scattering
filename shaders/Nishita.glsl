@@ -73,6 +73,8 @@ uniform vec3 uSunIntensity;
 uniform vec3 uCameraPosition;
 uniform vec3 betaR0; // vec3(5.8e-6, 13.5e-6, 33.1e-6);
 uniform vec3 betaM0; // vec3(21e-6);
+// [Hillaire16]
+uniform vec3 betaO0 = vec3(3.426, 8.298, 0.356) * 6e-7;
 
 
 // Ref. [Schuler12]
@@ -182,7 +184,10 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         
         vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
         vec3 tauM = mieScale * betaM0 * (opticalDepthM + opticalDepthLightM);
-        vec3 attenuation = exp(-(tauR + tauM));
+        // [KJH17][Hillaire16] Ozone has 0 scattering(absorption only) and similar betaR (distribution)
+        // so, reuse optical depth for rayleigh
+        vec3 tauO = betaO0 * (opticalDepthR + opticalDepthLightR);
+        vec3 attenuation = exp(-(tauR + tauM + tauO));
         sumR += attenuation * betaR;
         sumM += attenuation * betaM;
     }
