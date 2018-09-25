@@ -16,8 +16,7 @@ bool any(float x)
 
 void clip(float b)
 {
-    if (b < 0)
-        discard;
+    // if (b < 0) discard;
 }
 
 vec3 mul(mat3 m, vec3 v)

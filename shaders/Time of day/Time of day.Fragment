@@ -12,13 +12,15 @@
 // IN
 in vec2 vTexcoords;
 in vec3 vNormalW;
+in vec3 vMieLambda;
+in vec3 vRayleighLambda;
+in vec3 vCloudLambda;
 
 // OUT
 out vec4 fragColor;
 
 uniform float uTime;
 uniform float uAltitude;
-uniform float uTurbidity;
 uniform float uCloudSpeed;
 uniform float uCloudDensity;
 uniform float uSunRadius;
@@ -29,10 +31,6 @@ uniform vec3 uCameraPosition;
 
 void main() 
 {
-    vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, uTurbidity);
-    vec3 rayleight = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
-	vec3 cloud = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
-
     ScatteringParams setting;
     setting.mieG = g;
     setting.sunRadius = uSunRadius;
@@ -40,9 +38,9 @@ void main()
     setting.earthRadius = mEarthRadius * mUnitDistance;
     setting.earthCenter = vec3(0, -setting.earthRadius, 0);
     setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
-	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaMie = vMieLambda;
 	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
-	setting.waveLambdaRayleigh = rayleight;
+	setting.waveLambdaRayleigh = vRayleighLambda;
 	setting.mieHeight = mMieHeight * mUnitDistance;
 	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
 
@@ -51,7 +49,7 @@ void main()
     setting.cloudTop = 5.2 * mUnitDistance;
     setting.cloudBottom = 5 * mUnitDistance;
     setting.clouddir = vec3(1315.7, 0, -3000) * uCloudSpeed;
-    setting.cloudLambda = cloud;
+    setting.cloudLambda = vCloudLambda;
 #endif
 
     vec3 L = -uSunDir;

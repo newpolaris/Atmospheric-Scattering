@@ -1,5 +1,11 @@
 #version 450 core
 
+#include "Time of day.conf"
+
+#include "Common.glsli"
+#include "Math.glsli"
+#include "PhaseFunctions.glsli"
+
 // IN
 layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec3 inNormal;
@@ -8,7 +14,11 @@ layout (location = 2) in vec2 inTexcoords;
 // Out
 out vec2 vTexcoords;
 out vec3 vNormalW;
+out vec3 vMieLambda;
+out vec3 vRayleighLambda;
+out vec3 vCloudLambda;
 
+uniform float uTurbidity;
 uniform vec3 uCameraPosition;
 uniform mat4 uModelToProj;
 
@@ -18,4 +28,8 @@ void main()
     gl_Position = position;
     vTexcoords = inTexcoords;
     vNormalW = -inPosition;
+
+    vMieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, uTurbidity);
+    vRayleighLambda = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
+	vCloudLambda = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
 }
