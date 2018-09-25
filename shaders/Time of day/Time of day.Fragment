@@ -1,9 +1,5 @@
 #version 450 core
 
-#define ATM_SAMPLES_NUMS 16
-#define ATM_CLOUD_ENABLE 1
-#define ATM_LIMADARKENING_ENABLE 1
-
 #include "Time of day.conf"
 
 #include "Common.glsli"
@@ -25,6 +21,8 @@ uniform float uAltitude;
 uniform float uTurbidity;
 uniform float uCloudSpeed;
 uniform float uCloudDensity;
+uniform float uSunRadius;
+uniform float uSunRadiance;
 uniform vec3 uSunIntensity;
 uniform vec3 uSunDir;
 uniform vec3 uCameraPosition;
@@ -37,8 +35,8 @@ void main()
 
     ScatteringParams setting;
     setting.mieG = g;
-    setting.sunRadius = mSunRadius;
-    setting.sunRadiance = mSunRadiance;
+    setting.sunRadius = uSunRadius;
+    setting.sunRadiance = uSunRadiance;
     setting.earthRadius = mEarthRadius * mUnitDistance;
     setting.earthCenter = vec3(0, -setting.earthRadius, 0);
     setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;

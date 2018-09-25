@@ -18,5 +18,8 @@ glm::vec3 ComputeCoefficientMie(const glm::vec3& lambda, const glm::vec3& K, flo
     const float pi = glm::pi<float>();
     const float c = glm::max(0.f, 0.6544f*turbidity - 0.6510f)*1e-16f; // concentration factor
     const float mie =  0.434f * c * pi * glm::pow(2*pi, jungeexp - 2);
+    // original equation use pow equation, but it has high sensitivy 
+    // with turbidity so modify to use linear scaler
+    // return mie * K / glm::pow(lambda, glm::vec3(jungeexp - 2));
     return mie * K / lambda;
 }

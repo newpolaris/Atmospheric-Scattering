@@ -53,7 +53,6 @@ struct SceneSettings
     bool bUpdated = true;
 	bool bChapman = true;
     float angle = 76.f;
-    float intensity = 20.f;
     float altitude = 1.f;
     float turbidity = 10.f;
     float fov = 45.f;
@@ -66,6 +65,11 @@ struct SceneSettings
     // Time of Day
     FloatSetting cloudSpeedParams = {"Cloud Speed", glm::vec3(0.05, 0.0, 1.0)};
     FloatSetting cloudDensityParams = {"Cloud Density", glm::vec3(400, 0.0, 1600.0)};
+    // Sun Radius, How much size that simulates the sun size
+    FloatSetting sunRaidusParams {"Sun Radius", glm::vec3(5000, 100000, 100)};
+    // Sun light power, 10.0 is normal
+    FloatSetting sunRadianceParams {"Sun Radiance", glm::vec3(10, 1.0, 20.0)}; 	
+
 };
 
 class LightScattering final : public gamecore::IGameApp
@@ -242,7 +246,8 @@ void LightScattering::updateHUD() noexcept
             ImGui::Separator();
 
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
-            bUpdated |= ImGui::SliderFloat("Sun Intensity", &m_Settings.intensity, 10.f, 50.f);
+            bUpdated |= m_Settings.sunRaidusParams.updateGUI();
+            bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
             bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
@@ -295,7 +300,8 @@ void LightScattering::render() noexcept
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         if (m_Settings.kModel == kNishita)
         {
-            glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity);
+            const float kTurbScaling = 2.5f; // to fit parameter range
+            glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity*kTurbScaling);
             glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
 
             m_NishitaSkyShader.bind();
@@ -305,8 +311,9 @@ void LightScattering::render() noexcept
             m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
             m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
             m_NishitaSkyShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_NishitaSkyShader.setUniform("uSunIntensity", glm::vec3(m_Settings.intensity));
             m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+            m_NishitaSkyShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
+            m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_NishitaSkyShader.setUniform("betaR0", rayleigh);
             m_NishitaSkyShader.setUniform("betaM0", mie);
         }
@@ -320,6 +327,8 @@ void LightScattering::render() noexcept
             m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.turbidity);
             m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
             m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
+            m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
+			m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
         }
         if (m_Settings.kModel == kTimeOfNight)

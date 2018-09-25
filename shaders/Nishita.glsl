@@ -22,9 +22,12 @@ void main()
 
 -- Fragment
 
+#define SUN_ENABLE 1
+// Experimental:
 #define RAYLEIGH_SCTR_ONLY_ENABLE 0
 
 #include "Math.glsli"
+#include "Common.glsli"
 #include "PhaseFunctions.glsli"
 
 // IN
@@ -70,6 +73,8 @@ uniform float uAspect;
 uniform float uAngle;
 uniform float uAltitude;
 uniform float uTurbidity;
+uniform float uSunRadius;
+uniform float uSunRadiance;
 uniform vec2 uInvResolution;
 uniform vec3 uEarthCenter;
 uniform vec3 uSunDir;
@@ -165,8 +170,6 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     vec3 sumR = vec3(0, 0, 0);
     vec3 sumM = vec3(0, 0, 0);
 
-    vec3 lambda = betaR0 + betaM0 + mOzoneScatteringCoeff * mOzoneMass;
-
     //
     // equation 2 through 4
     // 
@@ -198,6 +201,7 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     #if RAYLEIGH_SCTR_ONLY_ENABLE
         // But, in 'Time of day.conf' state that ozone also has small scattering factor
         // And use rayleigh beta only
+        vec3 lambda = betaR0 + betaM0 + mOzoneScatteringCoeff * mOzoneMass;
         vec3 tau = lambda * (opticalDepthR + opticalDepthLightR);
         vec3 attenuation = exp(-(tau));
     #else
@@ -207,7 +211,6 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
         vec3 tauO = betaO0 * (opticalDepthR + opticalDepthLightR);
         vec3 tauR = betaR0 * (opticalDepthR + opticalDepthLightR);
         vec3 tauM = mieScale * betaM0 * (opticalDepthM + opticalDepthLightM);
-
         vec3 attenuation = exp(-(tauR + tauM + tauO));
     #endif
         sumR += attenuation * betaR;
@@ -218,6 +221,23 @@ vec3 computeIncidentLight(vec3 pos, vec3 dir, vec3 intensity, float tmin, float 
     float phaseR = ComputePhaseRayleigh(mu);
     float phaseM = ComputePhaseMie(mu, g);
     return intensity * (sumR*phaseR*betaR0 + sumM*phaseM*betaM0);
+}
+
+vec3 GetTransmittance(vec3 x, vec3 V)
+{
+    vec2 tl = ComputeRaySphereIntersection(x, uSunDir, uEarthCenter, uAtmosphereRadius);
+
+    float opticalDepthLightR = 0.0;
+    float opticalDepthLightM = 0.0;
+    opticalDepthLight(x, tl, opticalDepthLightR, opticalDepthLightM);
+
+#if RAYLEIGH_SCTR_ONLY_ENABLE
+	return exp(-(betaR0 + betaM0) * opticalDepthLightR);
+#else
+    vec3 tauR = (betaO0 + betaR0) * opticalDepthLightR;
+    vec3 tauM = mieScale * betaM0 * opticalDepthLightM;
+    return exp(-(tauR + tauM));
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -231,25 +251,28 @@ void main()
     float tmax = inf;
     if (t.y > 0) tmax = max(0.0, t.x);
 
-    vec3 color = computeIncidentLight(cameraPos, dir, uSunIntensity, 0.0, tmax);
+    vec3 sunIntensity = vec3(uSunRadiance);
+    vec3 color = computeIncidentLight(cameraPos, dir, sunIntensity, 0.0, tmax);
 
+#if SUN_ENABLE
+    float phaseTheta = dot(dir, uSunDir);
 	float intersectionTest = float(t.x < 0.0 && t.y < 0.0);
-    float angle = dot(dir, uSunDir);
-    float centerToEdge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);
-    if (centerToEdge > cos(radians(10)))
-    {
-    #if 0
-        // Model from http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf
-        vec3 u = vec3(1.0, 1.0, 1.0) ; // some models have u!=1
-        vec3 a = vec3(0.397, 0.503, 0.652) ; // coefficient for RGB wavelength (680 ,550 ,440)
+    float angle = saturate((1 - phaseTheta) * sqrt(abs(uSunDir.y)) * uSunRadius);
+    float cosAngle = cos(angle * PI * 0.5);
+    float edge = ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0);;
 
-        centerToEdge = 1.0 - centerToEdge;
-        float mu = sqrt (1.0 - centerToEdge * centerToEdge);
+    // Model from http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf
+    vec3 u = vec3(1.0, 1.0, 1.0) ; // some models have u!=1
+    vec3 a = vec3(0.397, 0.503, 0.652) ; // coefficient for RGB wavelength (680 ,550 ,440)
 
-        vec3 factor = 1.0 - u * (1.0 - pow(vec3(mu), a));
-    #endif
-        color += vec3(1.0) * intersectionTest;
-    }
+    float mu = sqrt(1.0 - angle*angle);
+    vec3 factor = 1.0 - u*(1.0 - pow(vec3(mu), a));
+
+    vec3 limbDarkening = GetTransmittance(cameraPos, dir) * factor * intersectionTest;
+    limbDarkening *= pow(vec3(cosAngle), vec3(0.420, 0.503, 0.652)) * mix(vec3(1.0), vec3(1.2,0.9,0.5), edge) * intersectionTest;
+    color += limbDarkening;
+#endif
+
     fragColor = vec4(color, 1.0);
 }
 

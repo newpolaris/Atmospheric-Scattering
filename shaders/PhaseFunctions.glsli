@@ -20,7 +20,7 @@ vec3 ComputeCoefficientMie(vec3 lambda, vec3 K, float turbidity)
     // let jungeexp = 4.0
     const float mie =  0.434f * c * PI * pow2(2*PI);
     // original equation use pow equation, but it has high sensitivy 
-    // with turbidity so just use linear
+    // with turbidity so modify to use linear scaler
     // return mie * K / pow(lambda, vec3(jungeexp - 2));
     return mie * K / lambda;
 }
