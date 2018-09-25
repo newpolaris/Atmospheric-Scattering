@@ -57,7 +57,7 @@ struct SceneSettings
     float turbidity = 10.f;
     float fov = 45.f;
 
-    EnumSkyModel kModel = kNishita;
+    EnumSkyModel kModel = kTimeOfDay;
 
     // Nishita Sky model
     bool bCPU = false;
@@ -103,6 +103,7 @@ private:
     ProgramShader m_NishitaSkyShader;
     ProgramShader m_TimeOfDayShader;
     ProgramShader m_BlitShader;
+    ProgramShader m_PostProcessHDRShader;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
@@ -160,6 +161,12 @@ void LightScattering::startup() noexcept
 	m_BlitShader.addShader(GL_VERTEX_SHADER, "BlitTexture.Vertex");
 	m_BlitShader.addShader(GL_FRAGMENT_SHADER, "BlitTexture.Fragment");
 	m_BlitShader.link();
+
+	m_PostProcessHDRShader.setDevice(m_Device);
+	m_PostProcessHDRShader.initialize();
+	m_PostProcessHDRShader.addShader(GL_VERTEX_SHADER, "PostProcessHDR.Vertex");
+	m_PostProcessHDRShader.addShader(GL_FRAGMENT_SHADER, "PostProcessHDR.Fragment");
+	m_PostProcessHDRShader.link();
 
     m_ScreenTraingle.create();
     m_Sphere.create();
@@ -242,6 +249,7 @@ void LightScattering::updateHUD() noexcept
             int kModel = m_Settings.kModel;
             ImGui::RadioButton("Nishita", &kModel, 0);
             ImGui::RadioButton("Time of Day", &kModel, 1);
+            ImGui::RadioButton("Time of Night", &kModel, 2);
             m_Settings.kModel = EnumSkyModel(kModel);
             ImGui::Separator();
 
@@ -347,8 +355,8 @@ void LightScattering::render() noexcept
         glViewport(0, 0, getFrameWidth(), getFrameHeight());
 
         glDisable(GL_DEPTH_TEST);
-        m_BlitShader.bind();
-        m_BlitShader.bindTexture("uTexSource", target, 0);
+        m_PostProcessHDRShader.bind();
+        m_PostProcessHDRShader.bindTexture("uTexSource", target, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }

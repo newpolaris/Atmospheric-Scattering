@@ -16,6 +16,10 @@ void main()
 
 -- Fragment
 
+#define HDR_TONEMAP_OPERATOR 4
+#include "Common.glsli"
+#include "ToneMappingUtility.glsli"
+
 // IN
 in vec2 vTexcoords;
 uniform sampler2D uTexSource;
@@ -26,6 +30,9 @@ out vec3 fragColor;
 // ----------------------------------------------------------------------------
 void main() 
 {
-    vec3 col = texture(uTexSource, vTexcoords).rgb;
-	fragColor = col;
+    vec3 color = texture(uTexSource, vTexcoords).rgb;
+    color = ColorToneMapping(color);
+    color = ApplySRGBCurve(color);
+
+    fragColor = color;
 }
