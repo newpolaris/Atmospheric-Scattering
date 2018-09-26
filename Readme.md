@@ -5,7 +5,16 @@ Rendering atmospheric scattering
 2. Time of day: use code ray-mmd skybox
 3. Time of night: use code ray-mmd skybox
 
-[![link text](./screenshots/twilight.jpg)](./screenshots/twilight.jpg)
+[![link text](./screenshots/with_cloud.jpg)](./screenshots/with_cloud.jpg)
+
+[Nishita]
+[![link text](./screenshots/daytime_s.jpg)](./screenshots/daytime.jpg)
+[![link text](./screenshots/twilight_s.jpg)](./screenshots/twilight.jpg)
+[![link text](./screenshots/space_s.jpg)](./screenshots/space.jpg)
+
+[Ray-MMD]
+[![link text](./screenshots/with_cloud_s.jpg)](./screenshots/with_cloud.jpg)
+[![link text](./screenshots/twilight2_s.jpg)](./screenshots/twilight2.jpg)
 
 [reference]
 1. [Nishita93] Nishita, 1993, "Display of the Earth Taking into account Atmospheric Scattering"
