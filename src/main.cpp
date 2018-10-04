@@ -54,10 +54,10 @@ struct SceneSettings
 	bool bChapman = true;
     float angle = 76.f;
     float altitude = 1.f;
-    float turbidity = 10.f;
+    float turbidity = 100.f;
     float fov = 45.f;
 
-    EnumSkyModel kModel = kTimeOfDay;
+    EnumSkyModel kModel = kTimeOfNight;
 
     // Nishita Sky model
     bool bCPU = false;
@@ -102,6 +102,7 @@ private:
     ProgramShader m_FlatShader;
     ProgramShader m_NishitaSkyShader;
     ProgramShader m_TimeOfDayShader;
+    ProgramShader m_TimeOfNightShader;
     ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsTexturePtr m_SkyColorTex;
@@ -155,6 +156,12 @@ void LightScattering::startup() noexcept
 	m_TimeOfDayShader.addShader(GL_VERTEX_SHADER, "Time of day/Time of day.Vertex");
 	m_TimeOfDayShader.addShader(GL_FRAGMENT_SHADER, "Time of day/Time of day.Fragment");
 	m_TimeOfDayShader.link();
+
+	m_TimeOfNightShader.setDevice(m_Device);
+	m_TimeOfNightShader.initialize();
+	m_TimeOfNightShader.addShader(GL_VERTEX_SHADER, "Time of night/Time of night.Vertex");
+	m_TimeOfNightShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Time of night.Fragment");
+	m_TimeOfNightShader.link();
 
 	m_BlitShader.setDevice(m_Device);
 	m_BlitShader.initialize();
@@ -251,8 +258,9 @@ void LightScattering::updateHUD() noexcept
             ImGui::RadioButton("Time of Day", &kModel, 1);
             ImGui::RadioButton("Time of Night", &kModel, 2);
             m_Settings.kModel = EnumSkyModel(kModel);
-            ImGui::Separator();
-
+        }
+        ImGui::Separator();
+        {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= m_Settings.sunRaidusParams.updateGUI();
             bUpdated |= m_Settings.sunRadianceParams.updateGUI();
@@ -308,7 +316,7 @@ void LightScattering::render() noexcept
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         if (m_Settings.kModel == kNishita)
         {
-            const float kTurbScaling = 2.5f; // to fit parameter range
+            const float kTurbScaling = 1./ 1000000.f;
             glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity*kTurbScaling);
             glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
 
@@ -341,6 +349,13 @@ void LightScattering::render() noexcept
         }
         if (m_Settings.kModel == kTimeOfNight)
         {
+            m_TimeOfNightShader.bind();
+            m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
+            m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+            m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
+            m_TimeOfNightShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+            m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.turbidity);
+			m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
         }
         m_Sphere.draw();
 		glEnable(GL_CULL_FACE);
