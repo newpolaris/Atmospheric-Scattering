@@ -1,0 +1,58 @@
+#version 450 core
+
+#include "Time of night.conf"
+
+#include "Common.glsli"
+#include "Math.glsli"
+
+#include "shader/Stars.glsli"
+
+// IN
+in vec3 vNormal;
+in vec3 vViewdir;
+
+// OUT
+out vec4 fragColor;
+
+uniform float uTime;
+uniform vec3 uSunDir;
+
+#if MILKYWAY_ENABLE
+uniform sampler2D uMilkyWayMapSamp;
+#endif
+
+const mat3 matTransformMilkWay = CreateRotate(vec3(3.14 / 2,0.0, 0.0));
+
+void main()
+{
+    float starBlink = 0.25;
+    float starDensity = 0.04;
+    float starDistance = 400;
+    float starBrightness = 0.4;
+
+    vec3 SunDirection = -uSunDir;
+    vec3 V = normalize(vViewdir);
+    vec3 normal = normalize(vNormal);
+
+    vec3 stars1 = vec3(CreateStars(normal, starDistance, starDensity, starBrightness, starBlink * uTime + PI));
+    vec3 stars2 = vec3(CreateStars(normal, starDistance * 0.5, starDensity * 0.5, starBrightness, starBlink * uTime + PI));
+
+    stars1 *= hsv2rgb(vec3(dot(normal, SunDirection), mStarSaturation, mStarBrightness));
+    stars2 *= hsv2rgb(vec3(dot(normal, -V), mStarSaturation, mStarBrightness));
+
+    float fadeSun = pow(saturate(dot(V, SunDirection)), 15);
+    float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
+
+    float meteor = CreateMeteor(V, vec3(SunDirection.x, -1, SunDirection.z) + vec3(0.5, 0, 0), uTime / PI);
+
+    vec3 stars = lerp((stars1 + stars2) * fadeStars + meteor * mMeteor, vec3(0.0), fadeSun);
+
+#if MILKYWAY_ENABLE
+    vec3 up = matTransformMilkWay*vec3(0, 0, 1);
+	vec2 coord = ComputeSphereCoord(matTransformMilkWay*V) - vec2(uTime / 1000, 0.0);
+
+	stars = lerp(stars, textureLod(uMilkyWayMapSamp, coord, 0).rgb, pow2(saturate(-V.y)));
+#endif
+
+    fragColor = vec4(vec3(stars), 1.0);
+}

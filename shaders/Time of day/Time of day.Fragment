@@ -29,9 +29,9 @@ uniform vec3 uCameraPosition;
 
 void main() 
 {
-    vec3 mieLambda = ComputeCoefficientMie(mWaveLength, mMieColor, uTurbidity);
+    vec3 mieLambda = ComputeCoefficientLinearMie(mWaveLength, mMieColor, uTurbidity);
     vec3 rayleight = ComputeCoefficientRayleigh(mWaveLength) * mRayleighColor;
-	vec3 cloud = ComputeCoefficientMie(mWaveLength, mCloudColor, mCloudTurbidity);
+	vec3 cloud = ComputeCoefficientLinearMie(mWaveLength, mCloudColor, mCloudTurbidity);
 
     ScatteringParams setting;
     setting.mieG = g;

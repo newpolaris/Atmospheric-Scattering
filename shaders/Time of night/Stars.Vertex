@@ -1,0 +1,21 @@
+#version 450 core
+
+// IN
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec2 inTexcoords;
+
+// Out
+out vec3 vNormal;
+out vec3 vViewdir;
+
+uniform vec3 uCameraPosition;
+uniform mat4 uModelToProj;
+
+void main()
+{
+    vNormal = inPosition;
+    vec3 Position = inPosition + uCameraPosition;
+    vViewdir = uCameraPosition - Position;
+    gl_Position = uModelToProj*vec4(Position, 1.0);
+}

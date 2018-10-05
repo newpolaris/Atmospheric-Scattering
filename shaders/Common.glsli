@@ -39,3 +39,12 @@ mat3 transpose(mat3 v)
 
     return tmp;
 }
+
+float lerp(float a, float b, float x) { return mix(a, b, x); }
+vec3 lerp(vec3 a, vec3 b, float x) { return mix(a, b, vec3(x)); }
+vec3 lerp(vec3 a, vec3 b, vec3 x) { return mix(a, b, x); }
+vec4 lerp(vec4 a, vec4 b, float x) { return mix(a, b, vec4(x)); }
+vec4 lerp(vec4 a, vec4 b, vec4 x) { return mix(a, b, x); }
+
+float frac(float x) { return fract(x); }
+vec3 frac(vec3 x) { return fract(x); }

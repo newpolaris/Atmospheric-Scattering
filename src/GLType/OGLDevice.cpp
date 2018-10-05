@@ -51,6 +51,8 @@ GraphicsDataPtr OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noex
 
 GraphicsTexturePtr OGLDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
+    assert(desc.getMagFilter() == GL_NEAREST || desc.getMagFilter() == GL_LINEAR);
+
     if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
     {
         auto texture = std::make_shared<OGLCoreTexture>();

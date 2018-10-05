@@ -209,7 +209,6 @@ void OGLCoreTexture::applyParameters(const GraphicsTextureDesc& desc)
     auto magFilter = desc.getMagFilter();
     auto defaultMinFilter = GL_LINEAR_MIPMAP_LINEAR;
     auto defaultMagFilter = GL_LINEAR;
-    assert(magFilter == GL_NEAREST || magFilter == GL_LINEAR);
     if (minFilter != defaultMinFilter)
         parameteri(GL_TEXTURE_MIN_FILTER, minFilter);
     if (magFilter != defaultMagFilter)

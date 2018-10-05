@@ -26,8 +26,8 @@ void main()
 // Experimental:
 #define RAYLEIGH_SCTR_ONLY_ENABLE 0
 
-#include "Math.glsli"
 #include "Common.glsli"
+#include "Math.glsli"
 #include "PhaseFunctions.glsli"
 
 // IN

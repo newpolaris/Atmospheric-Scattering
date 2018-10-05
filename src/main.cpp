@@ -102,12 +102,13 @@ private:
     ProgramShader m_FlatShader;
     ProgramShader m_NishitaSkyShader;
     ProgramShader m_TimeOfDayShader;
-    ProgramShader m_TimeOfNightShader;
+    ProgramShader m_TimeOfNightShader, m_StarShader, m_MoonShader;
     ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
+	GraphicsTexturePtr m_MilkywaySamp;
     GraphicsFramebufferPtr m_ColorRenderTarget;
     GraphicsDevicePtr m_Device;
 };
@@ -163,6 +164,12 @@ void LightScattering::startup() noexcept
 	m_TimeOfNightShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Time of night.Fragment");
 	m_TimeOfNightShader.link();
 
+	m_StarShader.setDevice(m_Device);
+	m_StarShader.initialize();
+	m_StarShader.addShader(GL_VERTEX_SHADER, "Time of night/Stars.Vertex");
+	m_StarShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Stars.Fragment");
+	m_StarShader.link();
+
 	m_BlitShader.setDevice(m_Device);
 	m_BlitShader.initialize();
 	m_BlitShader.addShader(GL_VERTEX_SHADER, "BlitTexture.Vertex");
@@ -185,6 +192,14 @@ void LightScattering::startup() noexcept
     noise.setMagFilter(GL_LINEAR);
     noise.setFilename("resources/Skybox/cloud.tga");
     m_NoiseMapSamp = m_Device->createTexture(noise);
+
+    GraphicsTextureDesc milkyWay;
+    milkyWay.setWrapS(GL_REPEAT);
+    milkyWay.setWrapT(GL_REPEAT);
+    milkyWay.setMinFilter(GL_NEAREST);
+    milkyWay.setMagFilter(GL_NEAREST);
+    milkyWay.setFilename("resources/Skybox/milky way.jpg");
+    m_MilkywaySamp = m_Device->createTexture(milkyWay);
 }
 
 void LightScattering::closeup() noexcept
@@ -316,7 +331,7 @@ void LightScattering::render() noexcept
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         if (m_Settings.kModel == kNishita)
         {
-            const float kTurbScaling = 1./ 1000000.f;
+            const float kTurbScaling = 1.f / 1000000.f;
             glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity*kTurbScaling);
             glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
 
@@ -332,6 +347,7 @@ void LightScattering::render() noexcept
             m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_NishitaSkyShader.setUniform("betaR0", rayleigh);
             m_NishitaSkyShader.setUniform("betaM0", mie);
+            m_Sphere.draw();
         }
         if (m_Settings.kModel == kTimeOfDay)
         {
@@ -346,9 +362,18 @@ void LightScattering::render() noexcept
             m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
 			m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
+            m_Sphere.draw();
         }
         if (m_Settings.kModel == kTimeOfNight)
         {
+            m_StarShader.bind();
+            m_StarShader.setUniform("uTime", time);
+            m_StarShader.setUniform("uCameraPosition", m_Camera.getPosition());
+            m_StarShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+            m_StarShader.setUniform("uSunDir", glm::normalize(sunDir));
+            m_StarShader.bindTexture("uMilkyWayMapSamp", m_MilkywaySamp, 0);
+            m_Sphere.draw();
+        #if 0
             m_TimeOfNightShader.bind();
             m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
             m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
@@ -356,8 +381,9 @@ void LightScattering::render() noexcept
             m_TimeOfNightShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
             m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.turbidity);
 			m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
+            m_Sphere.draw();
+        #endif
         }
-        m_Sphere.draw();
 		glEnable(GL_CULL_FACE);
         glDepthMask(GL_TRUE);
     }

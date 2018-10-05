@@ -1,3 +1,30 @@
+float ComputeStarNoise(vec3 p3)
+{
+    // hash33 method
+    p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787));
+    p3 + dot(p3, p3.yzx + 19.19);
+    // normalize part is removed
+    return fract((p3.x + p3.y) * p3.z);
+}
 
+float CreateStars(vec3 viewdir, float starDistance, float starDencity, float starBrightness, float starBlink)
+{
+    vec3 p = viewdir * starDistance;
+    float brightness = smoothstep(1.0 - starDencity, 1.0, ComputeStarNoise(floor(p)));
+    float blink = saturate(SmoothTriangleWave(brightness * starBlink));
+    return smoothstep(starBrightness, 0, length(fract(p) - 0.05)) * brightness * blink;
+}
 
+float CreateMeteor(vec3 V, vec3 L, float time)
+{
+    vec2 p = cross(V, L).yx * 1500;
+    p = p / 2e3 - 0.12;
 
+    float b = ceil(atan(p.x, p.y) * 6e2);
+    float h = cos(b);
+    float z = h / dot(p, p);
+    float metor = saturate(exp(frac(z + h * b + time) * -1e2) / z);
+    float fade = saturate(dot(V, L)) * saturate(-V.y);
+
+    return metor * fade;
+}
