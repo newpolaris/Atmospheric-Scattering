@@ -26,5 +26,5 @@ void main()
 	diffuse *= saturate(dot(normalize(vNormal), uSunDirection) + 0.1) * 1.5;	
     // hide the moon below the horizon
 	diffuse *= step(0, V.y) + exp2(-abs(V.y) * 500);
-    fragColor = diffuse;
+    fragColor = srgb2linear(diffuse);
 }

@@ -19,6 +19,7 @@ void main()
 #define HDR_TONEMAP_OPERATOR 0
 
 #include "Common.glsli"
+#include "Math.glsli"
 #include "ToneMappingUtility.glsli"
 
 // IN
@@ -33,7 +34,7 @@ void main()
 {
     vec3 color = texture(uTexSource, vTexcoords).rgb;
     color = ColorToneMapping(color);
-    color = (color);
+    color = linear2srgb(color);
 
     fragColor = color;
 }

@@ -30,7 +30,7 @@ void main()
 
     vec3 sunColor = vec3(154.0/255);
     vec3 mieColor = mMieColor * sunColor;
-    vec3 mieLambda = ComputeCoefficientLinearMie(mNightWaveLength, mieColor, 0);
+    vec3 mieLambda = ComputeCoefficientLinearMie(mNightWaveLength, mieColor, uTurbidity);
     vec3 rayleight = ComputeCoefficientRayleigh(mNightWaveLength) * mRayleighColor;
 
 	ScatteringParams setting;

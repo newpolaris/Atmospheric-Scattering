@@ -54,13 +54,13 @@ struct SceneSettings
 	bool bChapman = true;
     float angle = 76.f;
     float altitude = 1.f;
-    float turbidity = 100.f;
     float fov = 45.f;
 
     EnumSkyModel kModel = kTimeOfNight;
 
     // Nishita Sky model
     bool bCPU = false;
+    FloatSetting sunTurbidityParams {"Sun Turbidity", glm::vec3(-7.f, -9.f, -4.f)};
 
     // Time of Day
     FloatSetting cloudSpeedParams = {"Cloud Speed", glm::vec3(0.05, 0.0, 1.0)};
@@ -69,6 +69,10 @@ struct SceneSettings
     FloatSetting sunRaidusParams {"Sun Radius", glm::vec3(5000, 100000, 100)};
     // Sun light power, 10.0 is normal
     FloatSetting sunRadianceParams {"Sun Radiance", glm::vec3(10, 1.0, 20.0)}; 	
+    FloatSetting sunTurbidity2Params {"Sun Turbidity", glm::vec3(100.f, 1e-5f, 1000)};
+
+    // Time of night
+    FloatSetting moonTurbidityParams {"Moon Turbidity", glm::vec3(200.f, 1e-5f, 500)};
 
 };
 
@@ -297,7 +301,6 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= m_Settings.sunRaidusParams.updateGUI();
             bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
-            bUpdated |= ImGui::SliderFloat("Turbidity", &m_Settings.turbidity, 1e-5f, 10000.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
         }
         ImGui::Separator();
@@ -306,11 +309,17 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
             bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
             bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
+            bUpdated |= m_Settings.sunTurbidityParams.updateGUI();
         }
         if (m_Settings.kModel == kTimeOfDay)
         {
             bUpdated |= m_Settings.cloudSpeedParams.updateGUI();
             bUpdated |= m_Settings.cloudDensityParams.updateGUI();
+            bUpdated |= m_Settings.sunTurbidity2Params.updateGUI();
+        }
+        if (m_Settings.kModel == kTimeOfNight)
+        {
+            bUpdated |= m_Settings.moonTurbidityParams.updateGUI();
         }
     }
     ImGui::Unindent();
@@ -349,8 +358,8 @@ void LightScattering::render() noexcept
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         if (m_Settings.kModel == kNishita)
         {
-            const float kTurbScaling = 1.f / 1000000.f;
-            glm::vec3 mie = ComputeCoefficientMie(lambda, K, m_Settings.turbidity*kTurbScaling);
+            float turbidity = glm::exp(m_Settings.sunTurbidityParams.value());
+            glm::vec3 mie = ComputeCoefficientMie(lambda, K, turbidity);
             glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
 
             m_NishitaSkyShader.bind();
@@ -374,11 +383,11 @@ void LightScattering::render() noexcept
             m_TimeOfDayShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
             m_TimeOfDayShader.setUniform("uSunDir", glm::normalize(sunDir));
             m_TimeOfDayShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-            m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.turbidity);
             m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
             m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
             m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
 			m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
+            m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.sunTurbidity2Params.value());
             m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
             m_Sphere.draw();
         }
@@ -411,7 +420,7 @@ void LightScattering::render() noexcept
             m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
             m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
             m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.turbidity);
+            m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.moonTurbidityParams.value());
             m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_Sphere.draw();
 

@@ -54,5 +54,5 @@ void main()
 	stars = lerp(stars, textureLod(uMilkyWayMapSamp, coord, 0).rgb, pow2(saturate(-V.y)));
 #endif
 
-    fragColor = vec4(stars, 1.0);
+    fragColor = vec4(srgb2linear(stars), 1.0);
 }
