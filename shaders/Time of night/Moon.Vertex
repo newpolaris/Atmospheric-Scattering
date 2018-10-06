@@ -1,0 +1,36 @@
+#version 450 core
+
+#define VERTEX_SHADER 1
+
+#include "Time of night.conf"
+
+#include "Common.glsli"
+#include "Math.glsli"
+
+// IN
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec2 inTexcoords;
+
+// Out
+out vec2 vTexcoords;
+out vec3 vNormal;
+out vec3 vViewdir;
+
+uniform float uTime;
+uniform vec3 uCameraPosition;
+uniform vec3 uSunDirection;
+uniform mat4 uModelToProj;
+
+mat3 matTransformMoon = CreateRotate(vec3(0.0, 0.0, uTime / 50));
+
+void main()
+{
+    const float moonScaling = 100.0;
+    const float moonTranslate = 2000.0;
+
+    vTexcoords = inTexcoords;
+    vNormal = matTransformMoon*normalize(inPosition);
+    vViewdir = vNormal * moonScaling * mSunRadius - uSunDirection * moonTranslate;
+    gl_Position = uModelToProj*vec4(vViewdir, 1.0);
+}

@@ -1,0 +1,30 @@
+#version 450 core
+
+#include "Time of night.conf"
+
+#include "Common.glsli"
+#include "Math.glsli"
+
+// IN
+in vec2 vTexcoords;
+in vec3 vNormal;
+in vec3 vViewdir;
+
+// OUT
+out vec4 fragColor;
+
+uniform float uTime;
+uniform vec3 uSunDirection;
+uniform vec3 uCameraPosition;
+uniform sampler2D uMoonMapSamp;
+
+void main()
+{
+    vec3 V = normalize(vViewdir - uCameraPosition);
+    vec4 diffuse = texture2D(uMoonMapSamp, vTexcoords + vec2(0.4, 0.0));
+    // Fade out edge line
+	diffuse *= saturate(dot(normalize(vNormal), uSunDirection) + 0.1) * 1.5;	
+    // hide the moon below the horizon
+	diffuse *= step(0, V.y) + exp2(-abs(V.y) * 500);
+    fragColor = diffuse;
+}

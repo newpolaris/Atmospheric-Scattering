@@ -156,7 +156,6 @@ float ComputeSunIntensity(float EE, float zenithAngleCos)
 
 vec4 ComputeSkyScattering(ScatteringParams setting, vec3 V, vec3 L)
 {
-    L = normalize(-vec3(0.5, 1.0, 0.5));
     vec3 up = vec3(0, 1, 0);
     vec3 sunDirection = normalize(-L);
 
@@ -176,5 +175,5 @@ vec4 ComputeSkyScattering(ScatteringParams setting, vec3 V, vec3 L)
 
 	vec3 Lin = inscattering * (1.0 - extinction);
 
-	return vec4(Lin, 1);
+	return vec4(Lin, 1.0);
 }

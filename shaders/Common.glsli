@@ -16,8 +16,10 @@ bool any(float x)
 
 void clip(float b)
 {
+#if !VERTEX_SHADER
     if (b < 0)
         discard;
+#endif
 }
 
 vec3 mul(mat3 m, vec3 v)

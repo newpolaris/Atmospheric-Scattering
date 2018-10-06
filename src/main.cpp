@@ -102,13 +102,16 @@ private:
     ProgramShader m_FlatShader;
     ProgramShader m_NishitaSkyShader;
     ProgramShader m_TimeOfDayShader;
-    ProgramShader m_TimeOfNightShader, m_StarShader, m_MoonShader;
+    ProgramShader m_TimeOfNightShader;
+    ProgramShader m_StarShader;
+    ProgramShader m_MoonShader;
     ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
 	GraphicsTexturePtr m_MilkywaySamp;
+	GraphicsTexturePtr m_MoonMapSamp;
     GraphicsFramebufferPtr m_ColorRenderTarget;
     GraphicsDevicePtr m_Device;
 };
@@ -170,6 +173,12 @@ void LightScattering::startup() noexcept
 	m_StarShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Stars.Fragment");
 	m_StarShader.link();
 
+	m_MoonShader.setDevice(m_Device);
+	m_MoonShader.initialize();
+	m_MoonShader.addShader(GL_VERTEX_SHADER, "Time of night/Moon.Vertex");
+	m_MoonShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Moon.Fragment");
+	m_MoonShader.link();
+
 	m_BlitShader.setDevice(m_Device);
 	m_BlitShader.initialize();
 	m_BlitShader.addShader(GL_VERTEX_SHADER, "BlitTexture.Vertex");
@@ -200,6 +209,14 @@ void LightScattering::startup() noexcept
     milkyWay.setMagFilter(GL_NEAREST);
     milkyWay.setFilename("resources/Skybox/milky way.jpg");
     m_MilkywaySamp = m_Device->createTexture(milkyWay);
+
+    GraphicsTextureDesc moon;
+    moon.setWrapS(GL_REPEAT);
+    moon.setWrapT(GL_REPEAT);
+    moon.setMinFilter(GL_LINEAR);
+    moon.setMagFilter(GL_LINEAR);
+    moon.setFilename("resources/Skybox/moon.jpg");
+    m_MoonMapSamp = m_Device->createTexture(moon);
 }
 
 void LightScattering::closeup() noexcept
@@ -323,7 +340,8 @@ void LightScattering::render() noexcept
 
         // sky box
         glDisable(GL_CULL_FACE);
-        glDepthMask(GL_FALSE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
 
         const float time = m_Timer.duration();
         const float angle = glm::radians(m_Settings.angle);
@@ -373,19 +391,35 @@ void LightScattering::render() noexcept
             m_StarShader.setUniform("uSunDir", glm::normalize(sunDir));
             m_StarShader.bindTexture("uMilkyWayMapSamp", m_MilkywaySamp, 0);
             m_Sphere.draw();
-        #if 0
+
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+            m_MoonShader.bind();
+            m_MoonShader.setUniform("uTime", time);
+            m_MoonShader.setUniform("uCameraPosition", m_Camera.getPosition());
+            m_MoonShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+            m_MoonShader.setUniform("uSunDirection", -glm::normalize(sunDir));
+            m_MoonShader.bindTexture("uMoonMapSamp", m_MoonMapSamp, 0);
+            m_Sphere.draw();
+
+            glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+
             m_TimeOfNightShader.bind();
             m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
             m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
             m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_TimeOfNightShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
             m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.turbidity);
-			m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
+            m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_Sphere.draw();
-        #endif
+
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
         }
 		glEnable(GL_CULL_FACE);
-        glDepthMask(GL_TRUE);
     }
     // Tone mapping
     {
