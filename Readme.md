@@ -1,4 +1,4 @@
-﻿Rendering atmospheric scattering
+Rendering atmospheric scattering
 
 [method]
 
@@ -18,6 +18,8 @@
 
 [![link text](./screenshots/with_cloud_s.jpg)](./screenshots/with_cloud.jpg)
 [![link text](./screenshots/twilight2_s.jpg)](./screenshots/twilight2.jpg)
+[![link text](./screenshots/night_s.jpg)](./screenshots/night.jpg)
+[![link text](./screenshots/night2_s.jpg)](./screenshots/night2.jpg)
 
 [reference]
 
