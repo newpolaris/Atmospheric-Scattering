@@ -37,3 +37,4 @@
  
 1. Nishita method examples: https://bensimonds.com/2014/10/02/atmospheric-rendering-with-osl/ 
 2. Ray parameter examples: https://github.com/gaj-cg/ray-mmd-docs-ja/wiki/7_1_スカイボックス
+3. Playground: https://hexadrive.jp/hexablog-mae/wp-content/uploads/2016/06/20160616_sample.html 

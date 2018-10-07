@@ -16,7 +16,7 @@ void main()
 
 -- Fragment
 
-#define HDR_TONEMAP_OPERATOR 0
+#define HDR_TONEMAP_OPERATOR 4
 
 #include "Common.glsli"
 #include "Math.glsli"

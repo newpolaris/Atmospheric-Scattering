@@ -14,6 +14,7 @@ in vec3 vViewdir;
 out vec4 fragColor;
 
 uniform float uTime;
+uniform float uMoonBrightness;
 uniform vec3 uSunDirection;
 uniform vec3 uCameraPosition;
 uniform sampler2D uMoonMapSamp;
@@ -25,6 +26,6 @@ void main()
     // Fade out edge line
 	diffuse *= saturate(dot(normalize(vNormal), uSunDirection) + 0.1) * 1.5;	
     // hide the moon below the horizon
-	diffuse *= step(0, V.y) + exp2(-abs(V.y) * 500);
+	diffuse *= uMoonBrightness * (step(0, V.y) + exp2(-abs(V.y) * 500));
     fragColor = srgb2linear(diffuse);
 }

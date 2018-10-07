@@ -72,8 +72,8 @@ struct SceneSettings
     FloatSetting sunTurbidity2Params {"Sun Turbidity", glm::vec3(100.f, 1e-5f, 1000)};
 
     // Time of night
+    FloatSetting moonRadianceParams {"Moon Radiance", glm::vec3(5.0, 1.0, 10.0)}; 	
     FloatSetting moonTurbidityParams {"Moon Turbidity", glm::vec3(200.f, 1e-5f, 500)};
-
 };
 
 class LightScattering final : public gamecore::IGameApp
@@ -299,7 +299,6 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= m_Settings.sunRaidusParams.updateGUI();
-            bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= ImGui::SliderFloat("Altitude (km)", &m_Settings.altitude, 0.f, 100.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
         }
@@ -309,16 +308,19 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
             bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
             bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
+            bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= m_Settings.sunTurbidityParams.updateGUI();
         }
         if (m_Settings.kModel == kTimeOfDay)
         {
             bUpdated |= m_Settings.cloudSpeedParams.updateGUI();
             bUpdated |= m_Settings.cloudDensityParams.updateGUI();
+            bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= m_Settings.sunTurbidity2Params.updateGUI();
         }
         if (m_Settings.kModel == kTimeOfNight)
         {
+            bUpdated |= m_Settings.moonRadianceParams.updateGUI();
             bUpdated |= m_Settings.moonTurbidityParams.updateGUI();
         }
     }
@@ -411,17 +413,16 @@ void LightScattering::render() noexcept
             m_MoonShader.setUniform("uCameraPosition", m_Camera.getPosition());
             m_MoonShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
             m_MoonShader.setUniform("uSunDirection", -glm::normalize(sunDir));
+            m_MoonShader.setUniform("uMoonBrightness", m_Settings.moonRadianceParams.ratio());
             m_MoonShader.bindTexture("uMoonMapSamp", m_MoonMapSamp, 0);
             m_Sphere.draw();
 
             glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-
             m_TimeOfNightShader.bind();
             m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
             m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
             m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
             m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.moonTurbidityParams.value());
-            m_TimeOfNightShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
             m_Sphere.draw();
 
             glDisable(GL_BLEND);
