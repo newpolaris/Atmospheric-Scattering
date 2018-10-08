@@ -1,0 +1,57 @@
+#if VERTEX_SHADER
+
+// IN
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+
+// Out
+out vec3 vNormal;
+
+uniform vec3 uCameraPosition;
+uniform mat4 uModelToProj;
+
+void main()
+{
+	const float scale = 1000.0;
+
+#if SKYDOME_ENABLE
+	vNormal = normalize(inPosition);
+    vNormal.y = -vNormal.y; // DX TO OGL
+	vNormal.y = vNormal.y<-0.05 ? -0.05 : vNormal.y;
+	vNormal.y += 0.04999;
+	gl_Position = uModelToProj*vec4(vNormal.xyz * scale, 1);
+	vNormal.y -= 0.04999;
+#else
+	vNormal = normalize(inPosition);
+	gl_Position = uModelToProj*vec4(inPosition*scale, 1.0);
+#endif
+}
+
+#endif
+
+#if FRAGMENT_SHADER
+
+// IN
+in vec3 vNormal;
+
+// OUT
+out vec4 fragColor;
+
+uniform sampler2D uSkyboxMapSamp;
+
+
+void main()
+{
+    vec3 N = normalize(vNormal);
+    N.y = -N.y; // DX TO OGL
+    vec2 uv = ComputeSphereCoord(N);
+    vec3 color = DecodeRGBT(textureLod(uSkyboxMapSamp, uv, 0));
+
+#if SKYBOX_HDR_ENABLE
+	fragColor = vec4(color, 1.0);
+#else
+	fragColor = vec4(srgb2linear(color), 1.0);
+#endif
+}
+
+#endif

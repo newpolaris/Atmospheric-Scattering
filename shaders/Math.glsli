@@ -123,6 +123,30 @@ float ComputeRayPlaneIntersection(vec3 position, vec3 viewdir, vec3 n, float dis
     }
 }
 
+vec4 EncodeRGBT(vec3 rgb, float range = 1024)
+{
+    float limits = 0;
+    limits = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
+    limits = min(limits, range);
+
+    vec4 encode;
+    encode[3] = (range + 1) / range * limits / (1 + limits);
+    encode[3] = ceil(encode[3] * 255.0) / 255.0;
+
+    float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
+
+    encode[0] = rgb.r * rcp;
+    encode[1] = rgb.g * rcp;
+    encode[2] = rgb.b * rcp;
+
+    return encode;
+}
+
+vec3 DecodeRGBT(vec4 rgbt, float range = 1024)
+{
+    rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+    return rgbt.rgb * rgbt.a;
+}
 
 float SmoothCurve(float x)
 {
@@ -200,4 +224,12 @@ vec2 ComputeSphereCoord(vec3 normal)
 	vec2 coord = vec2(1 - (atan(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
 #endif
 	return coord;
+}
+
+vec3 ApplyColorBalance(vec3 color, vec3 colorBalanceP, vec3 colorBalanceM, float grayBalance)
+{
+	vec3 lum = vec3(luminance(color));
+	color = lerp(lum, color, 1 - grayBalance);
+	color *= vec3(1 + vec3(colorBalanceP) - vec3(colorBalanceM));
+	return color;
 }

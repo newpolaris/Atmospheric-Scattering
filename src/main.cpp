@@ -35,7 +35,8 @@
 #include <GameCore.h>
 #include "Atmosphere.h"
 
-enum ProfilerType { ProfilerTypeRender = 0 };
+enum ProfilerType { kProfilerTypeRender = 0 };
+enum SkyTextureFile { kHelipad = 0, kNewport };
 
 namespace 
 {
@@ -97,11 +98,16 @@ public:
 
 private:
 
+    void updateImage(SkyTextureFile texture);
+    void renderCloud() noexcept;
+    void renderSkybox() noexcept;
+
     std::vector<glm::vec2> m_Samples;
-    SphereMesh m_Sphere;
     SceneSettings m_Settings;
 	TCamera m_Camera;
     SimpleTimer m_Timer;
+    CubeMesh m_Cube;
+    SphereMesh m_Sphere;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_FlatShader;
     ProgramShader m_NishitaSkyShader;
@@ -111,6 +117,8 @@ private:
     ProgramShader m_MoonShader;
     ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
+    ProgramShader m_SkyboxShader;
+    GraphicsTexturePtr m_SkyboxTex;
     GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
@@ -195,7 +203,14 @@ void LightScattering::startup() noexcept
 	m_PostProcessHDRShader.addShader(GL_FRAGMENT_SHADER, "PostProcessHDR.Fragment");
 	m_PostProcessHDRShader.link();
 
+	m_SkyboxShader.setDevice(m_Device);
+	m_SkyboxShader.initialize();
+	m_SkyboxShader.addShader(GL_VERTEX_SHADER, "Helipad GoldenHour/Sky with box.Vertex");
+	m_SkyboxShader.addShader(GL_FRAGMENT_SHADER, "Helipad GoldenHour/Sky with box.Fragment");
+	m_SkyboxShader.link();
+
     m_ScreenTraingle.create();
+    m_Cube.create();
     m_Sphere.create();
 
     GraphicsTextureDesc noise;
@@ -221,10 +236,13 @@ void LightScattering::startup() noexcept
     moon.setMagFilter(GL_LINEAR);
     moon.setFilename("resources/Skybox/moon.jpg");
     m_MoonMapSamp = m_Device->createTexture(moon);
+
+    updateImage(kHelipad);
 }
 
 void LightScattering::closeup() noexcept
 {
+    m_Cube.destroy();
     m_Sphere.destroy();
     m_ScreenTraingle.destroy();
 	profiler::shutdown();
@@ -265,6 +283,23 @@ void LightScattering::update() noexcept
         colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
         m_SkyColorTex = m_Device->createTexture(colorDesc);
     }
+}
+
+void LightScattering::updateImage(SkyTextureFile texture)
+{
+    const std::vector<std::string> list {
+        "resources/skybox/helipad.dds",
+    };
+
+    // load the HDR environment map
+    GraphicsTextureDesc skyDesc;
+    skyDesc.setWrapS(GL_REPEAT);
+    skyDesc.setWrapT(GL_REPEAT);
+    skyDesc.setMinFilter(GL_LINEAR);
+    skyDesc.setMagFilter(GL_LINEAR);
+    skyDesc.setFilename(list[texture]);
+    m_SkyboxTex = m_Device->createTexture(skyDesc);
+    assert(m_SkyboxTex);
 }
 
 void LightScattering::updateHUD() noexcept
@@ -332,22 +367,46 @@ void LightScattering::updateHUD() noexcept
 
 void LightScattering::render() noexcept
 {
-    bool bUpdate = m_Settings.bProfile || m_Settings.bUpdated;
+    profiler::start(kProfilerTypeRender);
 
-    profiler::start(ProfilerTypeRender);
+    auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
+    m_Device->setFramebuffer(m_ColorRenderTarget);
+    GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
+    glViewport(0, 0, desc.getWidth(), desc.getHeight());
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearDepthf(1.0f);
+    glClear(clearFlag);
+
+    renderSkybox();
+    // renderCloud();
+
+    // Tone mapping
+    {
+        GraphicsTexturePtr target = m_ScreenColorTex;
+        if (m_Settings.bCPU && m_SkyColorTex) 
+            target = m_SkyColorTex;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, getFrameWidth(), getFrameHeight());
+
+        glDisable(GL_DEPTH_TEST);
+        m_PostProcessHDRShader.bind();
+        m_PostProcessHDRShader.bindTexture("uTexSource", target, 0);
+        m_ScreenTraingle.draw();
+        glEnable(GL_DEPTH_TEST);
+    }
+    profiler::stop(kProfilerTypeRender);
+    profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
+
+}
+
+void LightScattering::renderCloud() noexcept
+{
+    bool bUpdate = m_Settings.bProfile || m_Settings.bUpdated;
     if (!m_Settings.bCPU && bUpdate)
     {
         // [Preetham99]
         const glm::vec3 K = glm::vec3(0.686282f, 0.677739f, 0.663365f); // spectrum
         const glm::vec3 lambda = glm::vec3(680e-9f, 550e-9f, 440e-9f);
-
-        auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
-        m_Device->setFramebuffer(m_ColorRenderTarget);
-        GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-        glViewport(0, 0, desc.getWidth(), desc.getHeight());
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClearDepthf(1.0f);
-        glClear(clearFlag);
 
         // sky box
         glDisable(GL_CULL_FACE);
@@ -356,7 +415,6 @@ void LightScattering::render() noexcept
 
         const float time = m_Timer.duration();
         const float angle = glm::radians(m_Settings.angle);
-		glm::vec2 resolution(desc.getWidth(), desc.getHeight());
         glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
         if (m_Settings.kModel == kNishita)
         {
@@ -431,23 +489,16 @@ void LightScattering::render() noexcept
         }
 		glEnable(GL_CULL_FACE);
     }
-    // Tone mapping
-    {
-        GraphicsTexturePtr target = m_ScreenColorTex;
-        if (m_Settings.bCPU && m_SkyColorTex) 
-            target = m_SkyColorTex;
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, getFrameWidth(), getFrameHeight());
+}
 
-        glDisable(GL_DEPTH_TEST);
-        m_PostProcessHDRShader.bind();
-        m_PostProcessHDRShader.bindTexture("uTexSource", target, 0);
-        m_ScreenTraingle.draw();
-        glEnable(GL_DEPTH_TEST);
-    }
-    profiler::stop(ProfilerTypeRender);
-    profiler::tick(ProfilerTypeRender, s_CpuTick, s_GpuTick);
-
+void LightScattering::renderSkybox() noexcept
+{
+    glFrontFace(GL_CW);
+    m_SkyboxShader.bind();
+    m_SkyboxShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+    m_SkyboxShader.bindTexture("uSkyboxMapSamp", m_SkyboxTex, 0);
+    m_Cube.draw();
+    glFrontFace(GL_CCW);
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
