@@ -23,6 +23,7 @@
 #include <GLType/OGLCoreTexture.h>
 #include <GLType/OGLCoreFramebuffer.h>
 
+#include <Skybox/Skybox.h>
 #include <Skybox/LightCube.h>
 #include <GraphicsTypes.h>
 #include <PhaseFunctions.h>
@@ -166,9 +167,10 @@ void LightScattering::startup() noexcept
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
 #endif
 	m_Device = createDevice(deviceDesc);
-	assert(m_Device);
 
+	assert(m_Device);
     light_cube::initialize(m_Device);
+    skybox::initialize(m_Device);
 
 	m_FlatShader.setDevice(m_Device);
 	m_FlatShader.initialize();
@@ -442,8 +444,10 @@ void LightScattering::render() noexcept
     glClearDepthf(1.0f);
     glClear(clearFlag);
 
-    renderCubeSample();
-    renderSkycube();
+    skybox::render(m_Camera);
+
+    // renderCubeSample();
+    // renderSkycube();
     // renderSkybox();
     // renderCloud();
 

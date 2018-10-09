@@ -16,7 +16,6 @@ void main()
 
 #if SKYDOME_ENABLE
 	vNormal = normalize(inPosition);
-    vNormal.y = -vNormal.y; // DX TO OGL
 	vNormal.y = vNormal.y<-0.05 ? -0.05 : vNormal.y;
 	vNormal.y += 0.04999;
 	gl_Position = uModelToProj*vec4(vNormal.xyz * scale, 1);
@@ -43,7 +42,6 @@ uniform sampler2D uSkyboxMapSamp;
 void main()
 {
     vec3 N = normalize(vNormal);
-    N.y = -N.y; // DX TO OGL
     vec2 uv = ComputeSphereCoord(N);
     vec3 color = DecodeRGBT(textureLod(uSkyboxMapSamp, uv, 0));
 
