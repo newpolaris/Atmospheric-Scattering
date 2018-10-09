@@ -50,4 +50,6 @@ public:
 
     GraphicsFramebuffer() noexcept;
     virtual ~GraphicsFramebuffer() noexcept;
+
+    virtual const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept = 0;
 };

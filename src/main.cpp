@@ -23,8 +23,8 @@
 #include <GLType/OGLCoreTexture.h>
 #include <GLType/OGLCoreFramebuffer.h>
 
+#include <Skybox/LightCube.h>
 #include <GraphicsTypes.h>
-#include <SkyBox.h>
 #include <PhaseFunctions.h>
 #include <Mesh.h>
 
@@ -33,9 +33,8 @@
 #include <vector>
 #include <algorithm>
 #include <GameCore.h>
-#include "Atmosphere.h"
 
-enum ProfilerType { kProfilerTypeRender = 0 };
+enum ProfilerType { kProfilerTypeRender = 0, kProfilerTypeUpdate };
 enum SkyTextureFile { kHelipad = 0, kNewport };
 
 namespace 
@@ -48,11 +47,14 @@ enum EnumSkyModel { kNishita = 0, kTimeOfDay, kTimeOfNight, };
 
 struct SceneSettings
 {
-    bool bProfile = true;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
 	bool bChapman = true;
+    bool bUpdateLight = true;
+	float m_exposure = 0.f;
+	float m_radianceSlider = 2.f;
+	float m_bgType = 7.f;
     float angle = 76.f;
     float altitude = 1.f;
     float fov = 45.f;
@@ -98,9 +100,10 @@ public:
 
 private:
 
-    void updateImage(SkyTextureFile texture);
+    void updateLight(SkyTextureFile texture);
     void renderCloud() noexcept;
     void renderSkybox() noexcept;
+    void renderSkycube() noexcept;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -109,6 +112,7 @@ private:
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
     FullscreenTriangleMesh m_ScreenTraingle;
+    LightCube m_LightCube;
     ProgramShader m_FlatShader;
     ProgramShader m_NishitaSkyShader;
     ProgramShader m_TimeOfDayShader;
@@ -118,8 +122,8 @@ private:
     ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
     ProgramShader m_SkyboxShader;
+    ProgramShader m_SkycubeShader;
     GraphicsTexturePtr m_SkyboxTex;
-    GraphicsTexturePtr m_SkyColorTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
 	GraphicsTexturePtr m_MilkywaySamp;
@@ -142,6 +146,7 @@ LightScattering::~LightScattering() noexcept
 void LightScattering::startup() noexcept
 {
 	profiler::initialize();
+
     m_Timer.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
 	m_Camera.setViewParams(glm::vec3(2.0f, 5.0f, 15.0f), glm::vec3(2.0f, 0.0f, 0.0f));
@@ -154,6 +159,8 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 	assert(m_Device);
+
+    light_cube::initialize(m_Device);
 
 	m_FlatShader.setDevice(m_Device);
 	m_FlatShader.initialize();
@@ -209,6 +216,12 @@ void LightScattering::startup() noexcept
 	m_SkyboxShader.addShader(GL_FRAGMENT_SHADER, "Helipad GoldenHour/Sky with box.Fragment");
 	m_SkyboxShader.link();
 
+	m_SkycubeShader.setDevice(m_Device);
+	m_SkycubeShader.initialize();
+	m_SkycubeShader.addShader(GL_VERTEX_SHADER, "Skycube.Vertex");
+	m_SkycubeShader.addShader(GL_FRAGMENT_SHADER, "Skycube.Fragment");
+	m_SkycubeShader.link();
+
     m_ScreenTraingle.create();
     m_Cube.create();
     m_Sphere.create();
@@ -237,7 +250,17 @@ void LightScattering::startup() noexcept
     moon.setFilename("resources/Skybox/moon.jpg");
     m_MoonMapSamp = m_Device->createTexture(moon);
 
-    updateImage(kHelipad);
+    // load the HDR environment map
+    GraphicsTextureDesc skyDesc;
+    skyDesc.setWrapS(GL_REPEAT);
+    skyDesc.setWrapT(GL_REPEAT);
+    skyDesc.setMinFilter(GL_NEAREST_MIPMAP_LINEAR);
+    skyDesc.setMagFilter(GL_LINEAR);
+    skyDesc.setFilename("resources/skybox/helipad.dds");
+    skyDesc.setFilename("resources/skybox/newport_loft.hdr");
+    m_SkyboxTex = m_Device->createTexture(skyDesc);
+    assert(m_SkyboxTex);
+    m_LightCube.initialize(m_Device, m_SkyboxTex);
 }
 
 void LightScattering::closeup() noexcept
@@ -266,40 +289,13 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
-    if (m_Settings.bUpdated && m_Settings.bCPU)
-    {
-        float angle = glm::radians(m_Settings.angle);
-        std::vector<glm::vec4> image(width*height, glm::vec4(0.f));
-        glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
 
-        Atmosphere atmosphere(sunDir);
-        atmosphere.renderSkyDome(image, width, height);
-
-        GraphicsTextureDesc colorDesc;
-        colorDesc.setWidth(width);
-        colorDesc.setHeight(height);
-        colorDesc.setFormat(gli::FORMAT_RGBA32_SFLOAT_PACK32);
-        colorDesc.setStream((uint8_t*)image.data());
-        colorDesc.setStreamSize(width*height*sizeof(glm::vec4));
-        m_SkyColorTex = m_Device->createTexture(colorDesc);
-    }
-}
-
-void LightScattering::updateImage(SkyTextureFile texture)
-{
-    const std::vector<std::string> list {
-        "resources/skybox/helipad.dds",
-    };
-
-    // load the HDR environment map
-    GraphicsTextureDesc skyDesc;
-    skyDesc.setWrapS(GL_REPEAT);
-    skyDesc.setWrapT(GL_REPEAT);
-    skyDesc.setMinFilter(GL_LINEAR);
-    skyDesc.setMagFilter(GL_LINEAR);
-    skyDesc.setFilename(list[texture]);
-    m_SkyboxTex = m_Device->createTexture(skyDesc);
-    assert(m_SkyboxTex);
+    profiler::start(kProfilerTypeUpdate);
+    if (m_Settings.bUpdateLight)
+        m_LightCube.update(m_Device);
+    profiler::stop(kProfilerTypeUpdate);
+    profiler::tick(kProfilerTypeUpdate, s_CpuTick, s_GpuTick);
+    // m_Settings.bUpdateLight = false;
 }
 
 void LightScattering::updateHUD() noexcept
@@ -340,9 +336,7 @@ void LightScattering::updateHUD() noexcept
         ImGui::Separator();
         if (m_Settings.kModel == kNishita)
         {
-            bUpdated |= ImGui::Checkbox("Mode CPU", &m_Settings.bCPU);
-            bUpdated |= ImGui::Checkbox("Always redraw", &m_Settings.bProfile);
-            bUpdated |= ImGui::Checkbox("Use chapman approximation", &m_Settings.bChapman);
+            bUpdated |= ImGui::Checkbox("Use  approximation", &m_Settings.bChapman);
             bUpdated |= m_Settings.sunRadianceParams.updateGUI();
             bUpdated |= m_Settings.sunTurbidityParams.updateGUI();
         }
@@ -358,6 +352,56 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= m_Settings.moonRadianceParams.updateGUI();
             bUpdated |= m_Settings.moonTurbidityParams.updateGUI();
         }
+    }
+    ImGui::Unindent();
+    ImGui::Separator();
+    ImGui::Text("Background:");
+    ImGui::Indent();
+    {
+        ImGui::Indent();
+        ImGui::Checkbox("Update Lightcube", &m_Settings.bUpdateLight);
+        ImGui::Unindent();
+    }
+    {
+        int32_t selection;
+        if (0.0f == m_Settings.m_bgType)
+        {
+            selection = UINT8_C(0);
+        }
+        else if (7.0f == m_Settings.m_bgType)
+        {
+            selection = UINT8_C(2);
+        }
+        else
+        {
+            selection = UINT8_C(1);
+        }
+
+        float tabWidth = ImGui::GetContentRegionAvailWidth() / 3.0f;
+        if (ImGui::TabButton("Skybox", tabWidth, selection == 0))
+        {
+            selection = 0;
+        }
+
+        ImGui::SameLine(0.0f, 0.0f);
+        if (ImGui::TabButton("Radiance", tabWidth, selection == 1))
+        {
+            selection = 1;
+        }
+
+        ImGui::SameLine(0.0f, 0.0f);
+        if (ImGui::TabButton("Irradiance", tabWidth, selection == 2))
+        {
+            selection = 2;
+        }
+
+        if (0 == selection) m_Settings.m_bgType = 0.0f;
+        else if (2 == selection) m_Settings.m_bgType = 7.0f;
+        else m_Settings.m_bgType = m_Settings.m_radianceSlider;
+
+        const bool isRadiance = (selection == 1);
+        if (isRadiance)
+            ImGui::SliderFloat("Mip level", &m_Settings.m_radianceSlider, 1.0f, 6.0f);
     }
     ImGui::Unindent();
     ImGui::End();
@@ -377,14 +421,13 @@ void LightScattering::render() noexcept
     glClearDepthf(1.0f);
     glClear(clearFlag);
 
-    renderSkybox();
+    renderSkycube();
+    // renderSkybox();
     // renderCloud();
 
     // Tone mapping
     {
         GraphicsTexturePtr target = m_ScreenColorTex;
-        if (m_Settings.bCPU && m_SkyColorTex) 
-            target = m_SkyColorTex;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, getFrameWidth(), getFrameHeight());
 
@@ -395,100 +438,116 @@ void LightScattering::render() noexcept
         glEnable(GL_DEPTH_TEST);
     }
     profiler::stop(kProfilerTypeRender);
-    profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
-
+    // profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
 }
 
 void LightScattering::renderCloud() noexcept
 {
-    bool bUpdate = m_Settings.bProfile || m_Settings.bUpdated;
-    if (!m_Settings.bCPU && bUpdate)
-    {
-        // [Preetham99]
-        const glm::vec3 K = glm::vec3(0.686282f, 0.677739f, 0.663365f); // spectrum
-        const glm::vec3 lambda = glm::vec3(680e-9f, 550e-9f, 440e-9f);
+    // [Preetham99]
+    const glm::vec3 K = glm::vec3(0.686282f, 0.677739f, 0.663365f); // spectrum
+    const glm::vec3 lambda = glm::vec3(680e-9f, 550e-9f, 440e-9f);
 
-        // sky box
-        glDisable(GL_CULL_FACE);
+    // sky box
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
+    const float time = m_Timer.duration();
+    const float angle = glm::radians(m_Settings.angle);
+    glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
+    if (m_Settings.kModel == kNishita)
+    {
+        float turbidity = glm::exp(m_Settings.sunTurbidityParams.value());
+        glm::vec3 mie = ComputeCoefficientMie(lambda, K, turbidity);
+        glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
+
+        m_NishitaSkyShader.bind();
+        m_NishitaSkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_NishitaSkyShader.setUniform("uChapman", m_Settings.bChapman);
+        m_NishitaSkyShader.setUniform("uEarthRadius", 6360e3f);
+        m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
+        m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
+        m_NishitaSkyShader.setUniform("uSunDir", glm::normalize(sunDir));
+        m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+        m_NishitaSkyShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
+        m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
+        m_NishitaSkyShader.setUniform("betaR0", rayleigh);
+        m_NishitaSkyShader.setUniform("betaM0", mie);
+        m_Sphere.draw();
+    }
+    if (m_Settings.kModel == kTimeOfDay)
+    {
+        m_TimeOfDayShader.bind();
+        m_TimeOfDayShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_TimeOfDayShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_TimeOfDayShader.setUniform("uSunDir", glm::normalize(sunDir));
+        m_TimeOfDayShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
+        m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
+        m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
+        m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
+        m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
+        m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.sunTurbidity2Params.value());
+        m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
+        m_Sphere.draw();
+    }
+    if (m_Settings.kModel == kTimeOfNight)
+    {
+        m_StarShader.bind();
+        m_StarShader.setUniform("uTime", time);
+        m_StarShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_StarShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_StarShader.setUniform("uSunDir", glm::normalize(sunDir));
+        m_StarShader.bindTexture("uMilkyWayMapSamp", m_MilkywaySamp, 0);
+        m_Sphere.draw();
+
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        m_MoonShader.bind();
+        m_MoonShader.setUniform("uTime", time);
+        m_MoonShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_MoonShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_MoonShader.setUniform("uSunDirection", -glm::normalize(sunDir));
+        m_MoonShader.setUniform("uMoonBrightness", m_Settings.moonRadianceParams.ratio());
+        m_MoonShader.bindTexture("uMoonMapSamp", m_MoonMapSamp, 0);
+        m_Sphere.draw();
+
+        glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+        m_TimeOfNightShader.bind();
+        m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
+        m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.moonTurbidityParams.value());
+        m_Sphere.draw();
+
+        glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
-
-        const float time = m_Timer.duration();
-        const float angle = glm::radians(m_Settings.angle);
-        glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
-        if (m_Settings.kModel == kNishita)
-        {
-            float turbidity = glm::exp(m_Settings.sunTurbidityParams.value());
-            glm::vec3 mie = ComputeCoefficientMie(lambda, K, turbidity);
-            glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
-
-            m_NishitaSkyShader.bind();
-            m_NishitaSkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-            m_NishitaSkyShader.setUniform("uChapman", m_Settings.bChapman);
-            m_NishitaSkyShader.setUniform("uEarthRadius", 6360e3f);
-            m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
-            m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
-            m_NishitaSkyShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-            m_NishitaSkyShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
-            m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
-            m_NishitaSkyShader.setUniform("betaR0", rayleigh);
-            m_NishitaSkyShader.setUniform("betaM0", mie);
-            m_Sphere.draw();
-        }
-        if (m_Settings.kModel == kTimeOfDay)
-        {
-            m_TimeOfDayShader.bind();
-            m_TimeOfDayShader.setUniform("uCameraPosition", m_Camera.getPosition());
-            m_TimeOfDayShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-            m_TimeOfDayShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_TimeOfDayShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-            m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
-            m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
-            m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
-			m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
-            m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.sunTurbidity2Params.value());
-            m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
-            m_Sphere.draw();
-        }
-        if (m_Settings.kModel == kTimeOfNight)
-        {
-            m_StarShader.bind();
-            m_StarShader.setUniform("uTime", time);
-            m_StarShader.setUniform("uCameraPosition", m_Camera.getPosition());
-            m_StarShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-            m_StarShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_StarShader.bindTexture("uMilkyWayMapSamp", m_MilkywaySamp, 0);
-            m_Sphere.draw();
-
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(GL_FALSE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-            m_MoonShader.bind();
-            m_MoonShader.setUniform("uTime", time);
-            m_MoonShader.setUniform("uCameraPosition", m_Camera.getPosition());
-            m_MoonShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-            m_MoonShader.setUniform("uSunDirection", -glm::normalize(sunDir));
-            m_MoonShader.setUniform("uMoonBrightness", m_Settings.moonRadianceParams.ratio());
-            m_MoonShader.bindTexture("uMoonMapSamp", m_MoonMapSamp, 0);
-            m_Sphere.draw();
-
-            glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-            m_TimeOfNightShader.bind();
-            m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
-            m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-            m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
-            m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.moonTurbidityParams.value());
-            m_Sphere.draw();
-
-            glDisable(GL_BLEND);
-            glEnable(GL_DEPTH_TEST);
-            glDepthMask(GL_TRUE);
-        }
-		glEnable(GL_CULL_FACE);
     }
+    glEnable(GL_CULL_FACE);
+}
+
+void LightScattering::renderSkycube() noexcept
+{
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    glFrontFace(GL_CW);
+
+    m_SkycubeShader.bind();
+    m_SkycubeShader.setUniform("uViewMatrix", m_Camera.getViewMatrix());
+    m_SkycubeShader.setUniform("uProjMatrix", m_Camera.getProjectionMatrix());
+    m_SkycubeShader.setUniform("uBgType", m_Settings.m_bgType);
+    m_SkycubeShader.setUniform("uExposure", m_Settings.m_exposure);
+
+    // Texture binding
+    m_SkycubeShader.bindTexture("uEnvmapSamp", m_LightCube.getEnvCube(), 0);
+    m_SkycubeShader.bindTexture("uEnvmapIrrSamp", m_LightCube.getIrradiance(), 1);
+    m_SkycubeShader.bindTexture("uEnvmapPrefilterSamp", m_LightCube.getPrefilter(), 2);
+
+    m_Cube.draw();
+    glFrontFace(GL_CCW);
+    glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void LightScattering::renderSkybox() noexcept

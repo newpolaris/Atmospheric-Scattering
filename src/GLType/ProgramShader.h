@@ -51,7 +51,8 @@ public:
     bool bindBuffer(const std::string& name, const GraphicsDataPtr& data);
 
     // Compute
-    bool bindImage(const std::string &name, const OGLCoreTexturePtr &texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access);
+    bool bindImage(const std::string& name, const GraphicsTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access);
+    bool bindImage(const std::string& name, const OGLCoreTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access);
 
     void Dispatch( GLuint GroupCountX = 1, GLuint GroupCountY = 1, GLuint GroupCountZ = 1 );
     void Dispatch1D( GLuint ThreadCountX, GLuint GroupSizeX = 64);

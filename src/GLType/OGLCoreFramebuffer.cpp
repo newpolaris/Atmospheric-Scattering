@@ -35,6 +35,8 @@ bool OGLCoreFramebuffer::create(const GraphicsFramebufferDesc& desc) noexcept
 {
     assert(m_FBO == GL_NONE);
 
+    m_FramebufferDesc = desc;
+
     glCreateFramebuffers(1, &m_FBO);
 
 	GLsizei drawCount = 0;
@@ -68,4 +70,9 @@ void OGLCoreFramebuffer::destroy() noexcept
         glDeleteFramebuffers(1, &m_FBO);
         m_FBO = 0;
     }
+}
+
+const GraphicsFramebufferDesc& OGLCoreFramebuffer::getGraphicsFramebufferDesc() const noexcept
+{
+    return m_FramebufferDesc;
 }

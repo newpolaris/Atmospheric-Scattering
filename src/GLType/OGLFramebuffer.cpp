@@ -35,6 +35,8 @@ bool OGLFramebuffer::create(const GraphicsFramebufferDesc& desc) noexcept
 {
     assert(m_FBO == GL_NONE);
 
+    m_FramebufferDesc = desc;
+
     glGenFramebuffers(1, &m_FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
@@ -69,4 +71,9 @@ void OGLFramebuffer::destroy() noexcept
         glDeleteFramebuffers(1, &m_FBO);
         m_FBO = 0;
     }
+}
+
+const GraphicsFramebufferDesc& OGLFramebuffer::getGraphicsFramebufferDesc() const noexcept
+{
+    return m_FramebufferDesc;
 }

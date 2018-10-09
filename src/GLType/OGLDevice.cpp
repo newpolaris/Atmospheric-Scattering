@@ -113,6 +113,34 @@ void OGLDevice::setFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexce
     }
 }
 
+void OGLDevice::bindRenderTexture(const GraphicsTexturePtr& texture, uint32_t attachment, uint32_t textarget, int32_t level) noexcept 
+{
+    if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    {
+        auto tex = texture->downcast_pointer<OGLCoreTexture>();
+        if (tex) glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, tex->getTextureID(), level);
+    }
+    else if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    {
+        auto tex = texture->downcast_pointer<OGLTexture>();
+        if (tex) glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, tex->getTextureID(), level);
+    }
+}
+
+void OGLDevice::generateMipmap(const GraphicsTexturePtr& texture) noexcept
+{
+    if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    {
+        auto tex = texture->downcast_pointer<OGLCoreTexture>();
+        if (tex) tex->generateMipmap();
+    }
+    else if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    {
+        auto tex = texture->downcast_pointer<OGLTexture>();
+        if (tex) tex->generateMipmap();
+    }
+}
+
 const GraphicsDeviceDesc& OGLDevice::getGraphicsDeviceDesc() const noexcept
 {
     return m_Desc;

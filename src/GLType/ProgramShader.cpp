@@ -148,6 +148,7 @@ bool ProgramShader::initBlockBinding(const std::string& name)
 
 void ProgramShader::setDevice(const GraphicsDevicePtr& device)
 {
+    assert(device);
     m_Device = device;
 }
 
@@ -286,6 +287,7 @@ bool ProgramShader::bindTexture(const std::string& name, const GraphicsTexturePt
 {
     assert(texture);
     assert(unit >= 0);
+    assert(m_ShaderID != 0);
 
     GLint loc = glGetUniformLocation(m_ShaderID, name.c_str());
 
@@ -345,7 +347,15 @@ bool ProgramShader::bindBuffer(const std::string& name, const GraphicsDataPtr& d
     return false;
 }
 
-bool ProgramShader::bindImage(const std::string &name, const OGLCoreTexturePtr &texture,
+bool ProgramShader::bindImage(const std::string& name, const GraphicsTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access)
+{
+    if (!texture) return false;
+    auto tex = texture->downcast_pointer<OGLCoreTexture>();
+    if (!tex) return false;
+    return bindImage(name, tex, unit, level, layered, layer, access);
+}
+
+bool ProgramShader::bindImage(const std::string& name, const OGLCoreTexturePtr &texture,
     GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access)
 {
     GLint loc = glGetUniformLocation(m_ShaderID, name.c_str());

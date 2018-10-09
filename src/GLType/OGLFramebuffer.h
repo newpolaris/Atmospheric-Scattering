@@ -15,6 +15,8 @@ public:
 
     void bind() noexcept;
 
+    const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept override;
+
 private:
 
 	friend class OGLDevice;
