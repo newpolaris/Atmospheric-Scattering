@@ -173,7 +173,7 @@ void LightCube::updatePrefilter(const GraphicsDevicePtr& device, const GraphicsT
         s_programPrefilter.setUniform("uRoughness", float(mipLevel) / maxLevel);
         // Set layered true to use whole cube face
         s_programPrefilter.bindImage("uCube", m_prefilterCubemap, 0, mipLevel, GL_TRUE, 0, GL_WRITE_ONLY);
-        // s_programPrefilter.Dispatch3D(tsize, tsize, 6, localSize, localSize, 1);
+        s_programPrefilter.Dispatch3D(tsize, tsize, 6, localSize, localSize, 1);
         mipLevel++;
     }
 }
@@ -251,6 +251,11 @@ const GraphicsTexturePtr& LightCube::getIrradiance() const
 const GraphicsTexturePtr& LightCube::getPrefilter() const
 {
     return m_prefilterCubemap;
+}
+
+const GraphicsTexturePtr& LightCube::getBrdfLUT() const
+{
+    return s_brdfTexture;
 }
 
 LightCube::LightCube()

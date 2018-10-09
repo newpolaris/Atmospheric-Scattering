@@ -22,6 +22,7 @@ public:
     const GraphicsTexturePtr& getEnvCube() const;
     const GraphicsTexturePtr& getIrradiance() const;
     const GraphicsTexturePtr& getPrefilter() const;
+    const GraphicsTexturePtr& getBrdfLUT() const;
 
 private:
 

@@ -52,12 +52,17 @@ struct SceneSettings
     bool bUpdated = true;
 	bool bChapman = true;
     bool bUpdateLight = true;
+	bool m_doDiffuse = false;
+	bool m_doSpecular = false;
+	bool m_doDiffuseIbl = true;
+	bool m_doSpecularIbl = true;
 	float m_exposure = 0.f;
 	float m_radianceSlider = 2.f;
 	float m_bgType = 7.f;
     float angle = 76.f;
     float altitude = 1.f;
     float fov = 45.f;
+    glm::vec3 m_rgbDiff = glm::vec3(0.2f, 0.2f, 0.2f);
 
     EnumSkyModel kModel = kTimeOfNight;
 
@@ -100,10 +105,10 @@ public:
 
 private:
 
-    void updateLight(SkyTextureFile texture);
     void renderCloud() noexcept;
     void renderSkybox() noexcept;
     void renderSkycube() noexcept;
+    void renderCubeSample() noexcept;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -111,6 +116,7 @@ private:
     SimpleTimer m_Timer;
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
+    SphereMesh m_SphereMini;
     FullscreenTriangleMesh m_ScreenTraingle;
     LightCube m_LightCube;
     ProgramShader m_FlatShader;
@@ -123,6 +129,7 @@ private:
     ProgramShader m_PostProcessHDRShader;
     ProgramShader m_SkyboxShader;
     ProgramShader m_SkycubeShader;
+    ProgramShader m_programMesh;
     GraphicsTexturePtr m_SkyboxTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
@@ -135,7 +142,8 @@ private:
 CREATE_APPLICATION(LightScattering);
 
 LightScattering::LightScattering() noexcept :
-    m_Sphere(32, 1.0e2f)
+    m_Sphere(32, 1.0e2f),
+    m_SphereMini(48, 5.0f)
 {
 }
 
@@ -222,9 +230,16 @@ void LightScattering::startup() noexcept
 	m_SkycubeShader.addShader(GL_FRAGMENT_SHADER, "Skycube.Fragment");
 	m_SkycubeShader.link();
 
+	m_programMesh.setDevice(m_Device);
+    m_programMesh.initialize();
+    m_programMesh.addShader(GL_VERTEX_SHADER, "IBL/IblMesh.Vertex");
+    m_programMesh.addShader(GL_FRAGMENT_SHADER, "IBL/IblMesh.Fragment");
+    m_programMesh.link();
+
     m_ScreenTraingle.create();
     m_Cube.create();
     m_Sphere.create();
+    m_SphereMini.create();
 
     GraphicsTextureDesc noise;
     noise.setWrapS(GL_REPEAT);
@@ -257,7 +272,7 @@ void LightScattering::startup() noexcept
     skyDesc.setMinFilter(GL_NEAREST_MIPMAP_LINEAR);
     skyDesc.setMagFilter(GL_LINEAR);
     skyDesc.setFilename("resources/skybox/helipad.dds");
-    skyDesc.setFilename("resources/skybox/newport_loft.hdr");
+    // skyDesc.setFilename("resources/skybox/newport_loft.hdr");
     m_SkyboxTex = m_Device->createTexture(skyDesc);
     assert(m_SkyboxTex);
     m_LightCube.initialize(m_Device, m_SkyboxTex);
@@ -267,6 +282,7 @@ void LightScattering::closeup() noexcept
 {
     m_Cube.destroy();
     m_Sphere.destroy();
+    m_SphereMini.destroy();
     m_ScreenTraingle.destroy();
 	profiler::shutdown();
 }
@@ -404,6 +420,11 @@ void LightScattering::updateHUD() noexcept
             ImGui::SliderFloat("Mip level", &m_Settings.m_radianceSlider, 1.0f, 6.0f);
     }
     ImGui::Unindent();
+    ImGui::Separator();
+    ImGui::Text("Post processing:");
+    ImGui::Indent();
+    ImGui::SliderFloat("Exposure", &m_Settings.m_exposure, -4.0f, 4.0f);
+    ImGui::Unindent();
     ImGui::End();
 
     m_Settings.bUiChanged = bUpdated;
@@ -421,6 +442,7 @@ void LightScattering::render() noexcept
     glClearDepthf(1.0f);
     glClear(clearFlag);
 
+    renderCubeSample();
     renderSkycube();
     // renderSkybox();
     // renderCloud();
@@ -547,6 +569,52 @@ void LightScattering::renderSkycube() noexcept
 
     m_Cube.draw();
     glFrontFace(GL_CCW);
+    glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
+void LightScattering::renderCubeSample() noexcept
+{
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    m_programMesh.bind();
+
+    // Uniform binding
+    m_programMesh.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
+    m_programMesh.setUniform("uEyePosWS", m_Camera.getPosition());
+    m_programMesh.setUniform("uExposure", m_Settings.m_exposure);
+    m_programMesh.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
+    m_programMesh.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
+    m_programMesh.setUniform("ubDiffuseIbl", float(m_Settings.m_doDiffuseIbl));
+    m_programMesh.setUniform("ubSpecularIbl", float(m_Settings.m_doSpecularIbl));
+    m_programMesh.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
+    m_programMesh.setUniform("uMtxSrt", glm::mat4(1));
+
+    // Texture binding
+    m_programMesh.bindTexture("uEnvmapIrr", m_LightCube.getIrradiance(), 4);
+    m_programMesh.bindTexture("uEnvmapPrefilter", m_LightCube.getPrefilter(), 5);
+    m_programMesh.bindTexture("uEnvmapBrdfLUT", m_LightCube.getBrdfLUT(), 6);
+
+    // Submit orbs.
+    for (float yy = 0, yend = 5.0f; yy < yend; yy += 1.0f)
+    {
+        for (float xx = 0, xend = 5.0f; xx < xend; xx += 1.0f)
+        {
+            const float scale = 1.2f;
+            const float spacing = 2.2f * 30;
+            const float yAdj = -0.8f;
+            glm::vec3 translate(
+                0.0f + (xx / xend)*spacing - (1.0f + (scale - 1.0f)*0.5f - 1.0f / xend),
+                yAdj / yend + (yy / yend)*spacing - (1.0f + (scale - 1.0f)*0.5f - 1.0f / yend),
+                0.0f);
+            glm::mat4 mtxS = glm::scale(glm::mat4(1), glm::vec3(scale / xend));
+            glm::mat4 mtxST = glm::translate(mtxS, translate);
+            m_programMesh.setUniform("uGlossiness", xx*(1.0f / xend));
+            m_programMesh.setUniform("uReflectivity", (yend - yy)*(1.0f / yend));
+            m_programMesh.setUniform("uMtxSrt", mtxST);
+            m_SphereMini.draw();
+        }
+    }
+    m_programMesh.unbind();
     glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 

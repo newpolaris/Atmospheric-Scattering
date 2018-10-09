@@ -5,7 +5,8 @@
 
 -- Fragment
 
-#if 1
+#define RGBT_TEXTURE 1
+#if !RGBT_TEXTURE
 
 out vec4 FragColor;
 in vec3 WorldPos;
