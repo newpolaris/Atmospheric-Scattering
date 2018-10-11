@@ -1,0 +1,39 @@
+float EnvironmentMip(int miplevel, float smoothness)
+{
+	return lerp(miplevel, 0, smoothness * smoothness);
+}
+
+vec3 EnvironmentReflect(vec3 normal, vec3 view)
+{
+	return reflect(-view, normal);
+}
+
+vec3 FresnelSchlickGlass(vec3 N, vec3 V, float smoothness, vec3 specular)
+{
+    return lerp(specular, vec3(1.0), pow5(1 - saturate(dot(N, V))) / (40 - 39 * smoothness));
+}
+
+float FresnelSchlickClearCoat(float nv, float smoothness, float specular)
+{
+    return specular + (max(smoothness, specular) - specular) * pow5(1 - nv);
+}
+
+vec3 EnvironmentSpecularCloth(float nv, float smoothness, vec3 specular)
+{
+    const vec4 c0 = vec4(0.24, 0.93, 0.01, 0.20);
+    const vec4 c1 = vec4(2.00, -1.30, 0.40, 0.03);
+
+    float s = 1.0 - nv;
+    float e = s - c0.y;
+    float g = c0.x * exp2(-(e * e) / (2.0 * c0.z)) + s * c0.w;
+    float n = (1.0 - smoothness) * c1.x + c1.y;
+    float r = max(1.0 - n * n, c1.z) * g;
+
+    return specular * r + r * c1.w;
+}
+
+vec3 EnvironmentSpecularLUT(sampler2D lut, float nv, float smoothness, vec3 specular)
+{
+    vec2 brdf = texture(lut, vec2(nv, smoothness)).rg;
+    return specular * brdf.r + brdf.g;
+}

@@ -23,6 +23,7 @@
 #include <GLType/OGLCoreTexture.h>
 #include <GLType/OGLCoreFramebuffer.h>
 
+#include <BufferManager.h>
 #include <Skybox/Skybox.h>
 #include <Skybox/LightCube.h>
 #include <GraphicsTypes.h>
@@ -168,7 +169,6 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 
-	assert(m_Device);
     light_cube::initialize(m_Device);
     skybox::initialize(m_Device);
 
@@ -313,7 +313,6 @@ void LightScattering::update() noexcept
         m_LightCube.update(m_Device);
     profiler::stop(kProfilerTypeUpdate);
     profiler::tick(kProfilerTypeUpdate, s_CpuTick, s_GpuTick);
-    // m_Settings.bUpdateLight = false;
 }
 
 void LightScattering::updateHUD() noexcept
@@ -436,6 +435,8 @@ void LightScattering::render() noexcept
 {
     profiler::start(kProfilerTypeRender);
 
+    skybox::light(m_Camera);
+
     auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
     m_Device->setFramebuffer(m_ColorRenderTarget);
     GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
@@ -444,8 +445,6 @@ void LightScattering::render() noexcept
     glClearDepthf(1.0f);
     glClear(clearFlag);
 
-    skybox::render(m_Camera);
-
     // renderCubeSample();
     // renderSkycube();
     // renderSkybox();
@@ -453,13 +452,12 @@ void LightScattering::render() noexcept
 
     // Tone mapping
     {
-        GraphicsTexturePtr target = m_ScreenColorTex;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, getFrameWidth(), getFrameHeight());
 
         glDisable(GL_DEPTH_TEST);
         m_PostProcessHDRShader.bind();
-        m_PostProcessHDRShader.bindTexture("uTexSource", target, 0);
+        m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }
@@ -658,6 +656,9 @@ void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
 	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 10000.f);
+
+    Graphics::initializeRenderingBuffers(m_Device, width, height); 
+    Graphics::resizeDisplayDependentBuffers(width, height); 
 
     GraphicsTextureDesc colorDesc;
     colorDesc.setWidth(width);
