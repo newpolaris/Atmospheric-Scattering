@@ -131,7 +131,8 @@ private:
     ProgramShader m_PostProcessHDRShader;
     ProgramShader m_SkyboxShader;
     ProgramShader m_SkycubeShader;
-    ProgramShader m_programMesh;
+    ProgramShader m_IblMeshShader;
+    ProgramShader m_GbufferShader;
     GraphicsTexturePtr m_SkyboxTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
@@ -232,11 +233,17 @@ void LightScattering::startup() noexcept
 	m_SkycubeShader.addShader(GL_FRAGMENT_SHADER, "Skycube.Fragment");
 	m_SkycubeShader.link();
 
-	m_programMesh.setDevice(m_Device);
-    m_programMesh.initialize();
-    m_programMesh.addShader(GL_VERTEX_SHADER, "IBL/IblMesh.Vertex");
-    m_programMesh.addShader(GL_FRAGMENT_SHADER, "IBL/IblMesh.Fragment");
-    m_programMesh.link();
+	m_IblMeshShader.setDevice(m_Device);
+    m_IblMeshShader.initialize();
+    m_IblMeshShader.addShader(GL_VERTEX_SHADER, "IBL/IblMesh.Vertex");
+    m_IblMeshShader.addShader(GL_FRAGMENT_SHADER, "IBL/IblMesh.Fragment");
+    m_IblMeshShader.link();
+
+    m_GbufferShader.setDevice(m_Device);
+    m_GbufferShader.initialize();
+    m_GbufferShader.addShader(GL_VERTEX_SHADER, "Gbuffer.Vertex");
+    m_GbufferShader.addShader(GL_FRAGMENT_SHADER, "Gbuffer.Fragment");
+    m_GbufferShader.link();
 
     m_ScreenTraingle.create();
     m_Cube.create();
@@ -435,6 +442,12 @@ void LightScattering::render() noexcept
 {
     profiler::start(kProfilerTypeRender);
 
+    auto& gbufferdesc = Graphics::g_Gbuffer1Map->getGraphicsTextureDesc();
+    m_Device->setFramebuffer(Graphics::g_ObjectFramebuffer);
+    glViewport(0, 0, gbufferdesc.getWidth(), gbufferdesc.getHeight());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderCubeSample();
+
     skybox::light(m_Camera);
 
     auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
@@ -449,6 +462,37 @@ void LightScattering::render() noexcept
     // renderSkycube();
     // renderSkybox();
     // renderCloud();
+
+    {
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glFrontFace(GL_CW);
+        m_IblMeshShader.bind();
+
+        // Uniform binding
+        m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        // m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_IblMeshShader.setUniform("uExposure", m_Settings.m_exposure);
+        m_IblMeshShader.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
+        m_IblMeshShader.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
+        m_IblMeshShader.setUniform("ubDiffuseIbl", float(m_Settings.m_doDiffuseIbl));
+        m_IblMeshShader.setUniform("ubSpecularIbl", float(m_Settings.m_doSpecularIbl));
+        // m_IblMeshShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
+        // m_IblMeshShader.setUniform("uMtxSrt", glm::mat4(1));
+
+        // Texture binding
+        m_IblMeshShader.bindTexture("uBuffer1", Graphics::g_Gbuffer1Map, 0);
+        m_IblMeshShader.bindTexture("uBuffer2", Graphics::g_Gbuffer2Map, 1);
+        m_IblMeshShader.bindTexture("uBuffer3", Graphics::g_Gbuffer3Map, 2);
+        m_IblMeshShader.bindTexture("uBuffer4", Graphics::g_Gbuffer4Map, 3);
+
+        m_IblMeshShader.bindTexture("uEnvmapIrr", m_LightCube.getIrradiance(), 4);
+        m_IblMeshShader.bindTexture("uEnvmapPrefilter", m_LightCube.getPrefilter(), 5);
+        m_IblMeshShader.bindTexture("uEnvmapBrdfLUT", m_LightCube.getBrdfLUT(), 6);
+
+        m_Cube.draw();
+        glFrontFace(GL_CCW);
+        glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    }
 
     // Tone mapping
     {
@@ -576,25 +620,12 @@ void LightScattering::renderSkycube() noexcept
 
 void LightScattering::renderCubeSample() noexcept
 {
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-    m_programMesh.bind();
+    m_GbufferShader.bind();
 
     // Uniform binding
-    m_programMesh.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
-    m_programMesh.setUniform("uEyePosWS", m_Camera.getPosition());
-    m_programMesh.setUniform("uExposure", m_Settings.m_exposure);
-    m_programMesh.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
-    m_programMesh.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
-    m_programMesh.setUniform("ubDiffuseIbl", float(m_Settings.m_doDiffuseIbl));
-    m_programMesh.setUniform("ubSpecularIbl", float(m_Settings.m_doSpecularIbl));
-    m_programMesh.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
-    m_programMesh.setUniform("uMtxSrt", glm::mat4(1));
-
-    // Texture binding
-    m_programMesh.bindTexture("uEnvmapIrr", m_LightCube.getIrradiance(), 4);
-    m_programMesh.bindTexture("uEnvmapPrefilter", m_LightCube.getPrefilter(), 5);
-    m_programMesh.bindTexture("uEnvmapBrdfLUT", m_LightCube.getBrdfLUT(), 6);
+    m_GbufferShader.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
+    m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
+    m_GbufferShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
 
     // Submit orbs.
     for (float yy = 0, yend = 5.0f; yy < yend; yy += 1.0f)
@@ -610,14 +641,13 @@ void LightScattering::renderCubeSample() noexcept
                 0.0f);
             glm::mat4 mtxS = glm::scale(glm::mat4(1), glm::vec3(scale / xend));
             glm::mat4 mtxST = glm::translate(mtxS, translate);
-            m_programMesh.setUniform("uGlossiness", xx*(1.0f / xend));
-            m_programMesh.setUniform("uReflectivity", (yend - yy)*(1.0f / yend));
-            m_programMesh.setUniform("uMtxSrt", mtxST);
+            m_GbufferShader.setUniform("uGlossiness", xx*(1.0f / xend));
+            m_GbufferShader.setUniform("uReflectivity", (yend - yy)*(1.0f / yend));
+            m_GbufferShader.setUniform("uMtxSrt", mtxST);
             m_SphereMini.draw();
         }
     }
-    m_programMesh.unbind();
-    glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    m_GbufferShader.unbind();
 }
 
 void LightScattering::renderSkybox() noexcept

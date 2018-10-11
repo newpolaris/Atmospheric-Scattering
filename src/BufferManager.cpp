@@ -24,7 +24,7 @@ namespace Graphics
 
     GraphicsFramebufferPtr g_EnvLightFramebuffer;
     GraphicsFramebufferPtr g_ObjectFramebuffer;
-    GraphicsFramebufferPtr g_AlphaObjectFramebuffer;
+    GraphicsFramebufferPtr g_ObjectAlphaFramebuffer;
 }
 
 void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint32_t nativeWidth, uint32_t nativeHeight)
@@ -61,7 +61,7 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     gbuffer1Desc.setMagFilter(GL_NEAREST);
     gbuffer1Desc.setWidth(nativeWidth);
     gbuffer1Desc.setHeight(nativeHeight);
-    gbuffer1Desc.setFormat(gli::FORMAT_RGBA8_SNORM_PACK32);
+    gbuffer1Desc.setFormat(gli::FORMAT_RGBA16_SFLOAT_PACK16);
 
     GraphicsTextureDesc gbuffer2Desc = gbuffer1Desc;
     gbuffer2Desc.setFormat(gli::FORMAT_RGBA16_SFLOAT_PACK16);
@@ -76,6 +76,7 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     gbufferFrame1Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer2Map, GL_COLOR_ATTACHMENT1));
     gbufferFrame1Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer3Map, GL_COLOR_ATTACHMENT2));
     gbufferFrame1Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer4Map, GL_COLOR_ATTACHMENT3));
+    gbufferFrame1Desc.addComponent(GraphicsAttachmentBinding(g_ScreenDepthMap, GL_DEPTH_ATTACHMENT));
     g_ObjectFramebuffer = device->createFramebuffer(gbufferFrame1Desc);
 
     g_Gbuffer5Map = device->createTexture(gbuffer1Desc);
@@ -88,7 +89,8 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     gbufferFrame2Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer6Map, GL_COLOR_ATTACHMENT1));
     gbufferFrame2Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer7Map, GL_COLOR_ATTACHMENT2));
     gbufferFrame2Desc.addComponent(GraphicsAttachmentBinding(g_Gbuffer8Map, GL_COLOR_ATTACHMENT3));
-    g_AlphaObjectFramebuffer = device->createFramebuffer(gbufferFrame2Desc);
+    gbufferFrame2Desc.addComponent(GraphicsAttachmentBinding(g_ScreenDepthMap, GL_DEPTH_ATTACHMENT));
+    g_ObjectAlphaFramebuffer = device->createFramebuffer(gbufferFrame2Desc);
 }
 
 void Graphics::resizeDisplayDependentBuffers(uint32_t nativeWidth, uint32_t nativeHeight)
