@@ -10,7 +10,7 @@ layout(location = 1) in vec3 inNormal;
 
 // OUT
 out vec4 vTexcoords;
-out vec3 vDirection;
+out vec3 vViewdir;
 
 // UNIFORM
 uniform vec3 uCameraPosition;
@@ -18,14 +18,12 @@ uniform mat4 uModelToProj;
 
 void main()
 {
-    float scale = 1000.0;
-    vec4 position = vec4(inPosition.xyz * scale, 1.0);
+    vec4 position = vec4(inPosition.xyz, 1.0);
     gl_Position = vTexcoords = uModelToProj * position;
     vTexcoords.xy = PosToCoord(vTexcoords.xy / vTexcoords.w);
     vTexcoords.xy = vTexcoords.xy * vTexcoords.w;
-    vDirection = uCameraPosition - position.xyz;
+    vViewdir = uCameraPosition - position.xyz;
 }
-
 
 --
 
@@ -36,7 +34,7 @@ void main()
 
 // IN
 in vec4 vTexcoords;
-in vec3 vDirection;
+in vec3 vViewdir;
 
 // OUT
 layout(location = 0) out vec4 fragColor;
@@ -58,11 +56,17 @@ uniform float ubSpecularIbl;
 uniform float uGlossiness;
 uniform float uReflectivity;
 uniform float uExposure;
+uniform vec3 uCameraPosition;
+uniform vec3 uEyeZAxis;
 uniform vec3 uLightDir;
 uniform vec3 uLightCol;
 uniform vec3 uRgbDiff;
 uniform vec3 uLightPositions[4];
 uniform vec3 uLightColors[4];
+uniform mat4 uView;
+uniform mat4 uInverseView;
+uniform mat4 uInverseProj;
+uniform mat4 uInverseViewProj;
 
 const float pi = 3.14159265359;
 
@@ -158,92 +162,109 @@ vec3 getSpecularDomninantDir(vec3 N, vec3 R, float roughness)
     return mix(N, R, lerpFactor);
 }
 
+vec3 ReconstructWorldPositionFromDepth(vec2 coord, float depth)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, depth, 1.0);
+    vec4 position = uInverseViewProj * projectedPosition;
+    return position.xyz / position.w;
+}
+
+vec3 ReconstructWorldPositionFromDepth2(vec2 coord, float linearDepth, float far)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
+    vec4 ray = uInverseProj * projectedPosition; 
+    vec4 posWS = uInverseView * vec4(ray.xyz * linearDepth * far, 1.0);
+    return posWS.xyz;
+}
+
+vec3 ReconstructWorldPositionFromDepth3(vec3 viewRayWS, float viewDistWS)
+{
+    return uCameraPosition + viewRayWS * viewDistWS;
+}
+
+// https://www.shellblade.net/unprojection.html
+vec3 ReconstructViewPositionFromDepth(vec2 coord, float linearDepth, float far)
+{
+    // projectedPosition: (x, y, -1, w)
+    vec4 projectedPosition = vec4(coord*2.0 - 1.0, 1.0, 1.0);
+    vec4 ray = uInverseProj * projectedPosition; // = (x, y, -1, w)
+    vec3 posVS = ray.xyz * linearDepth * far;
+    return posVS;
+}
+
+vec3 ReconstructViewPositionFromDepth2(vec3 viewRay, float linearDepth, float far)
+{
+    vec3 ray = viewRay / -viewRay.z;
+    vec3 posVS = ray.xyz * linearDepth * far;
+    return posVS;
+}
+
+vec3 ReconstructViewPositionFromDepth3(vec2 coord, float viewDist)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
+    vec4 positionVS = uInverseProj * projectedPosition;
+    vec3 ray = normalize(positionVS.xyz);
+    vec3 posVS = ray * viewDist;
+    return posVS;
+}
+
 void main()
 {
     vec2 coords = vTexcoords.xy / vTexcoords.w;
+
     vec4 buffer1 = texture(uBuffer1, coords);
     vec4 buffer2 = texture(uBuffer2, coords);
     vec4 buffer3 = texture(uBuffer3, coords);
     vec4 buffer4 = texture(uBuffer4, coords);
 
+    vec3 V = normalize(vViewdir);
+
     // Material params.
-    vec3  inAlbedo = buffer1.xyz;
+    vec3 inAlbedo = buffer1.xyz;
     float inMetallic = buffer1.w;
-    vec3  vViewDirWS = buffer2.xyz;
+    float linearDepth = buffer2.x;
+    float viewDist = buffer2.y;
     float inRoughness = buffer2.w;
-    vec3  vWorldPosWS = buffer3.xyz;
-    vec3  vNormalWS = buffer4.xyz;
-
-    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    vec3 f0 = mix(vec3(0.04), inAlbedo, inMetallic);
-
-    // multiply kD by the inverse metalness such that only non-metals 
-    // have diffuse lighting, or a linear blend if partly metal (pure metals
-    // have no diffuse light).
-    vec3 albedo = inAlbedo * (1.0 - inMetallic);
-
-    // Input.
-    vec3 nn = normalize(vNormalWS);
-    vec3 vv = normalize(vViewDirWS);
-
-    // reflectance equation
-    vec3 direct = vec3(0.0);
-    for (int i = 0; i < 4; ++i)
-    {
-        // calculate per-light radiance
-        vec3 ld = normalize(uLightPositions[i] - vWorldPosWS);
-        vec3 hh = normalize(vv + ld);
-        float distance = length(uLightPositions[i] - vWorldPosWS);
-        float attenuation = 1.0 / (distance*distance);
-        vec3 radiance = uLightColors[i] * attenuation;
-
-        float ndotv = clamp(dot(nn, vv), 0.0, 1.0);
-        float ndotl = clamp(dot(nn, ld), 0.0, 1.0);
-        float ndoth = clamp(dot(nn, hh), 0.0, 1.0);
-        float hdotv = clamp(dot(hh, vv), 0.0, 1.0);
-
-        float d = distributionGGX(ndoth, inRoughness);
-        float g = geometrySmith(ndotv, ndotl, inRoughness);
-        vec3 f = calcFresnel(f0, hdotv, 1.0);
-
-        vec3 nominator = d * g * f;
-        // prevent divide by zero
-        float denominator = max(0.001, 4 * ndotv * ndotl);
-        vec3 specular = nominator / denominator * ubSpecular;
-
-        // kS is equal to Fresnel
-        vec3 kS = f;
-        // for energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-        vec3 kD = vec3(1.0) - kS;
-
-        // scale light by NdotL
-        vec3 diffuse = kD * albedo / pi * ubDiffuse;
-        direct += (diffuse + specular)*radiance*ndotl;
-    }
-
-    float ndotv = clamp(dot(nn, vv), 0.0, 1.0);
-    vec3 envFresnel = calcFresnel(f0, ndotv, 1);
-    vec3 r = 2.0 * nn * ndotv - vv; // =reflect(-toCamera, normal) 
-    r = getSpecularDomninantDir(nn, r, inRoughness);
-    vec3 kS = envFresnel;
-    vec3 kD = 1.0 - envFresnel;
-    vec3 irradiance = texture(uEnvmapIrr, nn).xyz;
-
-    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-    const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, inRoughness * MAX_REFLECTION_LOD).rgb;
-    vec2 brdf = texture(uEnvmapBrdfLUT, vec2(ndotv, inRoughness)).rg;
-    vec3 radiance = prefilteredColor * (kS * brdf.x + brdf.y);
-    vec3 envDiffuse = albedo*kD  * irradiance * ubDiffuseIbl;
-    vec3 envSpecular = radiance   * ubSpecularIbl;
-    vec3 indirect = envDiffuse + envSpecular;
-
-    // Color.
-    vec3 color = direct + indirect;
-    color = color * exp2(uExposure);
-    fragColor = vec4(color, 1.0);
+    vec3 vWorldPosWS = buffer3.xyz;
+    vec3 vNormalWS = buffer4.xyz;
+    float depth = buffer3.w;
+ 
+#define DEPTH_VIEW 4
+#if DEPTH_VIEW == 1
+    vec3 posWS = ReconstructWorldPositionFromDepth(coords, depth);
+    fragColor = vec4(vec3(length(posWS - vWorldPosWS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 2
+    float far = 10000.0;
+    vec3 posWS = ReconstructWorldPositionFromDepth2(coords, linearDepth, far);
+    fragColor = vec4(vec3(length(posWS.xyz - vWorldPosWS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 3
+    float far = 10000.0;
+    float dist = length(vWorldPosWS - uCameraPosition);
+    vec3 dirWS = normalize(vWorldPosWS - uCameraPosition);
+    vec3 posWS = ReconstructWorldPositionFromDepth3(-V, dist);
+    fragColor = vec4(vec3(length(posWS.xyz - vWorldPosWS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 5
+    float far = 10000.0;
+    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
+    vec3 posVS = ReconstructViewPositionFromDepth(coords, linearDepth, far);
+    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 6
+    float far = 10000.0;
+    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
+    vec3 viewVS = mat3(uView)*V;
+    vec3 posVS = ReconstructViewPositionFromDepth2(viewVS, linearDepth, far);
+    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 7
+    float far = 10000.0;
+    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
+    vec3 posVS = ReconstructViewPositionFromDepth3(coords, viewDist);
+    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
+    return;
+#endif
 }
 
