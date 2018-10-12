@@ -468,8 +468,17 @@ void LightScattering::render() noexcept
         glFrontFace(GL_CW);
         m_IblMeshShader.bind();
 
+        auto inverseViewProj = glm::inverse(m_Camera.getViewProjMatrix());
+        auto inverseView = glm::inverse(m_Camera.getViewMatrix());
+        auto inverseProj = glm::inverse(m_Camera.getProjectionMatrix());
+        auto test = inverseProj * glm::vec4(0, 0, 1, 1);
+
         // Uniform binding
         m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
+        m_IblMeshShader.setUniform("uView", m_Camera.getViewMatrix());
+        m_IblMeshShader.setUniform("uInverseView", inverseView);
+        m_IblMeshShader.setUniform("uInverseProj", inverseProj);
+        m_IblMeshShader.setUniform("uInverseViewProj", inverseViewProj);
         // m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
         m_IblMeshShader.setUniform("uExposure", m_Settings.m_exposure);
         m_IblMeshShader.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
@@ -624,6 +633,7 @@ void LightScattering::renderCubeSample() noexcept
 
     // Uniform binding
     m_GbufferShader.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
+    m_GbufferShader.setUniform("uProjection", m_Camera.getProjectionMatrix());
     m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
     m_GbufferShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
 
@@ -685,7 +695,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 10000.f);
+	m_Camera.setProjectionParams(45.0f, aspectRatio, 1.0f, 10000.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 

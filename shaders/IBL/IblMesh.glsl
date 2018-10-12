@@ -10,7 +10,7 @@ layout(location = 1) in vec3 inNormal;
 
 // OUT
 out vec4 vTexcoords;
-out vec3 vDirection;
+out vec3 vViewdir;
 
 // UNIFORM
 uniform vec3 uCameraPosition;
@@ -23,9 +23,8 @@ void main()
     gl_Position = vTexcoords = uModelToProj * position;
     vTexcoords.xy = PosToCoord(vTexcoords.xy / vTexcoords.w);
     vTexcoords.xy = vTexcoords.xy * vTexcoords.w;
-    vDirection = uCameraPosition - position.xyz;
+    vViewdir = uCameraPosition - position.xyz;
 }
-
 
 --
 
@@ -36,7 +35,7 @@ void main()
 
 // IN
 in vec4 vTexcoords;
-in vec3 vDirection;
+in vec3 vViewdir;
 
 // OUT
 layout(location = 0) out vec4 fragColor;
@@ -63,6 +62,10 @@ uniform vec3 uLightCol;
 uniform vec3 uRgbDiff;
 uniform vec3 uLightPositions[4];
 uniform vec3 uLightColors[4];
+uniform mat4 uView;
+uniform mat4 uInverseView;
+uniform mat4 uInverseProj;
+uniform mat4 uInverseViewProj;
 
 const float pi = 3.14159265359;
 
@@ -158,21 +161,72 @@ vec3 getSpecularDomninantDir(vec3 N, vec3 R, float roughness)
     return mix(N, R, lerpFactor);
 }
 
+vec3 ReconstructWorldPositionFromDepth(vec2 coord, float depth)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, depth, 1.0);
+    vec4 position = uInverseViewProj * projectedPosition;
+    return position.xyz / position.w;
+}
+
 void main()
 {
     vec2 coords = vTexcoords.xy / vTexcoords.w;
+
     vec4 buffer1 = texture(uBuffer1, coords);
     vec4 buffer2 = texture(uBuffer2, coords);
     vec4 buffer3 = texture(uBuffer3, coords);
     vec4 buffer4 = texture(uBuffer4, coords);
 
+    vec3 V = normalize(vViewdir);
+
     // Material params.
-    vec3  inAlbedo = buffer1.xyz;
+    vec3 inAlbedo = buffer1.xyz;
     float inMetallic = buffer1.w;
-    vec3  vViewDirWS = buffer2.xyz;
+    float linearDepth1 = buffer2.x;
     float inRoughness = buffer2.w;
-    vec3  vWorldPosWS = buffer3.xyz;
-    vec3  vNormalWS = buffer4.xyz;
+    vec3 vWorldPosWS = buffer3.xyz;
+    vec3 vNormalWS = buffer4.xyz;
+    float depth = buffer3.w;
+
+    vec3 vViewDirWS = V;
+
+#define DEPTH_VIEW 3
+#if DEPTH_VIEW == 1
+    vec3 posWS = ReconstructWorldPositionFromDepth(coords, depth);
+    fragColor = vec4(vec3(length(posWS - vWorldPosWS)), 1.0);
+    return;
+#elif DEPTH_VIEW == 2
+    float scaler = 10.0; // too small to view
+    fragColor = vec4(vec3(linearDepth1 * scaler), 1.0);
+    return;
+#elif DEPTH_VIEW == 3
+    vec2 ndc = coords*2.0 - 1.0;
+    vec4 ray = uInverseProj * vec4(ndc, 1.0, 1.0);
+    float far = 10000.0;
+    vec3 posVS = ray.xyz * -linearDepth1 * far;
+    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
+    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
+    // fragColor = vec4(vec3(length(refVS.z - linearDepth1)), 1.0);
+    // fragColor = vec4(vec3(length(refVS.z - posVS.z)), 1.0);
+    // fragColor = vec4(vec3(length(ray.z + 1)), 1.0);
+    return;
+#elif DEPTH_VIEW == 5
+    vec2 ndc = coords*2.0 - 1.0;
+    vec4 ray = uInverseProj * vec4(ndc, 1.0, 1.0);
+    float far = 10000.0;
+    vec3 posVS = ray.xyz * far * linearDepth1;
+    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
+    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
+    return;
+#else
+    vec2 ndc = coords*2.0 - 1.0;
+    vec4 ray = uInverseProj * vec4(ndc, 1.0, 1.0);
+    float far = 10000.0;
+    vec3 posVS = ray.xyz * far * linearDepth1;
+    vec3 posWS = vec3(uInverseView * vec4(posVS, 1.0));
+    fragColor = vec4(vec3(length(posWS.z - vWorldPosWS.z)), 1.0);
+    return;
+#endif
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
