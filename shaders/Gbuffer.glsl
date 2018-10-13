@@ -74,6 +74,7 @@ uniform vec3 uLightCol;
 uniform vec3 uRgbDiff;
 uniform vec3 uLightPositions[4];
 uniform vec3 uLightColors[4];
+uniform vec3 uEyePosWS;
 uniform mat4 uProjection;
 
 const float A = uProjection[2].z;
@@ -100,10 +101,10 @@ void main()
     float inRoughness = uGlossiness;
     float ndcDepth = gl_FragCoord.z * 2 - 1; // = vDepthZW.x / vDepthZW.y = [-1, 1]
     float linearDepth = LinearizeDepth(gl_FragCoord.z);
-    float viewDist = length(vPositionVS);
+    float dist = length(vWorldPosWS - uEyePosWS);
     buffer1 = vec4(inAlbedo, inMetallic);
-    buffer2 = vec4(linearDepth, viewDist, 0.0, inRoughness);
-    buffer3 = vec4(vWorldPosWS, ndcDepth);
+    buffer2 = vec4(linearDepth, dist, 0.0, inRoughness);
+    buffer3 = vec4(0.0, 0.0, 0.0, ndcDepth);
     buffer4 = vec4(vNormalWS, 0.0);
 }
 

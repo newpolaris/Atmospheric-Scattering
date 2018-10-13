@@ -57,7 +57,6 @@ uniform float uGlossiness;
 uniform float uReflectivity;
 uniform float uExposure;
 uniform vec3 uCameraPosition;
-uniform vec3 uEyeZAxis;
 uniform vec3 uLightDir;
 uniform vec3 uLightCol;
 uniform vec3 uRgbDiff;
@@ -169,43 +168,9 @@ vec3 ReconstructWorldPositionFromDepth(vec2 coord, float depth)
     return position.xyz / position.w;
 }
 
-vec3 ReconstructWorldPositionFromDepth2(vec2 coord, float linearDepth, float far)
-{
-    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
-    vec4 ray = uInverseProj * projectedPosition; 
-    vec4 posWS = uInverseView * vec4(ray.xyz * linearDepth * far, 1.0);
-    return posWS.xyz;
-}
-
 vec3 ReconstructWorldPositionFromDepth3(vec3 viewRayWS, float viewDistWS)
 {
     return uCameraPosition + viewRayWS * viewDistWS;
-}
-
-// https://www.shellblade.net/unprojection.html
-vec3 ReconstructViewPositionFromDepth(vec2 coord, float linearDepth, float far)
-{
-    // projectedPosition: (x, y, -1, w)
-    vec4 projectedPosition = vec4(coord*2.0 - 1.0, 1.0, 1.0);
-    vec4 ray = uInverseProj * projectedPosition; // = (x, y, -1, w)
-    vec3 posVS = ray.xyz * linearDepth * far;
-    return posVS;
-}
-
-vec3 ReconstructViewPositionFromDepth2(vec3 viewRay, float linearDepth, float far)
-{
-    vec3 ray = viewRay / -viewRay.z;
-    vec3 posVS = ray.xyz * linearDepth * far;
-    return posVS;
-}
-
-vec3 ReconstructViewPositionFromDepth3(vec2 coord, float viewDist)
-{
-    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
-    vec4 positionVS = uInverseProj * projectedPosition;
-    vec3 ray = normalize(positionVS.xyz);
-    vec3 posVS = ray * viewDist;
-    return posVS;
 }
 
 void main()
@@ -223,49 +188,13 @@ void main()
     vec3 inAlbedo = buffer1.xyz;
     float inMetallic = buffer1.w;
     float linearDepth = buffer2.x;
-    float viewDist = buffer2.y;
+    float dist = buffer2.y;
     float inRoughness = buffer2.w;
-    vec3 vWorldPosWS = buffer3.xyz;
     vec3 vNormalWS = buffer4.xyz;
     float depth = buffer3.w;
- 
-#define DEPTH_VIEW 4
-#if DEPTH_VIEW == 1
-    vec3 posWS = ReconstructWorldPositionFromDepth(coords, depth);
-    fragColor = vec4(vec3(length(posWS - vWorldPosWS)), 1.0);
-    return;
-#elif DEPTH_VIEW == 2
-    float far = 10000.0;
-    vec3 posWS = ReconstructWorldPositionFromDepth2(coords, linearDepth, far);
-    fragColor = vec4(vec3(length(posWS.xyz - vWorldPosWS)), 1.0);
-    return;
-#elif DEPTH_VIEW == 3
-    float far = 10000.0;
-    float dist = length(vWorldPosWS - uCameraPosition);
-    vec3 dirWS = normalize(vWorldPosWS - uCameraPosition);
-    vec3 posWS = ReconstructWorldPositionFromDepth3(-V, dist);
-    fragColor = vec4(vec3(length(posWS.xyz - vWorldPosWS)), 1.0);
-    return;
-#elif DEPTH_VIEW == 5
-    float far = 10000.0;
-    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
-    vec3 posVS = ReconstructViewPositionFromDepth(coords, linearDepth, far);
-    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
-    return;
-#elif DEPTH_VIEW == 6
-    float far = 10000.0;
-    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
-    vec3 viewVS = mat3(uView)*V;
-    vec3 posVS = ReconstructViewPositionFromDepth2(viewVS, linearDepth, far);
-    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
-    return;
-#elif DEPTH_VIEW == 7
-    float far = 10000.0;
-    vec3 refVS = vec3(uView*vec4(vWorldPosWS, 1.0));
-    vec3 posVS = ReconstructViewPositionFromDepth3(coords, viewDist);
-    fragColor = vec4(vec3(length(posVS - refVS)), 1.0);
-    return;
-#endif
+    
+    vec3 vViewDirWS = V;
+    vec3 worldPosWS = ReconstructWorldPositionFromDepth3(-V, dist);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
@@ -285,9 +214,9 @@ void main()
     for (int i = 0; i < 4; ++i)
     {
         // calculate per-light radiance
-        vec3 ld = normalize(uLightPositions[i] - vWorldPosWS);
+        vec3 ld = normalize(uLightPositions[i] - worldPosWS);
         vec3 hh = normalize(vv + ld);
-        float distance = length(uLightPositions[i] - vWorldPosWS);
+        float distance = length(uLightPositions[i] - worldPosWS);
         float attenuation = 1.0 / (distance*distance);
         vec3 radiance = uLightColors[i] * attenuation;
 

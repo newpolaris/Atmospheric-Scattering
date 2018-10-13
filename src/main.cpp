@@ -464,7 +464,7 @@ void LightScattering::render() noexcept
     // renderCloud();
 
     {
-        // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glFrontFace(GL_CW);
         m_IblMeshShader.bind();
 
@@ -473,10 +473,8 @@ void LightScattering::render() noexcept
         auto inverseProj = glm::inverse(m_Camera.getProjectionMatrix());
         auto test = inverseProj * glm::vec4(0, 0, 1, 1);
         auto view = m_Camera.getViewMatrix();
-        auto eyeZAxis = glm::vec3(glm::transpose(view)[2]);
 
         // Uniform binding
-        m_IblMeshShader.setUniform("uEyeZAxis", eyeZAxis);
         m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
         m_IblMeshShader.setUniform("uView", m_Camera.getViewMatrix());
         m_IblMeshShader.setUniform("uInverseView", inverseView);
