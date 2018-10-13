@@ -464,7 +464,7 @@ void LightScattering::render() noexcept
     // renderCloud();
 
     {
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glFrontFace(GL_CW);
         m_IblMeshShader.bind();
 
@@ -472,14 +472,17 @@ void LightScattering::render() noexcept
         auto inverseView = glm::inverse(m_Camera.getViewMatrix());
         auto inverseProj = glm::inverse(m_Camera.getProjectionMatrix());
         auto test = inverseProj * glm::vec4(0, 0, 1, 1);
+        auto view = m_Camera.getViewMatrix();
+        auto eyeZAxis = glm::vec3(glm::transpose(view)[2]);
 
         // Uniform binding
+        m_IblMeshShader.setUniform("uEyeZAxis", eyeZAxis);
         m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
         m_IblMeshShader.setUniform("uView", m_Camera.getViewMatrix());
         m_IblMeshShader.setUniform("uInverseView", inverseView);
         m_IblMeshShader.setUniform("uInverseProj", inverseProj);
         m_IblMeshShader.setUniform("uInverseViewProj", inverseViewProj);
-        // m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
+        m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
         m_IblMeshShader.setUniform("uExposure", m_Settings.m_exposure);
         m_IblMeshShader.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
         m_IblMeshShader.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
@@ -498,7 +501,7 @@ void LightScattering::render() noexcept
         m_IblMeshShader.bindTexture("uEnvmapPrefilter", m_LightCube.getPrefilter(), 5);
         m_IblMeshShader.bindTexture("uEnvmapBrdfLUT", m_LightCube.getBrdfLUT(), 6);
 
-        m_Cube.draw();
+        m_Sphere.draw();
         glFrontFace(GL_CCW);
         glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
@@ -632,6 +635,7 @@ void LightScattering::renderCubeSample() noexcept
     m_GbufferShader.bind();
 
     // Uniform binding
+    m_GbufferShader.setUniform("uModelViewMatrix", m_Camera.getViewMatrix());
     m_GbufferShader.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
     m_GbufferShader.setUniform("uProjection", m_Camera.getProjectionMatrix());
     m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
