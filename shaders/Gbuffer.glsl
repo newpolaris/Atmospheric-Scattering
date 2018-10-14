@@ -56,10 +56,15 @@ in vec2 vTexcoords;
 in vec2 vDepthZW;
 
 // OUT
-layout(location = 0) out vec4 buffer1;
-layout(location = 1) out vec4 buffer2;
-layout(location = 2) out vec4 buffer3;
-layout(location = 3) out vec4 buffer4;
+layout(location = 0) out vec4 Gbuffer1RT;
+layout(location = 1) out vec4 Gbuffer2RT;
+layout(location = 2) out vec4 Gbuffer3RT;
+layout(location = 3) out vec4 Gbuffer4RT;
+
+#include "Common.glsli"
+#include "Math.glsli"
+#include "Gbuffer.glsli"
+#include "LinearDepth.glsli"
 
 uniform float ubMetalOrSpec;
 uniform float ubDiffuse;
@@ -82,29 +87,58 @@ const float B = uProjection[3].z;
 const float near = -B / (1.0 - A);
 const float far = B / (1.0 + A);
 
-float ViewDepth(float fragZ)
-{
-    float z = fragZ * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near - z * (far - near));
-}
 
-float LinearizeDepth(float fragZ)
+struct MaterialParam
 {
-    return ViewDepth(fragZ) / far;
+    vec3 normal;
+    vec3 albedo;
+    vec3 specular;
+	vec3 emissive;
+	float smoothness;
+	float metalness;
+	float emissiveIntensity;
+	float alpha;
+	float visibility;
+	float customDataA;
+	vec3 customDataB;
+	int lightModel;
+
+    float distance;
+    float roughness;
+    float linearDepth;
+};
+
+struct GbufferParam
+{
+    vec4 buffer1;
+    vec4 buffer2;
+    vec4 buffer3;
+    vec4 buffer4;
+};
+
+// linearDepth: -positionVS.z
+GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1 = vec4(material.albedo, material.metalness);
+    gbuffer.buffer2 = vec4(material.linearDepth, material.distance, 0.0, material.roughness);
+    gbuffer.buffer4 = vec4(material.normal, 0.0);
+    return gbuffer;
 }
 
 void main()
 {
-    // Material params. uMetallicMap
-    vec3  inAlbedo = uRgbDiff;
-    float inMetallic = uReflectivity;
-    float inRoughness = uGlossiness;
-    float ndcDepth = gl_FragCoord.z * 2 - 1; // = vDepthZW.x / vDepthZW.y = [-1, 1]
-    float linearDepth = LinearizeDepth(gl_FragCoord.z);
-    float dist = length(vWorldPosWS - uEyePosWS);
-    buffer1 = vec4(inAlbedo, inMetallic);
-    buffer2 = vec4(linearDepth, dist, 0.0, inRoughness);
-    buffer3 = vec4(0.0, 0.0, 0.0, ndcDepth);
-    buffer4 = vec4(vNormalWS, 0.0);
+    MaterialParam material;
+    material.albedo = uRgbDiff;
+    material.normal = vNormalWS;
+    material.smoothness = 0.0;
+    material.metalness = uReflectivity;
+    material.roughness = uGlossiness;
+    material.linearDepth = LinearizeDepth(gl_FragCoord.z, near, far);
+    material.distance = length(vWorldPosWS - uEyePosWS);
+    GbufferParam gbuffer = EncodeGbuffer(material, -vPositionVS.z);
+    Gbuffer1RT = gbuffer.buffer1;
+    Gbuffer2RT = gbuffer.buffer2;
+    Gbuffer3RT = gbuffer.buffer3;
+    Gbuffer4RT = gbuffer.buffer4;
 }
-

@@ -49,4 +49,5 @@ vec4 lerp(vec4 a, vec4 b, float x) { return mix(a, b, vec4(x)); }
 vec4 lerp(vec4 a, vec4 b, vec4 x) { return mix(a, b, x); }
 
 float frac(float x) { return fract(x); }
+vec2 frac(vec2 x) { return fract(x); }
 vec3 frac(vec3 x) { return fract(x); }

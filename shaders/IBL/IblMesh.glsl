@@ -173,41 +173,53 @@ vec3 ReconstructWorldPositionFromDepth3(vec3 viewRayWS, float viewDistWS)
     return uCameraPosition + viewRayWS * viewDistWS;
 }
 
-void main()
+struct MaterialParam
 {
-    vec2 coords = vTexcoords.xy / vTexcoords.w;
+    vec3 normal;
+    vec3 albedo;
+    vec3 specular;
+	vec3 emissive;
+	float smoothness;
+	float metalness;
+	float emissiveIntensity;
+	float alpha;
+	float visibility;
+	float customDataA;
+	vec3 customDataB;
+	int lightModel;
 
-    vec4 buffer1 = texture(uBuffer1, coords);
-    vec4 buffer2 = texture(uBuffer2, coords);
-    vec4 buffer3 = texture(uBuffer3, coords);
-    vec4 buffer4 = texture(uBuffer4, coords);
+    float distance;
+    float roughness;
+    float linearDepth;
+};
 
-    vec3 V = normalize(vViewdir);
+void DecodeGbuffer(vec4 buffer1, vec4 buffer2, vec4 buffer3, vec4 buffer4, out MaterialParam material)
+{
+    material.albedo = buffer1.xyz;
+    material.metalness = buffer1.w;
+    material.linearDepth = buffer2.x;
+    material.distance = buffer2.y;
+    material.roughness = buffer2.w;
+    material.normal = buffer4.xyz;
+}
 
-    // Material params.
-    vec3 inAlbedo = buffer1.xyz;
-    float inMetallic = buffer1.w;
-    float linearDepth = buffer2.x;
-    float dist = buffer2.y;
-    float inRoughness = buffer2.w;
-    vec3 vNormalWS = buffer4.xyz;
-    float depth = buffer3.w;
-    
-    vec3 vViewDirWS = V;
-    vec3 worldPosWS = ReconstructWorldPositionFromDepth3(-V, dist);
+void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 color)
+{
+    float roughness = material.roughness;
+    vec3 worldPosWS = ReconstructWorldPositionFromDepth3(-worldView, material.distance);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    vec3 f0 = mix(vec3(0.04), inAlbedo, inMetallic);
+    vec3 f0 = mix(vec3(0.04), material.albedo, material.metalness);
 
     // multiply kD by the inverse metalness such that only non-metals 
     // have diffuse lighting, or a linear blend if partly metal (pure metals
     // have no diffuse light).
-    vec3 albedo = inAlbedo * (1.0 - inMetallic);
+    vec3 albedo = material.albedo * (1.0 - material.metalness);
 
     // Input.
-    vec3 nn = normalize(vNormalWS);
-    vec3 vv = normalize(vViewDirWS);
+    vec3 nn = normalize(material.normal);
+    vec3 vv = worldView;
 
     // reflectance equation
     vec3 direct = vec3(0.0);
@@ -225,8 +237,8 @@ void main()
         float ndoth = clamp(dot(nn, hh), 0.0, 1.0);
         float hdotv = clamp(dot(hh, vv), 0.0, 1.0);
 
-        float d = distributionGGX(ndoth, inRoughness);
-        float g = geometrySmith(ndotv, ndotl, inRoughness);
+        float d = distributionGGX(ndoth, roughness);
+        float g = geometrySmith(ndotv, ndotl, roughness);
         vec3 f = calcFresnel(f0, hdotv, 1.0);
 
         vec3 nominator = d * g * f;
@@ -249,23 +261,37 @@ void main()
     float ndotv = clamp(dot(nn, vv), 0.0, 1.0);
     vec3 envFresnel = calcFresnel(f0, ndotv, 1);
     vec3 r = 2.0 * nn * ndotv - vv; // =reflect(-toCamera, normal) 
-    r = getSpecularDomninantDir(nn, r, inRoughness);
+    r = getSpecularDomninantDir(nn, r, roughness);
     vec3 kS = envFresnel;
     vec3 kD = 1.0 - envFresnel;
     vec3 irradiance = texture(uEnvmapIrr, nn).xyz;
 
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, inRoughness * MAX_REFLECTION_LOD).rgb;
-    vec2 brdf = texture(uEnvmapBrdfLUT, vec2(ndotv, inRoughness)).rg;
+    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf = texture(uEnvmapBrdfLUT, vec2(ndotv, roughness)).rg;
     vec3 radiance = prefilteredColor * (kS * brdf.x + brdf.y);
-    vec3 envDiffuse = albedo*kD  * irradiance * ubDiffuseIbl;
-    vec3 envSpecular = radiance   * ubSpecularIbl;
+    vec3 envDiffuse = albedo*kD * irradiance * ubDiffuseIbl;
+    vec3 envSpecular = radiance * ubSpecularIbl;
     vec3 indirect = envDiffuse + envSpecular;
 
-    // Color.
-    vec3 color = direct + indirect;
-    color = color * exp2(uExposure);
-    fragColor = vec4(color, 1.0);
+    color = direct + indirect;
+}
+
+void main()
+{
+    vec3 V = normalize(vViewdir);
+    vec2 coords = vTexcoords.xy / vTexcoords.w;
+    vec4 MRT1 = texture(uBuffer1, coords);
+    vec4 MRT2 = texture(uBuffer2, coords);
+    vec4 MRT3 = texture(uBuffer3, coords);
+    vec4 MRT4 = texture(uBuffer4, coords);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+
+    vec3 color;
+    ShadingMaterial(material, V, color);
+    fragColor = vec4(color * exp2(uExposure), 1.0);
 }
 

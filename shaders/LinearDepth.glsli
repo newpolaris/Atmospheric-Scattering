@@ -1,0 +1,68 @@
+// fragment space to ndc space [0, 1] > [-1, 1]
+float ConvertToDepth(float fragZ)
+{
+    return fragZ * 2.0 - 1;
+}
+
+float ViewDepth(float fragZ, float near, float far)
+{
+    float z = ConvertToDepth(fragZ);
+    // reverse matrix projection
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+float LinearizeDepth(float fragZ, float near, float far)
+{
+    return ViewDepth(fragZ, near, far) / far;
+}
+
+float LinearizeDepth(float viewZ, float far)
+{
+    return -viewZ / far;
+}
+
+vec3 ReconstructWorldPositionFromDepth(mat4 matInverseViewProj, vec2 coord, float depth)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, depth, 1.0);
+    vec4 position = matInverseViewProj * projectedPosition;
+    return position.xyz / position.w;
+}
+
+vec3 ReconstructWorldPositionFromDepth2(mat4 matInverseView, mat4 matInverseProj, vec2 coord, float linearDepth, float far)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
+    vec4 ray = matInverseProj * projectedPosition; 
+    vec4 posWS = matInverseView * vec4(ray.xyz * linearDepth * far, 1.0);
+    return posWS.xyz;
+}
+
+vec3 ReconstructWorldPositionFromDepth3(vec3 cameraPositionWS, vec3 viewRayWS, float viewDistWS)
+{
+    return cameraPositionWS + viewRayWS * viewDistWS;
+}
+
+// https://www.shellblade.net/unprojection.html
+vec3 ReconstructViewPositionFromDepth(mat4 matInverseProj, vec2 coord, float linearDepth, float far)
+{
+    // projectedPosition: (x, y, -1, w)
+    vec4 projectedPosition = vec4(coord*2.0 - 1.0, 1.0, 1.0);
+    vec4 ray = matInverseProj * projectedPosition; // = (x, y, -1, w)
+    vec3 posVS = ray.xyz * linearDepth * far;
+    return posVS;
+}
+
+vec3 ReconstructViewPositionFromDepth2(vec3 viewRay, float linearDepth, float far)
+{
+    vec3 ray = viewRay / -viewRay.z;
+    vec3 posVS = ray.xyz * linearDepth * far;
+    return posVS;
+}
+
+vec3 ReconstructViewPositionFromDepth3(mat4 matInverseProj, vec2 coord, float viewDist)
+{
+    vec4 projectedPosition = vec4(coord * 2 - 1.0, 1.0, 1.0);
+    vec4 positionVS = matInverseProj * projectedPosition;
+    vec3 ray = normalize(positionVS.xyz);
+    vec3 posVS = ray * viewDist;
+    return posVS;
+}
