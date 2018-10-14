@@ -476,10 +476,6 @@ void LightScattering::render() noexcept
 
         // Uniform binding
         m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_IblMeshShader.setUniform("uView", m_Camera.getViewMatrix());
-        m_IblMeshShader.setUniform("uInverseView", inverseView);
-        m_IblMeshShader.setUniform("uInverseProj", inverseProj);
-        m_IblMeshShader.setUniform("uInverseViewProj", inverseViewProj);
         m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
         m_IblMeshShader.setUniform("uExposure", m_Settings.m_exposure);
         m_IblMeshShader.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
@@ -633,7 +629,6 @@ void LightScattering::renderCubeSample() noexcept
     m_GbufferShader.bind();
 
     // Uniform binding
-    m_GbufferShader.setUniform("uModelViewMatrix", m_Camera.getViewMatrix());
     m_GbufferShader.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
     m_GbufferShader.setUniform("uProjection", m_Camera.getProjectionMatrix());
     m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
