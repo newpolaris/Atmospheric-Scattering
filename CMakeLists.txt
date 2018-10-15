@@ -65,8 +65,14 @@ file( GLOB GLSW external/glsw/*.c external/glsw/*.h )
 add_library( glsw ${GLSW} )
 
 file( GLOB_RECURSE SRC src/* )
+file( GLOB_RECURSE SHADER_FILE shaders/*.glsl shaders/*.glsli )
 
-add_executable(${APP_TARGET} ${SRC})
+set(RESOURCE_FILES
+	${SHADER_FILE})
+
+source_group("Resource Files" FILES ${RESOURCE_FILES})
+
+add_executable(${APP_TARGET} ${SRC} ${RESOURCE_FILES})
 target_link_libraries(${APP_TARGET} glsw ${ALL_LIBS})
 
 # Xcode and Visual working directories

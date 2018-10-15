@@ -32,8 +32,10 @@ void main()
 
 --Fragment
 
-#include "EncodeNormal.glsli"
-#include "Gbuffer.glsli"
+#include "../Common.glsli"
+#include "../Math.glsli"
+#include "../EncodeNormal.glsli"
+#include "../Gbuffer.glsli"
 
 // IN
 in vec4 vTexcoords;

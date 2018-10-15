@@ -1,8 +1,8 @@
 #version 450 core
 
 #define VERTEX_SHADER 1
-#include "Common.glsli"
-#include "Math.glsli"
+#include "../Common.glsli"
+#include "../Math.glsli"
 
 // IN
 layout(location = 0) in vec4 inPosition;

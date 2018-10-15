@@ -1,10 +1,10 @@
 #version 450 core
 
-#include "Common.glsli"
-#include "Math.glsli"
-#include "Gbuffer.glsli"
-#include "EncodeNormal.glsli"
-#include "IBL/Ibl.glsli"
+#include "../Common.glsli"
+#include "../Math.glsli"
+#include "../Gbuffer.glsli"
+#include "../EncodeNormal.glsli"
+#include "../IBL/Ibl.glsli"
 
 #define IBL_MIPMAP_LEVEL 7
 
@@ -98,7 +98,6 @@ void main()
 
     vec3 diffuse, specular;
     ShadingMaterial(material, V, diffuse, specular);
-    specular = vec3(0, 1, 0);
-    oColor0 = vec4(diffuse, 1.0); // EncodeYcbcr(screenPosition, diffuse, specular);
-    oColor1 = EncodeYcbcr(screenPosition, diffuse, specular);
+    oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse);
+    oColor1 = EncodeYcbcr(screenPosition, diffuse, diffuse);
 }

@@ -84,6 +84,9 @@ void skybox::light(const TCamera& camera)
     #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
     const GraphicsTextureDesc& desc = Graphics::g_EnvLightMap->getGraphicsTextureDesc(); 
+
+    const auto matViewInverse = glm::inverse(camera.getViewMatrix());
+
     s_Device->setFramebuffer(Graphics::g_EnvLightFramebuffer);
     glViewport(0, 0, desc.getWidth(), desc.getHeight());
     // glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -92,9 +95,10 @@ void skybox::light(const TCamera& camera)
     glClearColor(0.0f, MIDPOINT_8_BIT, 0.0f, MIDPOINT_8_BIT);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    auto matViewInverse = glm::inverse(camera.getViewMatrix());
     glFrontFace(GL_CW);
     s_EnvLighting.bind();
+
+    s_EnvLighting.setUniform("uMatView", camera.getViewMatrix());
     s_EnvLighting.setUniform("uMatViewInverse", matViewInverse);
     s_EnvLighting.setUniform("uModelToProj", camera.getViewProjMatrix());
     s_EnvLighting.bindTexture("uBRDFSamp", s_BrdfSamp, 0);

@@ -107,10 +107,11 @@ public:
 
 private:
 
+    glm::vec3 GetSunDirection() const;
     void renderCloud() noexcept;
     void renderSkybox() noexcept;
     void renderSkycube() noexcept;
-    void renderCubeSample() noexcept;
+    void PassGbuffer() noexcept;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -133,6 +134,7 @@ private:
     ProgramShader m_SkycubeShader;
     ProgramShader m_IblMeshShader;
     ProgramShader m_GbufferShader;
+    ProgramShader m_ShadingOpacityShader;
     GraphicsTexturePtr m_SkyboxTex;
     GraphicsTexturePtr m_ScreenColorTex;
 	GraphicsTexturePtr m_NoiseMapSamp;
@@ -244,6 +246,12 @@ void LightScattering::startup() noexcept
     m_GbufferShader.addShader(GL_VERTEX_SHADER, "Gbuffer.Vertex");
     m_GbufferShader.addShader(GL_FRAGMENT_SHADER, "Gbuffer.Fragment");
     m_GbufferShader.link();
+
+    m_ShadingOpacityShader.setDevice(m_Device);
+    m_ShadingOpacityShader.initialize();
+    m_ShadingOpacityShader.addShader(GL_VERTEX_SHADER, "ScreenSpaceQuadVS.glsl");
+    m_ShadingOpacityShader.addShader(GL_FRAGMENT_SHADER, "ShadingOpacityPS.glsl");
+    m_ShadingOpacityShader.link();
 
     m_ScreenTraingle.create();
     m_Cube.create();
@@ -442,11 +450,11 @@ void LightScattering::render() noexcept
 {
     profiler::start(kProfilerTypeRender);
 
-    auto& gbufferdesc = Graphics::g_Gbuffer1Map->getGraphicsTextureDesc();
-    m_Device->setFramebuffer(Graphics::g_ObjectFramebuffer);
-    glViewport(0, 0, gbufferdesc.getWidth(), gbufferdesc.getHeight());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    renderCubeSample();
+    const auto matViewInverse = glm::inverse(m_Camera.getViewMatrix());
+    const auto matProjectInverse = glm::inverse(m_Camera.getProjectionMatrix());
+    const auto matViewProjectInverse = glm::inverse(m_Camera.getViewProjMatrix());
+
+    PassGbuffer();
 
     auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
     m_Device->setFramebuffer(m_ColorRenderTarget);
@@ -466,12 +474,6 @@ void LightScattering::render() noexcept
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glFrontFace(GL_CW);
         m_IblMeshShader.bind();
-
-        auto inverseViewProj = glm::inverse(m_Camera.getViewProjMatrix());
-        auto inverseView = glm::inverse(m_Camera.getViewMatrix());
-        auto inverseProj = glm::inverse(m_Camera.getProjectionMatrix());
-        auto test = inverseProj * glm::vec4(0, 0, 1, 1);
-        auto view = m_Camera.getViewMatrix();
 
         // Uniform binding
         m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
@@ -501,6 +503,29 @@ void LightScattering::render() noexcept
 
     skybox::light(m_Camera);
 
+    {
+        const auto viewportSize = glm::vec2(desc.getWidth(), desc.getHeight());
+        m_Device->setFramebuffer(m_ColorRenderTarget);
+        m_ShadingOpacityShader.bind();
+        m_ShadingOpacityShader.setUniform("uSunDirection", -GetSunDirection());
+        m_ShadingOpacityShader.setUniform("uViewportSize", viewportSize);
+        m_ShadingOpacityShader.setUniform("uMatView", m_Camera.getViewMatrix());
+        m_ShadingOpacityShader.setUniform("uProjectInverse", matProjectInverse);
+        m_ShadingOpacityShader.bindTexture("uEnvLightMapSamp", Graphics::g_EnvLightMap, 0);
+        m_ShadingOpacityShader.bindTexture("uGbuffer1", Graphics::g_Gbuffer1Map, 1);
+        m_ShadingOpacityShader.bindTexture("uGbuffer2", Graphics::g_Gbuffer2Map, 2);
+        m_ShadingOpacityShader.bindTexture("uGbuffer3", Graphics::g_Gbuffer3Map, 3);
+        m_ShadingOpacityShader.bindTexture("uGbuffer4", Graphics::g_Gbuffer4Map, 4);
+        m_ScreenTraingle.draw();
+        m_ShadingOpacityShader.unbind();
+    }
+    {
+        // s_EnvLighting.bindTexture("uGbuffer5", Graphics::g_Gbuffer5Map, 7);
+        // s_EnvLighting.bindTexture("uGbuffer6", Graphics::g_Gbuffer6Map, 8);
+        // s_EnvLighting.bindTexture("uGbuffer7", Graphics::g_Gbuffer7Map, 9);
+        // s_EnvLighting.bindTexture("uGbuffer8", Graphics::g_Gbuffer8Map, 10);
+    }
+
     // Tone mapping
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -508,13 +533,20 @@ void LightScattering::render() noexcept
 
         glDisable(GL_DEPTH_TEST);
         m_PostProcessHDRShader.bind();
-        // m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
         m_PostProcessHDRShader.bindTexture("uTexSource", Graphics::g_EnvLightMap, 0);
+        m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }
     profiler::stop(kProfilerTypeRender);
     // profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
+}
+
+glm::vec3 LightScattering::GetSunDirection() const
+{
+    const float angle = glm::radians(m_Settings.angle);
+    glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
+    return glm::normalize(sunDir);
 }
 
 void LightScattering::renderCloud() noexcept
@@ -528,9 +560,8 @@ void LightScattering::renderCloud() noexcept
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
+    const auto sunDir = GetSunDirection();
     const float time = m_Timer.duration();
-    const float angle = glm::radians(m_Settings.angle);
-    glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
     if (m_Settings.kModel == kNishita)
     {
         float turbidity = glm::exp(m_Settings.sunTurbidityParams.value());
@@ -543,7 +574,7 @@ void LightScattering::renderCloud() noexcept
         m_NishitaSkyShader.setUniform("uEarthRadius", 6360e3f);
         m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
         m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
-        m_NishitaSkyShader.setUniform("uSunDir", glm::normalize(sunDir));
+        m_NishitaSkyShader.setUniform("uSunDir", sunDir);
         m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
         m_NishitaSkyShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
         m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
@@ -626,8 +657,14 @@ void LightScattering::renderSkycube() noexcept
     glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
-void LightScattering::renderCubeSample() noexcept
+void LightScattering::PassGbuffer() noexcept
 {
+    auto& gbufferdesc = Graphics::g_Gbuffer1Map->getGraphicsTextureDesc();
+    m_Device->setFramebuffer(Graphics::g_ObjectFramebuffer);
+    glViewport(0, 0, gbufferdesc.getWidth(), gbufferdesc.getHeight());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render Object
     m_GbufferShader.bind();
 
     // Uniform binding
@@ -657,6 +694,8 @@ void LightScattering::renderCubeSample() noexcept
         }
     }
     m_GbufferShader.unbind();
+
+    // Render background
 }
 
 void LightScattering::renderSkybox() noexcept
