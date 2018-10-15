@@ -37,3 +37,19 @@ vec3 EnvironmentSpecularLUT(sampler2D lut, float nv, float smoothness, vec3 spec
     vec2 brdf = texture(lut, vec2(nv, smoothness)).rg;
     return specular * brdf.r + brdf.g;
 }
+
+vec4 EncodeYcbcr(vec4 screenPosition, vec3 color1, vec3 color2)
+{
+    // 1x1 check pattern
+    bool pattern = (mod(screenPosition.x, 2.0) == mod(screenPosition.y, 2.0));
+
+    color1 = EncodeYcbcr(color1);
+    color2 = EncodeYcbcr(color2);
+
+    vec4 result = vec4(0.0);
+    result.r = color1.r;
+    result.g = (pattern) ? color1.g : color1.b;
+    result.b = color2.r;
+    result.a = (pattern) ? color2.g : color2.b;
+    return result;
+}

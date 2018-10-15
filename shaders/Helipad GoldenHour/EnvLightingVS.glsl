@@ -18,8 +18,7 @@ uniform mat4 uModelToProj;
 
 void main()
 {
-    float scale = 1000.0;
-    vec4 position = vec4(inPosition.xyz * scale, 1.0);
+    vec4 position = vec4(inPosition.xyz, 1.0);
     gl_Position = vTexcoord = uModelToProj * position;
     vTexcoord.xy = PosToCoord(vTexcoord.xy / vTexcoord.w);
     vTexcoord.xy = vTexcoord.xy * vTexcoord.w;

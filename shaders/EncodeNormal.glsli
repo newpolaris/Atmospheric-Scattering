@@ -26,7 +26,7 @@ vec3 DecodeNormal(vec3 enc)
 	return normalize(normal);
 }
 #elif NORMAL_ENCODE_METHOD == 2
-// minium error
+// small error
 vec3 EncodeNormal(vec3 normal)
 {
     return 0.5 + 0.5*normal;
@@ -34,10 +34,10 @@ vec3 EncodeNormal(vec3 normal)
 
 vec3 DecodeNormal(vec3 enc)
 {
-    return enc * 2 - 1;
+    return normalize(enc * 2 - 1);
 }
 #elif NORMAL_ENCODE_METHOD == 3
-// small error
+// has many error
 vec3 EncodeNormal(vec3 normal)
 {
     return vec3(normal.xy*0.5 + 0.5, 0.0);
@@ -48,7 +48,7 @@ vec3 DecodeNormal(vec3 enc)
     vec3 n;
     n.xy = enc.xy*2 - 1;
     n.z = sqrt(1 - dot(n.xy, n.xy));
-    return n;
+    return normalize(n);
 }
 #elif NORMAL_ENCODE_METHOD == 4
 // small error

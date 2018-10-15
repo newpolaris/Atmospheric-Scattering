@@ -448,8 +448,6 @@ void LightScattering::render() noexcept
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderCubeSample();
 
-    skybox::light(m_Camera);
-
     auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
     m_Device->setFramebuffer(m_ColorRenderTarget);
     GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
@@ -463,6 +461,7 @@ void LightScattering::render() noexcept
     // renderSkybox();
     // renderCloud();
 
+    if (0)
     {
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glFrontFace(GL_CW);
@@ -500,6 +499,8 @@ void LightScattering::render() noexcept
         glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
 
+    skybox::light(m_Camera);
+
     // Tone mapping
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -507,7 +508,8 @@ void LightScattering::render() noexcept
 
         glDisable(GL_DEPTH_TEST);
         m_PostProcessHDRShader.bind();
-        m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
+        // m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
+        m_PostProcessHDRShader.bindTexture("uTexSource", Graphics::g_EnvLightMap, 0);
         m_ScreenTraingle.draw();
         glEnable(GL_DEPTH_TEST);
     }
