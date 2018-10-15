@@ -63,6 +63,7 @@ layout(location = 3) out vec4 Gbuffer4RT;
 
 #include "Common.glsli"
 #include "Math.glsli"
+#include "EncodeNormal.glsli"
 #include "Gbuffer.glsli"
 #include "LinearDepth.glsli"
 
@@ -122,7 +123,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     GbufferParam gbuffer;
     gbuffer.buffer1 = vec4(material.albedo, material.metalness);
     gbuffer.buffer2 = vec4(material.linearDepth, material.distance, 0.0, material.roughness);
-    gbuffer.buffer4 = vec4(material.normal, 0.0);
+    gbuffer.buffer3 = vec4(EncodeNormal(material.normal), 0.0);
     return gbuffer;
 }
 
@@ -130,7 +131,7 @@ void main()
 {
     MaterialParam material;
     material.albedo = uRgbDiff;
-    material.normal = vNormalWS;
+    material.normal = normalize(vNormalWS);
     material.smoothness = 0.0;
     material.metalness = uReflectivity;
     material.roughness = uGlossiness;

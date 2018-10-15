@@ -1,30 +1,5 @@
-// Use Ray-MMD Code
-
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
-
-// TODO: https://aras-p.info/texts/CompactNormalStorage.html#method04spheremap
-vec3 EncodeNormal(vec3 normal)
-{
-	float p = sqrt(-normal.z * 8 + 8);
-	vec2 enc = normal.xy / p + 0.5f;
-	vec2 enc255 = enc * 255;
-	vec2 residual = floor(frac(enc255) * 16);
-	return vec3(floor(enc255), residual.x * 16 + residual.y) / 255;
-}
-
-vec3 DecodeNormal(vec3 enc)
-{
-	float nz = floor(enc.z * 255) / 16;
-	enc.xy += vec2(floor(nz) / 16, frac(nz)) / 255;
-	vec2 fenc = enc.xy * 4 - 2;
-	float f = dot(fenc, fenc);
-	float g = sqrt(1 - f / 4);
-	vec3 normal;
-	normal.xy = fenc * g;
-	normal.z = f / 2 - 1;
-	return normalize(normal);
-}
 
 vec3 EncodeYcbcr(vec3 col)
 {

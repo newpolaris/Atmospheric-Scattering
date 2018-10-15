@@ -32,6 +32,9 @@ void main()
 
 --Fragment
 
+#include "EncodeNormal.glsli"
+#include "Gbuffer.glsli"
+
 // IN
 in vec4 vTexcoords;
 in vec3 vViewdir;
@@ -200,7 +203,7 @@ void DecodeGbuffer(vec4 buffer1, vec4 buffer2, vec4 buffer3, vec4 buffer4, out M
     material.linearDepth = buffer2.x;
     material.distance = buffer2.y;
     material.roughness = buffer2.w;
-    material.normal = buffer4.xyz;
+    material.normal = DecodeNormal(buffer3.xyz);
 }
 
 void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 color)
@@ -218,7 +221,7 @@ void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 color)
     vec3 albedo = material.albedo * (1.0 - material.metalness);
 
     // Input.
-    vec3 nn = normalize(material.normal);
+    vec3 nn = (material.normal);
     vec3 vv = worldView;
 
     // reflectance equation
