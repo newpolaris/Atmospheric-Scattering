@@ -17,7 +17,7 @@ bool any(float x)
 void clip(float b)
 {
 #if !VERTEX_SHADER
-    if (b < 0)
+    if (b < 0.0)
         discard;
 #endif
 }

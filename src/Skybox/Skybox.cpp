@@ -16,6 +16,7 @@
 namespace skybox
 {
     CubeMesh s_CubeMesh;
+    SphereMesh s_SphereMesh(64, 1e3f);
     GraphicsTexturePtr s_BrdfSamp;
     GraphicsTexturePtr s_SkyboxSamp;
     GraphicsTexturePtr s_DiffuseSamp;
@@ -29,6 +30,7 @@ void skybox::initialize(const GraphicsDevicePtr& device)
     s_Device = device;
 
     s_CubeMesh.create();
+    s_SphereMesh.create();
 
     GraphicsTextureDesc brdf;
     brdf.setWrapS(GL_CLAMP);
@@ -73,6 +75,7 @@ void skybox::initialize(const GraphicsDevicePtr& device)
 void skybox::shutdown()
 {
     s_CubeMesh.destroy();
+    s_SphereMesh.destroy();
     s_Device = nullptr;
 }
 
@@ -81,19 +84,35 @@ void skybox::light(const TCamera& camera)
     #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
     const GraphicsTextureDesc& desc = Graphics::g_EnvLightMap->getGraphicsTextureDesc(); 
+
+    const auto matViewInverse = glm::inverse(camera.getViewMatrix());
+
     s_Device->setFramebuffer(Graphics::g_EnvLightFramebuffer);
     glViewport(0, 0, desc.getWidth(), desc.getHeight());
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    // glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glClearColor(0.0f, MIDPOINT_8_BIT, 0.0f, MIDPOINT_8_BIT);
-    glDrawBuffer(GL_COLOR_ATTACHMENT1);
+    // glDrawBuffer(GL_COLOR_ATTACHMENT1);
     glClearColor(0.0f, MIDPOINT_8_BIT, 0.0f, MIDPOINT_8_BIT);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glFrontFace(GL_CW);
     s_EnvLighting.bind();
+
+    s_EnvLighting.setUniform("uMatView", camera.getViewMatrix());
+    s_EnvLighting.setUniform("uMatViewInverse", matViewInverse);
     s_EnvLighting.setUniform("uModelToProj", camera.getViewProjMatrix());
     s_EnvLighting.bindTexture("uBRDFSamp", s_BrdfSamp, 0);
-    s_CubeMesh.draw();
+    s_EnvLighting.bindTexture("uDiffuseSamp", s_DiffuseSamp, 1);
+    s_EnvLighting.bindTexture("uSpecularSamp", s_SpecularSamp, 2);
+    s_EnvLighting.bindTexture("uGbuffer1", Graphics::g_Gbuffer1Map, 3);
+    s_EnvLighting.bindTexture("uGbuffer2", Graphics::g_Gbuffer2Map, 4);
+    s_EnvLighting.bindTexture("uGbuffer3", Graphics::g_Gbuffer3Map, 5);
+    s_EnvLighting.bindTexture("uGbuffer4", Graphics::g_Gbuffer4Map, 6);
+    s_EnvLighting.bindTexture("uGbuffer5", Graphics::g_Gbuffer5Map, 7);
+    s_EnvLighting.bindTexture("uGbuffer6", Graphics::g_Gbuffer6Map, 8);
+    s_EnvLighting.bindTexture("uGbuffer7", Graphics::g_Gbuffer7Map, 9);
+    s_EnvLighting.bindTexture("uGbuffer8", Graphics::g_Gbuffer8Map, 10);
+    s_SphereMesh.draw();
     glFrontFace(GL_CCW);
 }
 

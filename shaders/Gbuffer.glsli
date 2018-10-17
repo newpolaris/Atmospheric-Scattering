@@ -1,3 +1,15 @@
+#define SHADINGMODELID_DEFAULT    0
+#define SHADINGMODELID_SKIN       1
+#define SHADINGMODELID_EMISSIVE   2
+#define SHADINGMODELID_ANISOTROPY 3
+#define SHADINGMODELID_GLASS      4
+#define SHADINGMODELID_CLOTH      5
+#define SHADINGMODELID_CLEAR_COAT 6
+#define SHADINGMODELID_SUBSURFACE 7
+#define SHADINGMODELID_CEL        8
+#define SHADINGMODELID_TONEBASED  9
+#define SHADINGMODELID_MASK       10
+
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
 
@@ -5,8 +17,17 @@ vec3 EncodeYcbcr(vec3 col)
 {
 	col = sqrt(col);
 	vec3 encode;
-	encode.x = dot(col.rgb, vec3(0.299, 0.587, 0114));
+	encode.x = dot(col.rgb, vec3(0.299, 0.587, 0.114));
 	encode.y = dot(col.rgb, vec3(-0.1687, -0.3312, 0.5) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
 	encode.z = dot(col.rgb, vec3(0.5, -0.4186, -0.0813) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
 	return encode;
+}
+
+vec3 DecodeYcbcr(vec3 YCbCr)
+{
+    YCbCr = vec3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+    float R = YCbCr.x + 1.402 * YCbCr.z;
+    float G = dot(vec3(1, -0.3441, -0.7141), YCbCr.xyz);
+    float B = YCbCr.x + 1.772 * YCbCr.y;
+    return pow2(vec3(R, G, B));
 }

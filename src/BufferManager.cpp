@@ -61,7 +61,7 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     gbuffer1Desc.setMagFilter(GL_NEAREST);
     gbuffer1Desc.setWidth(nativeWidth);
     gbuffer1Desc.setHeight(nativeHeight);
-    gbuffer1Desc.setFormat(gli::FORMAT_RGB10A2_UNORM_PACK32);
+    gbuffer1Desc.setFormat(gli::FORMAT_RGBA8_UNORM_PACK32);
 
     GraphicsTextureDesc gbuffer2Desc = gbuffer1Desc;
     gbuffer2Desc.setFormat(gli::FORMAT_RGBA16_SFLOAT_PACK16);

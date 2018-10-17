@@ -32,8 +32,10 @@ void main()
 
 --Fragment
 
-#include "EncodeNormal.glsli"
-#include "Gbuffer.glsli"
+#include "../Common.glsli"
+#include "../Math.glsli"
+#include "../EncodeNormal.glsli"
+#include "../Gbuffer.glsli"
 
 // IN
 in vec4 vTexcoords;
@@ -72,6 +74,7 @@ uniform mat4 uInverseViewProj;
 
 const float pi = 3.14159265359;
 
+// https://github.com/bkaradzic/bgfx/blob/master/examples/18-ibl/fs_ibl_mesh.sc
 vec3 calcFresnel(vec3 _cspec, float _dot, float _strength)
 {
     return _cspec + (1.0 - _cspec)*pow(1.0 - _dot, 5.0) * _strength;
@@ -155,7 +158,7 @@ mat3 calcTbn(vec3 _normal, vec3 _worldPos, vec2 _texCoords)
     return mat3(T, B, N);
 }
 
-// Moving frostbite to pbr
+// Moving frostbite to pbr: Listing 22
 vec3 getSpecularDomninantDir(vec3 N, vec3 R, float roughness)
 {
     float smoothness = 1 - roughness;
@@ -271,12 +274,12 @@ void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 color)
 
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, 0* MAX_REFLECTION_LOD).rgb;
+    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 brdf = texture(uEnvmapBrdfLUT, vec2(ndotv, roughness)).rg;
-    vec3 radiance = prefilteredColor;
+    vec3 radiance = prefilteredColor * (kS * brdf.x + brdf.y);
     vec3 envDiffuse = albedo*kD * irradiance * ubDiffuseIbl;
     vec3 envSpecular = radiance * ubSpecularIbl;
-    vec3 indirect = envSpecular;
+    vec3 indirect = envDiffuse + envSpecular;
 
     color = direct + indirect;
 }

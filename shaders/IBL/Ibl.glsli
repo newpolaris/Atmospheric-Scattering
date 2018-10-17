@@ -37,3 +37,51 @@ vec3 EnvironmentSpecularLUT(sampler2D lut, float nv, float smoothness, vec3 spec
     vec2 brdf = texture(lut, vec2(nv, smoothness)).rg;
     return specular * brdf.r + brdf.g;
 }
+
+vec4 EncodeYcbcr(vec4 screenPosition, vec3 color1, vec3 color2)
+{
+    // 1x1 check pattern
+    bool pattern = (mod(screenPosition.x, 2.0) == mod(screenPosition.y, 2.0));
+
+    color1 = EncodeYcbcr(color1);
+    color2 = EncodeYcbcr(color2);
+
+    vec4 result = vec4(0.0);
+    result.r = color1.r;
+    result.g = (pattern) ? color1.g : color1.b;
+    result.b = color2.r;
+    result.a = (pattern) ? color2.g : color2.b;
+    return result;
+}
+
+float EdgeFilter(vec2 center, vec2 a0, vec2 a1, vec2 a2, vec2 a3)
+{
+    const float THRESH = 30.0/255.0;
+    vec4 lum = vec4(a0.x, a1.x, a2.x, a3.x);
+    vec4 w = vec4(1.0) - step(THRESH, abs(lum - vec4(center.x)));
+    float W = w.x + w.y + w.z + w.w;
+    w.x = (W == 0.0) ? 1.0 : w.x;
+    W   = (W == 0.0) ? 1.0 : W;
+    return (w.x * a0.y + w.y * a1.y + w.z * a2.y + w.w * a3.y) / W;
+}
+
+void DecodeYcbcr(sampler2D source, vec2 coord, vec4 screenPosition, vec2 offset, out vec3 color1, out vec3 color2)
+{
+    vec4 pack = textureLod(source, coord, 0);
+
+	vec4 env2 = textureLod(source, coord + vec2(offset.x, 0.0), 0);
+	vec4 env3 = textureLod(source, coord - vec2(offset.x, 0.0), 0);
+	vec4 env4 = textureLod(source, coord + vec2(0.0, offset.y), 0);
+	vec4 env5 = textureLod(source, coord - vec2(0.0, offset.y), 0);
+
+    env2.rg = vec2(EdgeFilter(pack.rg, env2.rg, env3.rg, env4.rg, env5.rg));
+    env2.ba = vec2(EdgeFilter(pack.ba, env2.ba, env3.ba, env4.ba, env5.ba));
+
+    bool pattern = (mod(screenPosition.x, 2.0) == mod(screenPosition.y, 2.0));
+
+	color1 = (pattern) ? vec3(pack.rg, env2.g) : vec3(pack.r, env2.g, pack.g);
+	color2 = (pattern) ? vec3(pack.ba, env2.a) : vec3(pack.b, env2.a, pack.a);
+
+	color1 = DecodeYcbcr(color1);
+	color2 = DecodeYcbcr(color2);
+}
