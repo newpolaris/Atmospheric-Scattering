@@ -105,6 +105,6 @@ void main()
     specular += iblSpecular;
 #endif
 
-    oColor0 = vec4(diffuse * material.albedo + specular, 1.0);
+    oColor0 = vec4(specular, 1.0);
     oColor1 = vec4(max(vec3(0.0), V), 1.0);
 }

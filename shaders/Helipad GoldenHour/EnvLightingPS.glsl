@@ -82,7 +82,7 @@ void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 diffuse, o
     prefilteredDiffuse = ColorBalance(prefilteredDiffuse, uBalanceDiffuse);
 
     diffuse = prefilteredDiffuse * uEnvIntensityDiff;
-    specular = prefilteredSpecular * fresnel;
+    specular = prefilteredSpecular; // * fresnel;
 
     specular *= uEnvIntensitySpec;
 }
