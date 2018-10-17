@@ -18,6 +18,7 @@ layout(location = 1) out vec4 oColor1;
 
 uniform mat4 uMatViewInverse;
 uniform float uEnvIntensityDiff = 1.0;
+uniform float uEnvIntensitySpec = 1.0;
 uniform vec4 uBalanceDiffuse = vec4(0.0);
 
 uniform sampler2D uBRDFSamp;
@@ -59,7 +60,7 @@ void DecodeGbuffer(vec4 buffer1, vec4 buffer2, vec4 buffer3, vec4 buffer4, out M
     material.lightModel = 1;
 }
 
-void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 diffuse, out vec3 sepcular)
+void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 diffuse, out vec3 specular)
 {
     vec3 worldNormal = mat3(uMatViewInverse)*material.normal;
 
@@ -77,9 +78,13 @@ void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 diffuse, o
     vec2 coord2 = ComputeSphereCoord(R);
     
     vec3 prefilteredDiffuse = DecodeRGBT(textureLod(uDiffuseSamp, coord1, 0));
+    vec3 prefilteredSpecular = DecodeRGBT(textureLod(uSpecularSamp, coord2, mipLayer));
     prefilteredDiffuse = ColorBalance(prefilteredDiffuse, uBalanceDiffuse);
 
     diffuse = prefilteredDiffuse * uEnvIntensityDiff;
+    specular = prefilteredSpecular; // * fresnel;
+
+    specular *= uEnvIntensitySpec;
 }
 
 void main()
@@ -98,6 +103,6 @@ void main()
 
     vec3 diffuse, specular;
     ShadingMaterial(material, V, diffuse, specular);
-    oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse);
-    oColor1 = EncodeYcbcr(screenPosition, diffuse, diffuse);
+    oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
+    oColor1 = EncodeYcbcr(screenPosition, diffuse, specular);
 }

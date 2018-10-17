@@ -74,6 +74,7 @@ uniform mat4 uInverseViewProj;
 
 const float pi = 3.14159265359;
 
+// https://github.com/bkaradzic/bgfx/blob/master/examples/18-ibl/fs_ibl_mesh.sc
 vec3 calcFresnel(vec3 _cspec, float _dot, float _strength)
 {
     return _cspec + (1.0 - _cspec)*pow(1.0 - _dot, 5.0) * _strength;
@@ -157,7 +158,7 @@ mat3 calcTbn(vec3 _normal, vec3 _worldPos, vec2 _texCoords)
     return mat3(T, B, N);
 }
 
-// Moving frostbite to pbr
+// Moving frostbite to pbr: Listing 22
 vec3 getSpecularDomninantDir(vec3 N, vec3 R, float roughness)
 {
     float smoothness = 1 - roughness;

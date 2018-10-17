@@ -105,7 +105,6 @@ struct MaterialParam
 	vec3 customDataB;
 	int lightModel;
 
-    float distance;
     float roughness;
     float linearDepth;
 };
@@ -118,31 +117,34 @@ struct GbufferParam
     vec4 buffer4;
 };
 
-// linearDepth: -positionVS.z
+// Parameter linearDepth: -positionVS.z
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
     gbuffer.buffer1 = vec4(material.albedo, material.metalness);
-    gbuffer.buffer2 = vec4(material.linearDepth, material.distance, 0.0, material.roughness);
+    gbuffer.buffer2 = vec4(material.linearDepth, 0.0, 0.0, material.roughness);
 
     material.normal = mat3(uMatView)*material.normal;
     material.normal = normalize(material.normal);
 
     gbuffer.buffer3.xyz = EncodeNormal(material.normal);
 
+    gbuffer.buffer4 = vec4(material.specular, 0.0);
     return gbuffer;
 }
 
 void main()
 {
+    const float specular = 0.5;
+
     MaterialParam material;
     material.albedo = uRgbDiff;
     material.normal = normalize(vNormalWS);
     material.smoothness = 0.0;
     material.metalness = uReflectivity;
     material.roughness = uGlossiness;
+    material.specular = vec3(saturate(0.08 * specular));
     material.linearDepth = LinearizeDepth(gl_FragCoord.z, near, far);
-    material.distance = length(vWorldPosWS - uEyePosWS);
     GbufferParam gbuffer = EncodeGbuffer(material, -vPositionVS.z);
     Gbuffer1RT = gbuffer.buffer1;
     Gbuffer2RT = gbuffer.buffer2;
