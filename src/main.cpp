@@ -160,7 +160,7 @@ void LightScattering::startup() noexcept
 
     m_Timer.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
-	m_Camera.setViewParams(glm::vec3(8.0f, 8.0f, 15.0f), glm::vec3(8.0f, 8.0f, 0.0f));
+	m_Camera.setViewParams(glm::vec3(0.0f, 12.5f, 2.5f), glm::vec3(0.0f, 12.5f, 1.6f));
 
 	GraphicsDeviceDesc deviceDesc;
 #if __APPLE__

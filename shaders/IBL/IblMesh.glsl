@@ -271,12 +271,12 @@ void ShadingMaterial(MaterialParam material, vec3 worldView, out vec3 color)
 
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, roughness * MAX_REFLECTION_LOD).rgb;
+    vec3 prefilteredColor = textureLod(uEnvmapPrefilter, r, 0* MAX_REFLECTION_LOD).rgb;
     vec2 brdf = texture(uEnvmapBrdfLUT, vec2(ndotv, roughness)).rg;
-    vec3 radiance = prefilteredColor * (kS * brdf.x + brdf.y);
+    vec3 radiance = prefilteredColor;
     vec3 envDiffuse = albedo*kD * irradiance * ubDiffuseIbl;
     vec3 envSpecular = radiance * ubSpecularIbl;
-    vec3 indirect = envDiffuse + envSpecular;
+    vec3 indirect = envSpecular;
 
     color = direct + indirect;
 }
