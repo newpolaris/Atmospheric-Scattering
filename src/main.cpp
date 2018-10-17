@@ -483,8 +483,6 @@ void LightScattering::render() noexcept
         m_IblMeshShader.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
         m_IblMeshShader.setUniform("ubDiffuseIbl", float(m_Settings.m_doDiffuseIbl));
         m_IblMeshShader.setUniform("ubSpecularIbl", float(m_Settings.m_doSpecularIbl));
-        // m_IblMeshShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
-        // m_IblMeshShader.setUniform("uMtxSrt", glm::mat4(1));
 
         // Texture binding
         m_IblMeshShader.bindTexture("uBuffer1", Graphics::g_Gbuffer1Map, 0);
@@ -668,8 +666,9 @@ void LightScattering::PassGbuffer() noexcept
     m_GbufferShader.bind();
 
     // Uniform binding
-    m_GbufferShader.setUniform("uModelViewProjMatrix", m_Camera.getViewProjMatrix());
-    m_GbufferShader.setUniform("uProjection", m_Camera.getProjectionMatrix());
+    m_GbufferShader.setUniform("uMatProject", m_Camera.getProjectionMatrix());
+    m_GbufferShader.setUniform("uMatView", m_Camera.getViewMatrix());
+    m_GbufferShader.setUniform("uMatViewProject", m_Camera.getViewProjMatrix());
     m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
     m_GbufferShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
 

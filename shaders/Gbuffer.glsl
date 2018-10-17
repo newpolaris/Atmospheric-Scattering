@@ -15,15 +15,15 @@ out vec2 vDepthZW;
 
 // UNIFORM
 uniform mat4 uMtxSrt;
-uniform mat4 uModelViewMatrix;
-uniform mat4 uModelViewProjMatrix;
+uniform mat4 uMatView;
+uniform mat4 uMatViewProject;
 uniform vec3 uEyePosWS;
 
 void main()
 {
     // Clip Space position
-    gl_Position = uModelViewProjMatrix * uMtxSrt * inPosition;
-    vec4 positionVS = uModelViewMatrix * uMtxSrt * inPosition;
+    gl_Position = uMatViewProject * uMtxSrt * inPosition;
+    vec4 positionVS = uMatView * uMtxSrt * inPosition;
 
     // World Space normal
     vec3 normal = mat3(uMtxSrt) * inNormal;
@@ -81,10 +81,11 @@ uniform vec3 uRgbDiff;
 uniform vec3 uLightPositions[4];
 uniform vec3 uLightColors[4];
 uniform vec3 uEyePosWS;
-uniform mat4 uProjection;
+uniform mat4 uMatView;
+uniform mat4 uMatProject;
 
-const float A = uProjection[2].z;
-const float B = uProjection[3].z;
+const float A = uMatProject[2].z;
+const float B = uMatProject[3].z;
 const float near = -B / (1.0 - A);
 const float far = B / (1.0 + A);
 
@@ -123,7 +124,12 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     GbufferParam gbuffer;
     gbuffer.buffer1 = vec4(material.albedo, material.metalness);
     gbuffer.buffer2 = vec4(material.linearDepth, material.distance, 0.0, material.roughness);
-    gbuffer.buffer3 = vec4(EncodeNormal(material.normal), 0.0);
+
+    material.normal = mat3(uMatView)*material.normal;
+    material.normal = normalize(material.normal);
+
+    gbuffer.buffer3.xyz = EncodeNormal(material.normal);
+
     return gbuffer;
 }
 
