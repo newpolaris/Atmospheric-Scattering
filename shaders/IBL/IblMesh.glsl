@@ -157,7 +157,7 @@ mat3 calcTbn(vec3 _normal, vec3 _worldPos, vec2 _texCoords)
     return mat3(T, B, N);
 }
 
-// Moving frostbite to pbr
+// Moving frostbite to pbr: Listing 22
 vec3 getSpecularDomninantDir(vec3 N, vec3 R, float roughness)
 {
     float smoothness = 1 - roughness;

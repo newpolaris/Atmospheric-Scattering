@@ -52,7 +52,7 @@ void DecodeGbuffer(vec4 buffer1, vec4 buffer2, vec4 buffer3, vec4 buffer4, out M
     material.specular = vec3(0.0);
 
     material.normal = DecodeNormal(buffer3.xyz);
-    material.smoothness = 0.0;
+    material.smoothness =  1 - sqrt(buffer2.w);
     material.alpha = 1.0;
     material.visibility = 1.0;
 }
@@ -105,6 +105,6 @@ void main()
     specular += iblSpecular;
 #endif
 
-    oColor0 = vec4(diffuse, 1.0);
+    oColor0 = vec4(diffuse * material.albedo + specular, 1.0);
     oColor1 = vec4(max(vec3(0.0), V), 1.0);
 }

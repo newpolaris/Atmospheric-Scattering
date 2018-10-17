@@ -117,7 +117,7 @@ struct GbufferParam
     vec4 buffer4;
 };
 
-// linearDepth: -positionVS.z
+// Parameter linearDepth: -positionVS.z
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
