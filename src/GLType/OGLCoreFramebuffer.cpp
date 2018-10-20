@@ -54,7 +54,7 @@ bool OGLCoreFramebuffer::create(const GraphicsFramebufferDesc& desc) noexcept
         else
             glNamedFramebufferTexture(m_FBO, attachment, texture->getTextureID(), levels);
 
-        if (attachment != GL_DEPTH_ATTACHMENT)
+        if (attachment != GL_DEPTH_ATTACHMENT && attachment != GL_DEPTH_STENCIL_ATTACHMENT && attachment != GL_STENCIL_ATTACHMENT)
             drawBuffers[drawCount++] = attachment;
     }
     glNamedFramebufferDrawBuffers(m_FBO, drawCount, drawBuffers);
