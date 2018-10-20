@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btAlignedAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btConvexHull.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btConvexHullComputer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btGeometryUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btPolarDecomposition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btQuickprof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btVector3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btAabbUtil2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btAlignedAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btAlignedObjectArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btConvexHull.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btConvexHullComputer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btDefaultMotionState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btGeometryUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btGrahamScan2dConvexHull.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btHashMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btIDebugDraw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btMatrix3x3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btMinMax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btMotionState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btPolarDecomposition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btPoolAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btQuadWord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btQuaternion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btQuickprof.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btRandom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btScalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btSerializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btStackAlloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btTransform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btTransformUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\btVector3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\Irradiance\external\bullet-2.81-rev2613\src\LinearMath\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{958785E0-8452-3C95-99E1-FF501165D136}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{F9C3A6EF-983B-3EC0-86B6-01EB305A9D00}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

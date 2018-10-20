@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\Irradiance\CMakeFiles\9b8a3309a6e05d784c3b17b12e1ce239\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{247BD642-EB75-3019-934F-8B50C87E25D7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

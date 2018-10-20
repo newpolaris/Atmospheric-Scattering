@@ -1,0 +1,1489 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D6A24860-CA57-3866-96D6-2D5149CCF0B3}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>FreeImage</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FreeImage.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FreeImage</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FreeImage.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FreeImage</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">FreeImage.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">FreeImage</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">FreeImage.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">FreeImage</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\CacheFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\DeprecationManager\Deprecated.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\DeprecationManager\DeprecationMgr.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\DeprecationManager\DeprecationMgr.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\BitmapAccess.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\CacheFile.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ColorLookup.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion16_555.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion16_565.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion24.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion32.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ConversionFloat.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ConversionRGB16.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion4.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Conversion8.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ConversionRGBF.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ConversionType.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ConversionUINT16.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\FreeImage.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\FreeImageIO.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\GetType.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Halftoning.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\J2KHelper.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\MemoryIO.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\MNGHelper.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\MultiPage.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\NNQuantizer.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PSDParser.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PSDParser.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PixelAccess.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\Plugin.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginBMP.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginCUT.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginDDS.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginEXR.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginG3.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginGIF.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginHDR.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginICO.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginIFF.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginJ2K.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginJNG.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginJP2.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginJPEG.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginKOALA.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginMNG.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPCD.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPCX.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPFM.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPICT.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPNG.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPNM.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginPSD.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginRAS.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginRAW.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginSGI.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginTARGA.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginTIFF.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginWBMP.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginXBM.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\PluginXPM.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\TIFFLogLuv.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ToneMapping.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\WuQuantizer.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\ZLibInterface.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\tmoColorConvert.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\tmoDrago03.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\tmoFattal02.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImage\tmoReinhard05.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageIO.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\BSplineRotate.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Background.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Channels.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\ClassicRotate.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Colors.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\CopyPaste.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Display.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Filters.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Flip.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\JPEGTransform.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\MultigridPoissonSolver.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Rescale.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Resize.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit\Resize.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jaricom.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcapimin.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcapistd.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcarith.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jccoefct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jccolor.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcdctmgr.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jchuff.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcinit.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcmainct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcmarker.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcmaster.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcomapi.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jconfig.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcparam.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcprepct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jcsample.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jctrans.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdapimin.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdapistd.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdarith.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdatadst.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdatasrc.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdcoefct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdcolor.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdct.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jddctmgr.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdhuff.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdinput.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdmainct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdmarker.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdmaster.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdmerge.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdpostct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdsample.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jdtrans.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jerror.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jerror.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jfdctflt.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jfdctfst.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jfdctint.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jidctflt.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jidctfst.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jidctint.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jinclude.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jmemmgr.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jmemnobs.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jmemsys.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jmorecfg.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jpegint.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jpeglib.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jquant1.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jquant2.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jutils.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\jversion.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\transupp.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG\transupp.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\bio.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\bio.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\cidx_manager.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\cidx_manager.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\cio.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\cio.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\dwt.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\dwt.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\event.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\event.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\fix.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\image.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\image.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\indexbox_manager.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\int.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\j2k.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\j2k.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\j2k_lib.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\j2k_lib.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\jp2.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\jp2.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\jpt.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\jpt.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\mct.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\mct.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\mqc.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\mqc.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\openjpeg.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\openjpeg.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\opj_config.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\opj_includes.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\opj_malloc.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\phix_manager.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\pi.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\pi.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\ppix_manager.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\raw.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\raw.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\t1.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\t1.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\t1_luts.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\t2.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\t2.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\tcd.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\tcd.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\tgt.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\tgt.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\thix_manager.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG\tpix_manager.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\png.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\png.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngconf.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngdebug.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngerror.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pnggccrd.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngget.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pnginfo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pnglibconf.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngmem.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngpread.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngread.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngpriv.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngrio.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngrtran.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngrutil.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngset.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngstruct.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngtrans.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngvcrd.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngwio.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngwrite.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngwtran.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG\pngwutil.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\dcraw_common.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\dcraw_fileio.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\defines.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\demosaic_packs.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\libraw_bytebuffer.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\libraw_internal_funcs.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\internal\var_defines.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_alloc.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_const.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_datastream.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_internal.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_types.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\libraw\libraw_version.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\src\libraw_c_api.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\src\libraw_cxx.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite\src\libraw_datastream.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\t4.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_aux.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_close.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_codec.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_color.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_compress.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_config.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dir.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dir.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dirinfo.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dirread.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dirwrite.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_dumpmode.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_error.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_extension.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_fax3.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_fax3.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_fax3sm.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_flush.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_getimage.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_jpeg.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_jpeg_12.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_luv.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_lzma.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_lzw.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_next.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_ojpeg.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_open.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_packbits.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_pixarlog.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_predict.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_predict.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_print.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_read.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_strip.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_swab.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_thunder.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_tile.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_version.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_warning.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_write.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tif_zip.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tiff.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tiffio.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tiffiop.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\tiffvers.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF4\uvcode.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\Exif.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\FIRational.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\FIRational.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\FreeImageTag.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\FreeImageTag.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\IPTC.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\TagConversion.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\TagLib.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Metadata\XTIFF.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\eLut.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\half.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\half.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\halfFunction.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\halfLimits.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half\toFloat.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\Iex.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexBaseExc.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexBaseExc.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexErrnoExc.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexMacros.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexMathExc.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexThrowErrnoExc.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex\IexThrowErrnoExc.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmBaseConfig.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\b44ExpLogTable.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfAcesFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfAcesFile.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfArray.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfAttribute.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfAutoArray.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfB44Compressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfB44Compressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfBoxAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfBoxAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCRgbaFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCRgbaFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChannelList.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChannelList.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChannelListAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChannelListAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChromaticities.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChromaticities.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChromaticitiesAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfChromaticitiesAttribute.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCompression.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCompressionAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCompressionAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCompressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfCompressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfConvert.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfConvert.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfDoubleAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfDoubleAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfEnvmap.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfEnvmap.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfEnvmapAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfEnvmapAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFloatAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFloatAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFrameBuffer.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFrameBuffer.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFramesPerSecond.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfFramesPerSecond.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfHeader.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfHeader.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfHuf.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfHuf.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfIO.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfIO.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfInputFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfInputFile.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfInt64.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfIntAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfIntAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfKeyCode.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfKeyCode.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfKeyCodeAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfKeyCodeAttribute.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfLineOrder.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfLineOrderAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfLineOrderAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfLut.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfLut.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMatrixAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMatrixAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMisc.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMisc.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMultiView.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfMultiView.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfName.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfOpaqueAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfOpaqueAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfOutputFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfOutputFile.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPixelType.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPizCompressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPizCompressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPreviewImage.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPreviewImage.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPreviewImageAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPreviewImageAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPxr24Compressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfPxr24Compressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRational.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRational.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRationalAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRationalAttribute.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRgba.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRgbaFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRgbaFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRgbaYca.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRgbaYca.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRleCompressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfRleCompressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfScanLineInputFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfScanLineInputFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStandardAttributes.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStandardAttributes.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStdIO.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStdIO.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStringAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStringAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStringVectorAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfStringVectorAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTestFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTestFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfThreading.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfThreading.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTileDescription.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTileDescriptionAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTileDescriptionAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTileOffsets.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTileOffsets.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledInputFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledInputFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledMisc.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledMisc.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledOutputFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledOutputFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledRgbaFile.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTiledRgbaFile.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTimeCode.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTimeCode.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTimeCodeAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfTimeCodeAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfVecAttribute.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfVecAttribute.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfVersion.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfVersion.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfWav.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfWav.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfXdr.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfZipCompressor.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf\ImfZipCompressor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThread.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThread.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadMutex.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadMutex.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadPool.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadPool.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadSemaphore.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread\IlmThreadSemaphore.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathBox.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathBox.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathBoxAlgo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathColor.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathColorAlgo.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathColorAlgo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathEuler.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathExc.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathFrame.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathFrustum.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathFun.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathFun.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathGL.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathGLU.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathHalfLimits.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathInt64.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathInterval.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathLimits.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathLine.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathLineAlgo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathMath.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathMatrix.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathMatrixAlgo.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathMatrixAlgo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathPlane.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathPlatform.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathQuat.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathRandom.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathRandom.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathRoots.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathShear.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathShear.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathSphere.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathVec.cpp"  />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathVec.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath\ImathVecAlgo.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\OpenEXRConfig.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Plugin.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Quantizers.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ToneMapping.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\Utilities.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\adler32.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\compress.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\crc32.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\crc32.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\deflate.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\deflate.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\gzclose.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\gzguts.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\gzlib.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\gzread.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\gzwrite.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\infback.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inffast.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inffast.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inffixed.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inflate.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inflate.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inftrees.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\inftrees.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\trees.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\trees.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\uncompr.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\zconf.h" />
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\zlib.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\zutil.c" >
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\newpolaris\Projects\lightProbe\ZERO_CHECK.vcxproj">
+      <Project>{8EF03D4E-2B1C-3952-927C-08442F43E3C8}</Project>
+      <Name>ZERO_CHECK</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

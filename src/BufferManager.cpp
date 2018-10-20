@@ -6,8 +6,13 @@
 
 namespace Graphics
 {
+    uint32_t g_NativeWidth = 0;
+    uint32_t g_NativeHeight = 0;
+
     GraphicsDeviceWeakPtr g_DeviceWeakPtr;
 
+    GraphicsTexturePtr g_SceneMap;
+    GraphicsTexturePtr g_DepthMap;
     GraphicsTexturePtr g_ScreenDepthMap;
 
     GraphicsTexturePtr g_EnvLightMap;
@@ -22,6 +27,7 @@ namespace Graphics
     GraphicsTexturePtr g_Gbuffer7Map;
     GraphicsTexturePtr g_Gbuffer8Map;
 
+    GraphicsFramebufferPtr g_MainFramebuffer;
     GraphicsFramebufferPtr g_EnvLightFramebuffer;
     GraphicsFramebufferPtr g_ObjectFramebuffer;
     GraphicsFramebufferPtr g_ObjectAlphaFramebuffer;
@@ -32,15 +38,35 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     g_DeviceWeakPtr = device;
     assert(device);
 
+    g_NativeWidth = nativeWidth;
+    g_NativeHeight = nativeHeight;
+
+    GraphicsTextureDesc sceneDesc;
+    sceneDesc.setWrapS(GL_CLAMP_TO_EDGE);
+    sceneDesc.setWrapT(GL_CLAMP_TO_EDGE);
+    sceneDesc.setMinFilter(GL_NEAREST);
+    sceneDesc.setMagFilter(GL_NEAREST);
+    sceneDesc.setWidth(nativeWidth);
+    sceneDesc.setHeight(nativeHeight);
+    sceneDesc.setFormat(gli::FORMAT_RGBA16_SFLOAT_PACK16);
+    g_SceneMap = device->createTexture(sceneDesc);
+
     GraphicsTextureDesc depthDesc;
     depthDesc.setWidth(nativeWidth);
     depthDesc.setHeight(nativeHeight);
     depthDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
+
+    g_DepthMap = device->createTexture(depthDesc);
     g_ScreenDepthMap = device->createTexture(depthDesc);
 
+    GraphicsFramebufferDesc mainFrameDesc;
+    mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_SceneMap, GL_COLOR_ATTACHMENT0));
+    mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_DepthMap, GL_DEPTH_STENCIL_ATTACHMENT));
+    g_MainFramebuffer = device->createFramebuffer(mainFrameDesc);
+
     GraphicsTextureDesc envLightDesc;
-    envLightDesc.setWrapS(GL_CLAMP);
-    envLightDesc.setWrapT(GL_CLAMP);
+    envLightDesc.setWrapS(GL_CLAMP_TO_EDGE);
+    envLightDesc.setWrapT(GL_CLAMP_TO_EDGE);
     envLightDesc.setMinFilter(GL_NEAREST);
     envLightDesc.setMagFilter(GL_NEAREST);
     envLightDesc.setWidth(nativeWidth);
@@ -55,8 +81,8 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     g_EnvLightFramebuffer = device->createFramebuffer(diffuseFrameDesc);
 
     GraphicsTextureDesc gbuffer1Desc;
-    gbuffer1Desc.setWrapS(GL_CLAMP);
-    gbuffer1Desc.setWrapT(GL_CLAMP);
+    gbuffer1Desc.setWrapS(GL_CLAMP_TO_EDGE);
+    gbuffer1Desc.setWrapT(GL_CLAMP_TO_EDGE);
     gbuffer1Desc.setMinFilter(GL_NEAREST);
     gbuffer1Desc.setMagFilter(GL_NEAREST);
     gbuffer1Desc.setWidth(nativeWidth);

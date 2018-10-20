@@ -1,0 +1,396 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7C83CAE6-13EC-3206-B1E4-7495F287EDD2}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>FreeImageTest</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FreeImageTest.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FreeImageTest</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FreeImageTest.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">FreeImageTest</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">FreeImageTest.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">FreeImageTest</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">FreeImageTest.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">FreeImageTest</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/newpolaris/Projects/lightProbe/test/ressource C:/Users/newpolaris/Projects/lightProbe/test/ressource
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>Debug\FreeImage.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/Debug/FreeImageTest.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/Debug/FreeImageTest.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/newpolaris/Projects/lightProbe/test/ressource C:/Users/newpolaris/Projects/lightProbe/test/ressource
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>Release\FreeImage.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/Release/FreeImageTest.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/Release/FreeImageTest.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/newpolaris/Projects/lightProbe/test/ressource C:/Users/newpolaris/Projects/lightProbe/test/ressource
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>MinSizeRel\FreeImage.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/MinSizeRel/FreeImageTest.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/MinSizeRel/FreeImageTest.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w</AdditionalOptions>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;TW_STATIC;TW_NO_LIB_PRAGMA;TW_NO_DIRECT3D;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;ASSIMP_BUILD_BOOST_WORKAROUND;OPJ_STATIC;LIBRAW_NODLL;LIBRAW_LIBRARY_BUILD;FREEIMAGE_LIB;NO_LCMS;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\newpolaris\Projects\lightProbe\external\glfw-3.1.2\include;C:\Users\newpolaris\Projects\lightProbe\external\glew-1.13.0\include;C:\Users\newpolaris\Projects\lightProbe\external\assimp-3.0.1270\code\BoostWorkaround;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\FreeImageToolkit;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibMNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibOpenJPEG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibPNG;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibRawLite;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibTIFF;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\jxrgluelib;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\sys;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\decode;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\image\x86;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\LibJXR\common\include;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Half;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Iex;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmImf;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IlmThread;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\IexMath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\OpenEXR\Imath;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/newpolaris/Projects/lightProbe/test/ressource C:/Users/newpolaris/Projects/lightProbe/test/ressource
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>RelWithDebInfo\FreeImage.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/RelWithDebInfo/FreeImageTest.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/RelWithDebInfo/FreeImageTest.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/newpolaris/Projects/lightProbe -BC:/Users/newpolaris/Projects/lightProbe --check-stamp-file C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:/Users/newpolaris/Projects/lightProbe/external/FreeImage/CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\TestSuite.h" />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\MainTestSuite.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testHeaderOnly.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testChannels.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testImageType.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testMemIO.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testMPage.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testMPageMemory.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testMPageStream.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testPlugins.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testThumbnail.cpp"  />
+    <ClCompile Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\test\testTools.cpp"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\newpolaris\Projects\lightProbe\ZERO_CHECK.vcxproj">
+      <Project>{8EF03D4E-2B1C-3952-927C-08442F43E3C8}</Project>
+      <Name>ZERO_CHECK</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\newpolaris\Projects\lightProbe\external\FreeImage\FreeImage.vcxproj">
+      <Project>{D6A24860-CA57-3866-96D6-2D5149CCF0B3}</Project>
+      <Name>FreeImage</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

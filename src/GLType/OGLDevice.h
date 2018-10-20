@@ -17,7 +17,6 @@ public:
     GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept override;
     GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept override;
 
-    void setFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept override;
     void bindRenderTexture(const GraphicsTexturePtr& texture, uint32_t attachment, uint32_t textarget, int32_t level) noexcept override;
     void generateMipmap(const GraphicsTexturePtr& texture) noexcept override;
 

@@ -1,0 +1,15 @@
+*.o
+*.pyc
+*.log
+*.old
+*.out
+*.DS_Store
+*.~
+*~
+*.user
+*.project
+.idea
+
+# Build directories
+build*/
+install*

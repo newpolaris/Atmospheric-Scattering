@@ -16,6 +16,7 @@ find_package(OpenGL REQUIRED)
 
 set(UseGLI TRUE)
 set(UseZlib TRUE)
+set(UseAssImp TRUE)
 
 # Compile external dependencies 
 add_subdirectory (external)

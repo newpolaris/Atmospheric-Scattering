@@ -97,22 +97,6 @@ GraphicsFramebufferPtr OGLDevice::createFramebuffer(const GraphicsFramebufferDes
     return nullptr;
 }
 
-void OGLDevice::setFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept
-{
-    assert(framebuffer);
-
-    if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-    {
-        auto fbo = framebuffer->downcast_pointer<OGLCoreFramebuffer>();
-        if (fbo) fbo->bind();
-    }
-    else if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-    {
-        auto fbo = framebuffer->downcast_pointer<OGLFramebuffer>();
-        if (fbo) fbo->bind();
-    }
-}
-
 void OGLDevice::bindRenderTexture(const GraphicsTexturePtr& texture, uint32_t attachment, uint32_t textarget, int32_t level) noexcept 
 {
     if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)

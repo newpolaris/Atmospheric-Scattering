@@ -21,11 +21,11 @@
 
 #include <GLType/OGLTexture.h>
 #include <GLType/OGLCoreTexture.h>
+
+#include <GLType/OGLFramebuffer.h>
 #include <GLType/OGLCoreFramebuffer.h>
 
 #include <BufferManager.h>
-#include <Skybox/Skybox.h>
-#include <Skybox/LightCube.h>
 #include <GraphicsTypes.h>
 #include <PhaseFunctions.h>
 #include <Mesh.h>
@@ -54,10 +54,6 @@ struct SceneSettings
     bool bUpdated = true;
 	bool bChapman = true;
     bool bUpdateLight = true;
-	bool m_doDiffuse = false;
-	bool m_doSpecular = false;
-	bool m_doDiffuseIbl = true;
-	bool m_doSpecularIbl = true;
 	float m_exposure = 0.f;
 	float m_radianceSlider = 2.f;
 	float m_bgType = 7.f;
@@ -108,10 +104,6 @@ public:
 private:
 
     glm::vec3 GetSunDirection() const;
-    void renderCloud() noexcept;
-    void renderSkybox() noexcept;
-    void renderSkycube() noexcept;
-    void PassGbuffer() noexcept;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -121,25 +113,9 @@ private:
     SphereMesh m_Sphere;
     SphereMesh m_SphereMini;
     FullscreenTriangleMesh m_ScreenTraingle;
-    LightCube m_LightCube;
     ProgramShader m_FlatShader;
-    ProgramShader m_NishitaSkyShader;
-    ProgramShader m_TimeOfDayShader;
-    ProgramShader m_TimeOfNightShader;
-    ProgramShader m_StarShader;
-    ProgramShader m_MoonShader;
-    ProgramShader m_BlitShader;
     ProgramShader m_PostProcessHDRShader;
-    ProgramShader m_SkyboxShader;
-    ProgramShader m_SkycubeShader;
-    ProgramShader m_IblMeshShader;
-    ProgramShader m_GbufferShader;
-    ProgramShader m_ShadingOpacityShader;
-    GraphicsTexturePtr m_SkyboxTex;
     GraphicsTexturePtr m_ScreenColorTex;
-	GraphicsTexturePtr m_NoiseMapSamp;
-	GraphicsTexturePtr m_MilkywaySamp;
-	GraphicsTexturePtr m_MoonMapSamp;
     GraphicsFramebufferPtr m_ColorRenderTarget;
     GraphicsDevicePtr m_Device;
 };
@@ -172,50 +148,11 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 
-    light_cube::initialize(m_Device);
-    skybox::initialize(m_Device);
-
 	m_FlatShader.setDevice(m_Device);
 	m_FlatShader.initialize();
 	m_FlatShader.addShader(GL_VERTEX_SHADER, "Flat.Vertex");
 	m_FlatShader.addShader(GL_FRAGMENT_SHADER, "Flat.Fragment");
 	m_FlatShader.link();
-
-	m_NishitaSkyShader.setDevice(m_Device);
-	m_NishitaSkyShader.initialize();
-	m_NishitaSkyShader.addShader(GL_VERTEX_SHADER, "Nishita.Vertex");
-	m_NishitaSkyShader.addShader(GL_FRAGMENT_SHADER, "Nishita.Fragment");
-	m_NishitaSkyShader.link();
-
-	m_TimeOfDayShader.setDevice(m_Device);
-	m_TimeOfDayShader.initialize();
-	m_TimeOfDayShader.addShader(GL_VERTEX_SHADER, "Time of day/Time of day.Vertex");
-	m_TimeOfDayShader.addShader(GL_FRAGMENT_SHADER, "Time of day/Time of day.Fragment");
-	m_TimeOfDayShader.link();
-
-	m_TimeOfNightShader.setDevice(m_Device);
-	m_TimeOfNightShader.initialize();
-	m_TimeOfNightShader.addShader(GL_VERTEX_SHADER, "Time of night/Time of night.Vertex");
-	m_TimeOfNightShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Time of night.Fragment");
-	m_TimeOfNightShader.link();
-
-	m_StarShader.setDevice(m_Device);
-	m_StarShader.initialize();
-	m_StarShader.addShader(GL_VERTEX_SHADER, "Time of night/Stars.Vertex");
-	m_StarShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Stars.Fragment");
-	m_StarShader.link();
-
-	m_MoonShader.setDevice(m_Device);
-	m_MoonShader.initialize();
-	m_MoonShader.addShader(GL_VERTEX_SHADER, "Time of night/Moon.Vertex");
-	m_MoonShader.addShader(GL_FRAGMENT_SHADER, "Time of night/Moon.Fragment");
-	m_MoonShader.link();
-
-	m_BlitShader.setDevice(m_Device);
-	m_BlitShader.initialize();
-	m_BlitShader.addShader(GL_VERTEX_SHADER, "BlitTexture.Vertex");
-	m_BlitShader.addShader(GL_FRAGMENT_SHADER, "BlitTexture.Fragment");
-	m_BlitShader.link();
 
 	m_PostProcessHDRShader.setDevice(m_Device);
 	m_PostProcessHDRShader.initialize();
@@ -223,76 +160,10 @@ void LightScattering::startup() noexcept
 	m_PostProcessHDRShader.addShader(GL_FRAGMENT_SHADER, "PostProcessHDR.Fragment");
 	m_PostProcessHDRShader.link();
 
-	m_SkyboxShader.setDevice(m_Device);
-	m_SkyboxShader.initialize();
-	m_SkyboxShader.addShader(GL_VERTEX_SHADER, "Helipad GoldenHour/Sky with box.Vertex");
-	m_SkyboxShader.addShader(GL_FRAGMENT_SHADER, "Helipad GoldenHour/Sky with box.Fragment");
-	m_SkyboxShader.link();
-
-	m_SkycubeShader.setDevice(m_Device);
-	m_SkycubeShader.initialize();
-	m_SkycubeShader.addShader(GL_VERTEX_SHADER, "Skycube.Vertex");
-	m_SkycubeShader.addShader(GL_FRAGMENT_SHADER, "Skycube.Fragment");
-	m_SkycubeShader.link();
-
-	m_IblMeshShader.setDevice(m_Device);
-    m_IblMeshShader.initialize();
-    m_IblMeshShader.addShader(GL_VERTEX_SHADER, "IBL/IblMesh.Vertex");
-    m_IblMeshShader.addShader(GL_FRAGMENT_SHADER, "IBL/IblMesh.Fragment");
-    m_IblMeshShader.link();
-
-    m_GbufferShader.setDevice(m_Device);
-    m_GbufferShader.initialize();
-    m_GbufferShader.addShader(GL_VERTEX_SHADER, "Gbuffer.Vertex");
-    m_GbufferShader.addShader(GL_FRAGMENT_SHADER, "Gbuffer.Fragment");
-    m_GbufferShader.link();
-
-    m_ShadingOpacityShader.setDevice(m_Device);
-    m_ShadingOpacityShader.initialize();
-    m_ShadingOpacityShader.addShader(GL_VERTEX_SHADER, "ScreenSpaceQuadVS.glsl");
-    m_ShadingOpacityShader.addShader(GL_FRAGMENT_SHADER, "ShadingOpacityPS.glsl");
-    m_ShadingOpacityShader.link();
-
     m_ScreenTraingle.create();
     m_Cube.create();
     m_Sphere.create();
     m_SphereMini.create();
-
-    GraphicsTextureDesc noise;
-    noise.setWrapS(GL_REPEAT);
-    noise.setWrapT(GL_REPEAT);
-    noise.setMinFilter(GL_LINEAR);
-    noise.setMagFilter(GL_LINEAR);
-    noise.setFilename("resources/Skybox/cloud.tga");
-    m_NoiseMapSamp = m_Device->createTexture(noise);
-
-    GraphicsTextureDesc milkyWay;
-    milkyWay.setWrapS(GL_REPEAT);
-    milkyWay.setWrapT(GL_REPEAT);
-    milkyWay.setMinFilter(GL_NEAREST);
-    milkyWay.setMagFilter(GL_NEAREST);
-    milkyWay.setFilename("resources/Skybox/milky way.jpg");
-    m_MilkywaySamp = m_Device->createTexture(milkyWay);
-
-    GraphicsTextureDesc moon;
-    moon.setWrapS(GL_REPEAT);
-    moon.setWrapT(GL_REPEAT);
-    moon.setMinFilter(GL_LINEAR);
-    moon.setMagFilter(GL_LINEAR);
-    moon.setFilename("resources/Skybox/moon.jpg");
-    m_MoonMapSamp = m_Device->createTexture(moon);
-
-    // load the HDR environment map
-    GraphicsTextureDesc skyDesc;
-    skyDesc.setWrapS(GL_REPEAT);
-    skyDesc.setWrapT(GL_REPEAT);
-    skyDesc.setMinFilter(GL_NEAREST_MIPMAP_LINEAR);
-    skyDesc.setMagFilter(GL_LINEAR);
-    skyDesc.setFilename("resources/skybox/helipad.dds");
-    // skyDesc.setFilename("resources/skybox/newport_loft.hdr");
-    m_SkyboxTex = m_Device->createTexture(skyDesc);
-    assert(m_SkyboxTex);
-    m_LightCube.initialize(m_Device, m_SkyboxTex);
 }
 
 void LightScattering::closeup() noexcept
@@ -322,12 +193,6 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
-
-    profiler::start(kProfilerTypeUpdate);
-    if (m_Settings.bUpdateLight)
-        m_LightCube.update(m_Device);
-    profiler::stop(kProfilerTypeUpdate);
-    profiler::tick(kProfilerTypeUpdate, s_CpuTick, s_GpuTick);
 }
 
 void LightScattering::updateHUD() noexcept
@@ -446,98 +311,138 @@ void LightScattering::updateHUD() noexcept
     m_Settings.bUiChanged = bUpdated;
 }
 
+enum FrontFaceType { kCountClockWise = 0, kClockWise };
+enum ClearBitType
+{
+    kColorBufferBit = 1,
+    kDepthBufferBit = 2,
+    kStencilBufferBit = 4,
+    kAccumBufferBit = 8
+};
+
+class GraphicsContext
+{
+public:
+
+    GraphicsContext(GraphicsDeviceType type);
+
+    void Clear(uint8_t flags);
+    void ClearColor(glm::vec4 color);
+    void ClearDepth(float depth);
+
+    void SetViewport(int x, int y, size_t width, size_t height);
+    void SetFrontFace(FrontFaceType flag);
+    void SetDepthTest(bool bFlag);
+    void SetCubemapSeamless(bool bFlag);
+    void SetFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept;
+
+    GraphicsDeviceType m_DeviceType;
+};
+
+GraphicsContext::GraphicsContext(GraphicsDeviceType type) 
+    :  m_DeviceType(type) 
+{
+}
+
+void GraphicsContext::Clear(uint8_t flags)
+{
+    GLbitfield mask = 0;
+    if (flags & kColorBufferBit)
+        mask |= GL_COLOR_BUFFER_BIT;
+    if (flags & kDepthBufferBit)
+        mask |= GL_DEPTH_BUFFER_BIT;
+    if (flags & kStencilBufferBit)
+        mask |= GL_STENCIL_BUFFER_BIT;
+    if (flags & kAccumBufferBit)
+        mask |= GL_ACCUM_BUFFER_BIT;
+    glClear(mask);
+}
+
+void GraphicsContext::ClearColor(glm::vec4 color)
+{
+    glClearColor(color.r, color.g, color.b, color.a);
+}
+
+void GraphicsContext::ClearDepth(float depth)
+{
+    glClearDepthf(depth);
+}
+
+void GraphicsContext::SetViewport(int x, int y, size_t width, size_t height)
+{
+    glViewport(x, y, width, height);
+}
+
+void GraphicsContext::SetFrontFace(FrontFaceType flag)
+{
+    glFrontFace((flag == kCountClockWise) ? GL_CCW : GL_CW);
+}
+
+void GraphicsContext::SetDepthTest(bool bFlag)
+{
+    const auto func = bFlag ? glEnable : glDisable;
+    func(GL_DEPTH_TEST);
+}
+
+void GraphicsContext::SetCubemapSeamless(bool bFlag)
+{
+    const auto func = bFlag ? glEnable : glDisable;
+    func(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
+void GraphicsContext::SetFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept
+{
+    assert(framebuffer);
+
+    if (!framebuffer)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        return;
+    }
+
+    if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    {
+        auto fbo = framebuffer->downcast_pointer<OGLCoreFramebuffer>();
+        if (fbo) fbo->bind();
+    }
+    else if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    {
+        auto fbo = framebuffer->downcast_pointer<OGLFramebuffer>();
+        if (fbo) fbo->bind();
+    }
+}
+
+
 void LightScattering::render() noexcept
 {
+    GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
     const auto matViewInverse = glm::inverse(m_Camera.getViewMatrix());
     const auto matProjectInverse = glm::inverse(m_Camera.getProjectionMatrix());
     const auto matViewProjectInverse = glm::inverse(m_Camera.getViewProjMatrix());
 
-    PassGbuffer();
-
     auto& desc = m_ScreenColorTex->getGraphicsTextureDesc();
-    m_Device->setFramebuffer(m_ColorRenderTarget);
-    GLenum clearFlag = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-    glViewport(0, 0, desc.getWidth(), desc.getHeight());
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClearDepthf(1.0f);
-    glClear(clearFlag);
 
-    // renderCubeSample();
-    // renderSkycube();
-    // renderSkybox();
-    // renderCloud();
-
-    if (0)
-    {
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-        glFrontFace(GL_CW);
-        m_IblMeshShader.bind();
-
-        // Uniform binding
-        m_IblMeshShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_IblMeshShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_IblMeshShader.setUniform("uExposure", m_Settings.m_exposure);
-        m_IblMeshShader.setUniform("ubDiffuse", float(m_Settings.m_doDiffuse));
-        m_IblMeshShader.setUniform("ubSpecular", float(m_Settings.m_doSpecular));
-        m_IblMeshShader.setUniform("ubDiffuseIbl", float(m_Settings.m_doDiffuseIbl));
-        m_IblMeshShader.setUniform("ubSpecularIbl", float(m_Settings.m_doSpecularIbl));
-
-        // Texture binding
-        m_IblMeshShader.bindTexture("uBuffer1", Graphics::g_Gbuffer1Map, 0);
-        m_IblMeshShader.bindTexture("uBuffer2", Graphics::g_Gbuffer2Map, 1);
-        m_IblMeshShader.bindTexture("uBuffer3", Graphics::g_Gbuffer3Map, 2);
-        m_IblMeshShader.bindTexture("uBuffer4", Graphics::g_Gbuffer4Map, 3);
-
-        m_IblMeshShader.bindTexture("uEnvmapIrr", m_LightCube.getIrradiance(), 4);
-        m_IblMeshShader.bindTexture("uEnvmapPrefilter", m_LightCube.getPrefilter(), 5);
-        m_IblMeshShader.bindTexture("uEnvmapBrdfLUT", m_LightCube.getBrdfLUT(), 6);
-
-        m_Sphere.draw();
-        glFrontFace(GL_CCW);
-        glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    }
-
-    skybox::light(m_Camera);
-
-    {
-        const auto viewportSize = glm::vec2(desc.getWidth(), desc.getHeight());
-        m_Device->setFramebuffer(m_ColorRenderTarget);
-        m_ShadingOpacityShader.bind();
-        m_ShadingOpacityShader.setUniform("uSunDirection", -GetSunDirection());
-        m_ShadingOpacityShader.setUniform("uViewportSize", viewportSize);
-        m_ShadingOpacityShader.setUniform("uMatView", m_Camera.getViewMatrix());
-        m_ShadingOpacityShader.setUniform("uProjectInverse", matProjectInverse);
-        m_ShadingOpacityShader.bindTexture("uEnvLightMapSamp", Graphics::g_EnvLightMap, 0);
-        m_ShadingOpacityShader.bindTexture("uGbuffer1", Graphics::g_Gbuffer1Map, 1);
-        m_ShadingOpacityShader.bindTexture("uGbuffer2", Graphics::g_Gbuffer2Map, 2);
-        m_ShadingOpacityShader.bindTexture("uGbuffer3", Graphics::g_Gbuffer3Map, 3);
-        m_ShadingOpacityShader.bindTexture("uGbuffer4", Graphics::g_Gbuffer4Map, 4);
-        m_ScreenTraingle.draw();
-        m_ShadingOpacityShader.unbind();
-    }
-    {
-        // s_EnvLighting.bindTexture("uGbuffer5", Graphics::g_Gbuffer5Map, 7);
-        // s_EnvLighting.bindTexture("uGbuffer6", Graphics::g_Gbuffer6Map, 8);
-        // s_EnvLighting.bindTexture("uGbuffer7", Graphics::g_Gbuffer7Map, 9);
-        // s_EnvLighting.bindTexture("uGbuffer8", Graphics::g_Gbuffer8Map, 10);
-    }
+    context.SetFramebuffer(m_ColorRenderTarget);
+    context.SetViewport(0, 0, desc.getWidth(), desc.getHeight());
+    context.ClearColor(glm::vec4(1, 0, 0, 0));
+    context.ClearDepth(1.0f);
+    context.Clear(kColorBufferBit | kDepthBufferBit);
 
     // Tone mapping
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, getFrameWidth(), getFrameHeight());
+        context.SetFramebuffer(nullptr);
 
-        glDisable(GL_DEPTH_TEST);
+        context.SetViewport(0, 0, getFrameWidth(), getFrameHeight());
+        context.SetDepthTest(false);
         m_PostProcessHDRShader.bind();
-        m_PostProcessHDRShader.bindTexture("uTexSource", Graphics::g_EnvLightMap, 0);
         m_PostProcessHDRShader.bindTexture("uTexSource", m_ScreenColorTex, 0);
         m_ScreenTraingle.draw();
-        glEnable(GL_DEPTH_TEST);
+        context.SetDepthTest(true);
     }
     profiler::stop(kProfilerTypeRender);
-    // profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
+    profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
@@ -545,166 +450,6 @@ glm::vec3 LightScattering::GetSunDirection() const
     const float angle = glm::radians(m_Settings.angle);
     glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
     return glm::normalize(sunDir);
-}
-
-void LightScattering::renderCloud() noexcept
-{
-    // [Preetham99]
-    const glm::vec3 K = glm::vec3(0.686282f, 0.677739f, 0.663365f); // spectrum
-    const glm::vec3 lambda = glm::vec3(680e-9f, 550e-9f, 440e-9f);
-
-    // sky box
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-
-    const auto sunDir = GetSunDirection();
-    const float time = m_Timer.duration();
-    if (m_Settings.kModel == kNishita)
-    {
-        float turbidity = glm::exp(m_Settings.sunTurbidityParams.value());
-        glm::vec3 mie = ComputeCoefficientMie(lambda, K, turbidity);
-        glm::vec3 rayleigh = ComputeCoefficientRayleigh(lambda);
-
-        m_NishitaSkyShader.bind();
-        m_NishitaSkyShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_NishitaSkyShader.setUniform("uChapman", m_Settings.bChapman);
-        m_NishitaSkyShader.setUniform("uEarthRadius", 6360e3f);
-        m_NishitaSkyShader.setUniform("uAtmosphereRadius", 6420e3f);
-        m_NishitaSkyShader.setUniform("uEarthCenter", glm::vec3(0.f));
-        m_NishitaSkyShader.setUniform("uSunDir", sunDir);
-        m_NishitaSkyShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-        m_NishitaSkyShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
-        m_NishitaSkyShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
-        m_NishitaSkyShader.setUniform("betaR0", rayleigh);
-        m_NishitaSkyShader.setUniform("betaM0", mie);
-        m_Sphere.draw();
-    }
-    if (m_Settings.kModel == kTimeOfDay)
-    {
-        m_TimeOfDayShader.bind();
-        m_TimeOfDayShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_TimeOfDayShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_TimeOfDayShader.setUniform("uSunDir", glm::normalize(sunDir));
-        m_TimeOfDayShader.setUniform("uAltitude", m_Settings.altitude*1e3f);
-        m_TimeOfDayShader.setUniform("uCloudSpeed", m_Settings.cloudSpeedParams.value() * time);
-        m_TimeOfDayShader.setUniform("uCloudDensity", m_Settings.cloudDensityParams.value());
-        m_TimeOfDayShader.setUniform("uSunRadius", m_Settings.sunRaidusParams.value());
-        m_TimeOfDayShader.setUniform("uSunRadiance", m_Settings.sunRadianceParams.value());
-        m_TimeOfDayShader.setUniform("uTurbidity", m_Settings.sunTurbidity2Params.value());
-        m_TimeOfDayShader.bindTexture("uNoiseMapSamp", m_NoiseMapSamp, 0);
-        m_Sphere.draw();
-    }
-    if (m_Settings.kModel == kTimeOfNight)
-    {
-        m_StarShader.bind();
-        m_StarShader.setUniform("uTime", time);
-        m_StarShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_StarShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_StarShader.setUniform("uSunDir", glm::normalize(sunDir));
-        m_StarShader.bindTexture("uMilkyWayMapSamp", m_MilkywaySamp, 0);
-        m_Sphere.draw();
-
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-        m_MoonShader.bind();
-        m_MoonShader.setUniform("uTime", time);
-        m_MoonShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_MoonShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_MoonShader.setUniform("uSunDirection", -glm::normalize(sunDir));
-        m_MoonShader.setUniform("uMoonBrightness", m_Settings.moonRadianceParams.ratio());
-        m_MoonShader.bindTexture("uMoonMapSamp", m_MoonMapSamp, 0);
-        m_Sphere.draw();
-
-        glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-        m_TimeOfNightShader.bind();
-        m_TimeOfNightShader.setUniform("uCameraPosition", m_Camera.getPosition());
-        m_TimeOfNightShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-        m_TimeOfNightShader.setUniform("uSunDir", glm::normalize(sunDir));
-        m_TimeOfNightShader.setUniform("uTurbidity", m_Settings.moonTurbidityParams.value());
-        m_Sphere.draw();
-
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-    }
-    glEnable(GL_CULL_FACE);
-}
-
-void LightScattering::renderSkycube() noexcept
-{
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    glFrontFace(GL_CW);
-
-    m_SkycubeShader.bind();
-    m_SkycubeShader.setUniform("uViewMatrix", m_Camera.getViewMatrix());
-    m_SkycubeShader.setUniform("uProjMatrix", m_Camera.getProjectionMatrix());
-    m_SkycubeShader.setUniform("uBgType", m_Settings.m_bgType);
-    m_SkycubeShader.setUniform("uExposure", m_Settings.m_exposure);
-
-    // Texture binding
-    m_SkycubeShader.bindTexture("uEnvmapSamp", m_LightCube.getEnvCube(), 0);
-    m_SkycubeShader.bindTexture("uEnvmapIrrSamp", m_LightCube.getIrradiance(), 1);
-    m_SkycubeShader.bindTexture("uEnvmapPrefilterSamp", m_LightCube.getPrefilter(), 2);
-
-    m_Cube.draw();
-    glFrontFace(GL_CCW);
-    glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-}
-
-void LightScattering::PassGbuffer() noexcept
-{
-    auto& gbufferdesc = Graphics::g_Gbuffer1Map->getGraphicsTextureDesc();
-    m_Device->setFramebuffer(Graphics::g_ObjectFramebuffer);
-    glViewport(0, 0, gbufferdesc.getWidth(), gbufferdesc.getHeight());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Render Object
-    m_GbufferShader.bind();
-
-    // Uniform binding
-    m_GbufferShader.setUniform("uMatProject", m_Camera.getProjectionMatrix());
-    m_GbufferShader.setUniform("uMatView", m_Camera.getViewMatrix());
-    m_GbufferShader.setUniform("uMatViewProject", m_Camera.getViewProjMatrix());
-    m_GbufferShader.setUniform("uEyePosWS", m_Camera.getPosition());
-    m_GbufferShader.setUniform("uRgbDiff", m_Settings.m_rgbDiff);
-
-    // Submit orbs.
-    for (float yy = 0, yend = 5.0f; yy < yend; yy += 1.0f)
-    {
-        for (float xx = 0, xend = 5.0f; xx < xend; xx += 1.0f)
-        {
-            const float scale = 1.2f;
-            const float spacing = 2.2f * 30;
-            const float yAdj = -0.8f;
-            glm::vec3 translate(
-                0.0f + (xx / xend)*spacing - (1.0f + (scale - 1.0f)*0.5f - 1.0f / xend),
-                yAdj / yend + (yy / yend)*spacing - (1.0f + (scale - 1.0f)*0.5f - 1.0f / yend),
-                0.0f);
-            glm::mat4 mtxS = glm::scale(glm::mat4(1), glm::vec3(scale / xend));
-            glm::mat4 mtxST = glm::translate(mtxS, translate);
-            m_GbufferShader.setUniform("uGlossiness", xx*(1.0f / xend));
-            m_GbufferShader.setUniform("uReflectivity", (yend - yy)*(1.0f / yend));
-            m_GbufferShader.setUniform("uMtxSrt", mtxST);
-            m_SphereMini.draw();
-        }
-    }
-    m_GbufferShader.unbind();
-
-    // Render background
-}
-
-void LightScattering::renderSkybox() noexcept
-{
-    glFrontFace(GL_CW);
-    m_SkyboxShader.bind();
-    m_SkyboxShader.setUniform("uModelToProj", m_Camera.getViewProjMatrix());
-    m_SkyboxShader.bindTexture("uSkyboxMapSamp", m_SkyboxTex, 0);
-    m_Cube.draw();
-    glFrontFace(GL_CCW);
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept

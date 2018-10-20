@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\newpolaris\Projects\lightProbe\CMakeFiles\d21108ad9c97e94ecc2f30d393d4f7c6\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{48606A55-052B-3459-911B-689376061055}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

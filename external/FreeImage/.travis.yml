@@ -1,0 +1,48 @@
+sudo: required
+dist: trusty
+language: c++
+
+matrix:
+ include:
+  # OSX / Clang
+  - os: osx
+    osx_image: xcode8
+  
+  # Linux / GCC
+  - os: linux
+    compiler: gcc
+    env: 
+      - C_COMPILER=gcc-4.9
+      - CXX_COMPILER=g++-4.9
+    addons:
+      apt:
+        sources: ['ubuntu-toolchain-r-test']
+        packages: 
+          - gcc-4.9
+          - g++-4.9
+  
+before_script:
+  - export BUILD_DIR=$(pwd)/build
+  - export INSTALL_DIR=$(pwd)/build/install
+
+  - mkdir $BUILD_DIR
+  - pushd $(pwd)
+  - cd $BUILD_DIR
+
+  - echo ${C_COMPILER}
+  - echo ${CXX_COMPILER}
+
+  - if [[ "${C_COMPILER}" != "" ]]; then export CC=${C_COMPILER}; fi
+  - if [[ "${CXX_COMPILER}" != "" ]]; then export CXX=${CXX_COMPILER}; fi
+
+  - cmake ../ -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DFREEIMAGE_TESTING=ON
+  - cmake --build . --target install
+  - popd
+
+script:
+  - export BUILD_DIR=$(pwd)/build
+  - pushd $(pwd)
+  - cd $BUILD_DIR
+  - ctest
+  - popd
+
