@@ -10,6 +10,12 @@ add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
+### Zlib ###
+if (UseZlib)
+	set(SKIP_INSTALL_ALL FALSE)
+	add_subdirectory(zlib)
+endif(UseZlib)
+
 ### GLFW ###
 
 add_subdirectory (glfw-3.1.2)
@@ -130,9 +136,3 @@ endif(UseNVDDS)
 if (UseGLI)
 	add_subdirectory(gli)
 endif(UseGLI)
-
-### Zlib ###
-if (UseZlib)
-	set(SKIP_INSTALL_ALL FALSE)
-	add_subdirectory(zlib)
-endif(UseZlib)
