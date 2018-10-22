@@ -13,11 +13,15 @@ namespace Graphics
 
     GraphicsTexturePtr g_SceneMap;
     GraphicsTexturePtr g_DepthMap;
-    GraphicsTexturePtr g_ScreenDepthMap;
+    GraphicsFramebufferPtr g_MainFramebuffer;
+
+    GraphicsTexturePtr g_ShadowMap;
+    GraphicsFramebufferPtr g_ShadowMapFramebuffer;
 
     GraphicsTexturePtr g_EnvLightMap;
     GraphicsTexturePtr g_EnvLightAlphaMap;
 
+    GraphicsTexturePtr g_ScreenDepthMap;
     GraphicsTexturePtr g_Gbuffer1Map;
     GraphicsTexturePtr g_Gbuffer2Map;
     GraphicsTexturePtr g_Gbuffer3Map;
@@ -27,7 +31,6 @@ namespace Graphics
     GraphicsTexturePtr g_Gbuffer7Map;
     GraphicsTexturePtr g_Gbuffer8Map;
 
-    GraphicsFramebufferPtr g_MainFramebuffer;
     GraphicsFramebufferPtr g_EnvLightFramebuffer;
     GraphicsFramebufferPtr g_ObjectFramebuffer;
     GraphicsFramebufferPtr g_ObjectAlphaFramebuffer;
@@ -54,6 +57,10 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     GraphicsTextureDesc depthDesc;
     depthDesc.setWidth(nativeWidth);
     depthDesc.setHeight(nativeHeight);
+    depthDesc.setMinFilter(GL_LINEAR);
+    depthDesc.setMagFilter(GL_LINEAR);
+    depthDesc.setWrapS(GL_CLAMP_TO_EDGE);
+    depthDesc.setWrapT(GL_CLAMP_TO_EDGE);
     depthDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
 
     g_DepthMap = device->createTexture(depthDesc);
@@ -63,6 +70,20 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_SceneMap, GL_COLOR_ATTACHMENT0));
     mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_DepthMap, GL_DEPTH_STENCIL_ATTACHMENT));
     g_MainFramebuffer = device->createFramebuffer(mainFrameDesc);
+
+    GraphicsTextureDesc shadowDesc;
+    shadowDesc.setWidth(nativeWidth);
+    shadowDesc.setHeight(nativeHeight);
+    shadowDesc.setMinFilter(GL_LINEAR);
+    shadowDesc.setMagFilter(GL_LINEAR);
+    shadowDesc.setWrapS(GL_CLAMP_TO_EDGE);
+    shadowDesc.setWrapT(GL_CLAMP_TO_EDGE);
+    shadowDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
+    g_ShadowMap = device->createTexture(shadowDesc);
+
+    GraphicsFramebufferDesc shadowmapFrameDesc;
+    shadowmapFrameDesc.addComponent(GraphicsAttachmentBinding(g_ShadowMap, GL_DEPTH_ATTACHMENT));
+    g_ShadowMapFramebuffer = device->createFramebuffer(shadowmapFrameDesc);
 
     GraphicsTextureDesc envLightDesc;
     envLightDesc.setWrapS(GL_CLAMP_TO_EDGE);
@@ -131,6 +152,11 @@ void Graphics::destroyRenderingBuffers()
     g_EnvLightMap.reset();
     g_EnvLightAlphaMap.reset();
 
+    g_ObjectFramebuffer.reset();
+    g_ObjectAlphaFramebuffer.reset();
+
+    g_ScreenDepthMap.reset();
+
     g_Gbuffer1Map.reset();
     g_Gbuffer2Map.reset();
     g_Gbuffer3Map.reset();
@@ -140,4 +166,15 @@ void Graphics::destroyRenderingBuffers()
     g_Gbuffer6Map.reset();
     g_Gbuffer7Map.reset();
     g_Gbuffer8Map.reset();
+
+    g_ShadowMapFramebuffer.reset();
+    g_ShadowMap.reset();
+
+    g_EnvLightFramebuffer.reset();
+    g_EnvLightMap.reset();
+    g_EnvLightAlphaMap.reset();
+
+    g_MainFramebuffer.reset();
+    g_SceneMap.reset();
+    g_DepthMap.reset();;
 }

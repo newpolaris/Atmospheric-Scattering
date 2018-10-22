@@ -10,6 +10,9 @@ namespace Graphics
     extern GraphicsTexturePtr g_DepthMap;
     extern GraphicsFramebufferPtr g_MainFramebuffer;
 
+    extern GraphicsTexturePtr g_ShadowMap;
+    extern GraphicsFramebufferPtr g_ShadowMapFramebuffer;
+
     extern GraphicsTexturePtr g_EnvLightMap;
     extern GraphicsTexturePtr g_EnvLightAlphaMap;
     extern GraphicsFramebufferPtr g_EnvLightFramebuffer;
