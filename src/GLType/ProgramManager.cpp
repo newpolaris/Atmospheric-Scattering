@@ -129,7 +129,7 @@ namespace nv_helpers_gl
     {
         std::string filename = filenameorig;
 
-        if(source.empty()){
+        if (source.empty()){
             return std::string();
         }
 
@@ -188,7 +188,7 @@ namespace nv_helpers_gl
                     #if NV_LINE_MARKERS
                         text += markerString(1, PathName, 1);
                     #endif
-                        text += Source;
+                        text += manualInclude(Include, Source, "", dirs, includes);
                     #if NV_LINE_MARKERS
                         text += std::string("\n") + markerString(lineCount + 1, filename, 0);
                     #endif
