@@ -299,7 +299,6 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.ClearColor(glm::vec4(0, 0, 0, 0));
     gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
-    gfxContext.SetDepthTest(true);
 
     glm::mat4 matWorld(1.0);
     glm::mat4 matWorldViewProject = m_Camera.getViewProjMatrix()*matWorld;

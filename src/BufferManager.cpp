@@ -80,11 +80,11 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     shadowDesc.setMagFilter(GL_NEAREST);
     shadowDesc.setWrapS(GL_CLAMP_TO_EDGE);
     shadowDesc.setWrapT(GL_CLAMP_TO_EDGE);
-    shadowDesc.setFormat(gli::FORMAT_D32_SFLOAT_PACK32);
+    shadowDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
     g_ShadowMap = device->createTexture(shadowDesc);
 
     GraphicsFramebufferDesc shadowmapFrameDesc;
-    shadowmapFrameDesc.addComponent(GraphicsAttachmentBinding(g_ShadowMap, GL_DEPTH_ATTACHMENT));
+    shadowmapFrameDesc.addComponent(GraphicsAttachmentBinding(g_ShadowMap, GL_DEPTH_STENCIL_ATTACHMENT));
     g_ShadowMapFramebuffer = device->createFramebuffer(shadowmapFrameDesc);
 
     GraphicsTextureDesc envLightDesc;
