@@ -9,6 +9,8 @@ namespace Graphics
     uint32_t g_NativeWidth = 0;
     uint32_t g_NativeHeight = 0;
 
+    uint32_t g_ShadowMapSize = 1024;
+
     GraphicsDeviceWeakPtr g_DeviceWeakPtr;
 
     GraphicsTexturePtr g_SceneMap;
@@ -72,13 +74,13 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     g_MainFramebuffer = device->createFramebuffer(mainFrameDesc);
 
     GraphicsTextureDesc shadowDesc;
-    shadowDesc.setWidth(nativeWidth);
-    shadowDesc.setHeight(nativeHeight);
+    shadowDesc.setWidth(g_ShadowMapSize);
+    shadowDesc.setHeight(g_ShadowMapSize);
     shadowDesc.setMinFilter(GL_LINEAR);
     shadowDesc.setMagFilter(GL_LINEAR);
     shadowDesc.setWrapS(GL_CLAMP_TO_EDGE);
     shadowDesc.setWrapT(GL_CLAMP_TO_EDGE);
-    shadowDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
+    shadowDesc.setFormat(gli::FORMAT_D32_SFLOAT_PACK32);
     g_ShadowMap = device->createTexture(shadowDesc);
 
     GraphicsFramebufferDesc shadowmapFrameDesc;

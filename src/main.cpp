@@ -101,6 +101,7 @@ private:
     SceneSettings m_Settings;
 	TCamera m_Camera;
     SimpleTimer m_Timer;
+    DirectionalLight m_DirectionalLight;
     SpotLight m_SpotLight;
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
@@ -130,6 +131,11 @@ LightScattering::LightScattering() noexcept :
     m_SpotLight.Position = glm::vec3(-20.0f, 20.0f, 5.0f);
     m_SpotLight.Direction = glm::vec3(1.f, -1.f, 0.f);
     m_SpotLight.Cutoff = 20.0f;
+
+    m_DirectionalLight.AmbientIntensity = 0.5f;
+    m_DirectionalLight.DiffuseIntensity = 0.9f;
+    m_DirectionalLight.Color = glm::vec3(1.f, 1.f, 1.f);
+    m_DirectionalLight.Direction = glm::vec3(1.0f, -1.f, 0.0f);
 }
 
 LightScattering::~LightScattering() noexcept
@@ -260,6 +266,7 @@ void LightScattering::render() noexcept
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
+    m_DirectionalLight.Direction = m_Settings.lightDirection;
     m_SpotLight.Direction = m_Settings.lightDirection;
     m_SpotLight.Position = m_Settings.position;
 
@@ -274,12 +281,14 @@ void LightScattering::render() noexcept
 void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 {
     gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer);
-    gfxContext.SetViewport(0, 0, Graphics::g_NativeWidth, Graphics::g_NativeHeight); 
+    gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize); 
+    gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kDepthBufferBit);
 
     m_ShadowMapShader.bind();
     m_ShadowMapShader.setUniform("uMatShadow", GetShadowMatrix());
     m_Cube.draw();
+    m_SphereMini.draw();
     m_ShadowMapShader.unbind();
 }
 
@@ -295,7 +304,8 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     glm::mat4 matWorldViewProject = m_Camera.getViewProjMatrix()*matWorld;
 
     m_LightTechnique.bind();
-    m_LightTechnique.setSpotLights(1, &m_SpotLight);
+    // m_LightTechnique.setSpotLights(1, &m_SpotLight);
+    m_LightTechnique.setDirectionalLight(m_DirectionalLight);
     m_LightTechnique.setMatWorld(matWorld);
     m_LightTechnique.setMatWorldViewProject(matWorldViewProject);
     m_LightTechnique.setMatLight(GetShadowMatrix());
@@ -303,6 +313,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightTechnique.setShadowMap(Graphics::g_ShadowMap);
     m_Ground.draw();
     m_Cube.draw();
+    m_SphereMini.draw();
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
@@ -325,10 +336,15 @@ glm::vec3 LightScattering::GetSunDirection() const
 
 glm::mat4 LightScattering::GetShadowMatrix() const
 {
-    const glm::mat4 identity(1.f);
+#if 0
     glm::mat4 view = glm::lookAtRH(m_SpotLight.Position, m_SpotLight.Position + m_SpotLight.Direction, glm::vec3(0, 1, 0));
     glm::mat4 project = glm::perspectiveFovRH_NO(glm::radians(60.f), float(Graphics::g_NativeWidth), float(Graphics::g_NativeHeight), 0.1f, 100.f);
     glm::mat4 matShadow = project * view;
+#else
+    glm::mat4 view = glm::lookAtRH(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0, 1, 0));
+    glm::mat4 project = glm::orthoRH_NO(-5.f, 5.f, -5.f, 5.f, -5.f, 5.f);
+    glm::mat4 matShadow = project * view;
+#endif
     return matShadow;
 }
 

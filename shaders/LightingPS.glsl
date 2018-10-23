@@ -51,13 +51,13 @@ uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];
 
 uniform sampler2D uTexShadowmap;
 
-float CalcShadowFacotr(vec4 positionLS)
+float CalcShadowFactor(vec4 positionLS)
 {
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
     float Depth = texture(uTexShadowmap, UVCoords.xy).x;
-    if (Depth < UVCoords.z + 1e-5f)
-        return 0.5;
+    if (Depth < UVCoords.z + 1e-4f)
+        return 1.0;
     return 1.0;
 }
 
@@ -84,9 +84,10 @@ vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal, float 
     return (AmbientColor + ShadowFactor * (DiffuseColor + SpecularColor));
 }
 
-vec4 CalcDirectionalLight(DirectionalLight light, vec3 Normal)
+vec4 CalcDirectionalLight(DirectionalLight light, vec3 Normal, vec4 LightSpacePos)
 {
-    return CalcLightInternal(light.Base, light.Direction, Normal, 1.0);
+    float ShadowFactor = CalcShadowFactor(LightSpacePos);
+    return CalcLightInternal(light.Base, light.Direction, Normal, ShadowFactor);
 }
 
 vec4 CalcPointLight(PointLight light, vec3 normal, vec4 positionLS)
@@ -94,7 +95,7 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec4 positionLS)
     vec3 LightDirection = vPositionWS - light.Position;
     float Distance = length(LightDirection);
     LightDirection = normalize(LightDirection);
-    float ShadowFactor = CalcShadowFacotr(positionLS);
+    float ShadowFactor = CalcShadowFactor(positionLS);
 
     vec4 Color = CalcLightInternal(light.Base, LightDirection, normal, ShadowFactor);
     float Attenuation = light.Attenuation.x + light.Attenuation.y * Distance + light.Attenuation.z * Distance * Distance;
@@ -116,7 +117,7 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal, vec4 positionLS)
 void main()
 {
     vec3 normal = normalize(vNormalWS);
-    vec4 sumLight = vec4(0.0);
+    vec4 sumLight = CalcDirectionalLight(uDirectionalLight, normal, vPositionLS);
     for (int i = 0; i < uNumPointLights; i++)
         sumLight += CalcPointLight(uPointLights[i], normal, vPositionLS);
     for (int i = 0; i < uNumSpotLights; i++)
