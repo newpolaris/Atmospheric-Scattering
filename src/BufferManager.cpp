@@ -70,14 +70,14 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
 
     GraphicsFramebufferDesc mainFrameDesc;
     mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_SceneMap, GL_COLOR_ATTACHMENT0));
-    mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_DepthMap, GL_DEPTH_STENCIL_ATTACHMENT));
+    mainFrameDesc.addComponent(GraphicsAttachmentBinding(g_DepthMap, GL_DEPTH_ATTACHMENT));
     g_MainFramebuffer = device->createFramebuffer(mainFrameDesc);
 
     GraphicsTextureDesc shadowDesc;
     shadowDesc.setWidth(g_ShadowMapSize);
     shadowDesc.setHeight(g_ShadowMapSize);
-    shadowDesc.setMinFilter(GL_LINEAR);
-    shadowDesc.setMagFilter(GL_LINEAR);
+    shadowDesc.setMinFilter(GL_NEAREST);
+    shadowDesc.setMagFilter(GL_NEAREST);
     shadowDesc.setWrapS(GL_CLAMP_TO_EDGE);
     shadowDesc.setWrapT(GL_CLAMP_TO_EDGE);
     shadowDesc.setFormat(gli::FORMAT_D32_SFLOAT_PACK32);

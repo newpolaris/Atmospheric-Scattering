@@ -16,7 +16,7 @@ void main()
 
 -- Fragment
 
-#define HDR_TONEMAP_OPERATOR 4
+#define HDR_TONEMAP_OPERATOR 0
 
 #include "Common.glsli"
 #include "Math.glsli"
@@ -33,8 +33,8 @@ out vec3 fragColor;
 void main() 
 {
     vec3 color = texture(uTexSource, vTexcoords).rgb;
-    color = ColorToneMapping(color);
-    color = linear2srgb(color);
+    // color = ColorToneMapping(color);
+    // color = linear2srgb(color);
 
     fragColor = color;
 }

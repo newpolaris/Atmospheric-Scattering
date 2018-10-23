@@ -55,9 +55,10 @@ float CalcShadowFactor(vec4 positionLS)
 {
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
+    float currentZ = UVCoords.z;
     float Depth = texture(uTexShadowmap, UVCoords.xy).x;
-    if (Depth < UVCoords.z + 1e-4f)
-        return 1.0;
+    if (currentZ - 0.01 > Depth.x)
+        return 0.5;
     return 1.0;
 }
 
@@ -114,6 +115,14 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal, vec4 positionLS)
     return vec4(0, 0, 0, 0);
 }
 
+vec4 DepthPrint(vec4 positionLS)
+{
+    vec3 ProjCoords = positionLS.xyz / positionLS.w;
+    vec3 UVCoords = 0.5 * ProjCoords + 0.5;
+    float Depth = texture(uTexShadowmap, UVCoords.xy).x;
+    return vec4(UVCoords.z - 0.01 > Depth.x ? 0.0 : 1.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
     vec3 normal = normalize(vNormalWS);
@@ -122,5 +131,6 @@ void main()
         sumLight += CalcPointLight(uPointLights[i], normal, vPositionLS);
     for (int i = 0; i < uNumSpotLights; i++)
         sumLight += CalcSpotLight(uSpotLights[i], normal, vPositionLS);
+    // sumLight = DepthPrint(vPositionLS);
     FragColor = sumLight;
 }

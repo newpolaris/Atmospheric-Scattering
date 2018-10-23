@@ -299,12 +299,12 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.ClearColor(glm::vec4(0, 0, 0, 0));
     gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
+    gfxContext.SetDepthTest(true);
 
     glm::mat4 matWorld(1.0);
     glm::mat4 matWorldViewProject = m_Camera.getViewProjMatrix()*matWorld;
 
     m_LightTechnique.bind();
-    // m_LightTechnique.setSpotLights(1, &m_SpotLight);
     m_LightTechnique.setDirectionalLight(m_DirectionalLight);
     m_LightTechnique.setMatWorld(matWorld);
     m_LightTechnique.setMatWorldViewProject(matWorldViewProject);
@@ -342,7 +342,7 @@ glm::mat4 LightScattering::GetShadowMatrix() const
     glm::mat4 matShadow = project * view;
 #else
     glm::mat4 view = glm::lookAtRH(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0, 1, 0));
-    glm::mat4 project = glm::orthoRH_NO(-5.f, 5.f, -5.f, 5.f, -5.f, 5.f);
+    glm::mat4 project = glm::orthoRH_NO(-20.f, 20.f, -20.f, 20.f, -10.f, 50.f);
     glm::mat4 matShadow = project * view;
 #endif
     return matShadow;
@@ -373,7 +373,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 1000.f);
+	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 100.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 
