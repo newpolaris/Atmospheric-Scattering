@@ -150,6 +150,7 @@ void ProgramShader::setDevice(const GraphicsDevicePtr& device)
 {
     assert(device);
     m_Device = device;
+    m_DeviceType = device->getGraphicsDeviceDesc().getDeviceType();
 }
 
 bool ProgramShader::setUniform(const std::string &name, GLint v) const
@@ -297,20 +298,15 @@ bool ProgramShader::bindTexture(const std::string& name, const GraphicsTexturePt
         return false;
     }
 
-    auto device = m_Device.lock();
-    assert(device);
-    if (!device) return false;
-    auto type = device->getGraphicsDeviceDesc().getDeviceType();
-
     // Bind the buffer object to the texture 
-    if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
     {
         auto tex = texture->downcast_pointer<OGLCoreTexture>();
         tex->bind(unit);
         glUniform1i(loc, unit);
         return true;
     }
-    else if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    else if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
     {
         auto tex = texture->downcast_pointer<OGLTexture>();
         tex->bind(unit);
@@ -329,22 +325,70 @@ bool ProgramShader::bindBuffer(const std::string& name, const GraphicsDataPtr& d
         return false;
 
     auto blockPoint = it->second;
-    auto type = device->getGraphicsDeviceDesc().getDeviceType();
 
     // Bind the buffer object to the uniform block
-    if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
     {
         auto ubo = data->downcast_pointer<OGLCoreGraphicsData>();
         glBindBufferBase(GL_UNIFORM_BUFFER, blockPoint, ubo->getInstanceID());
         return true;
     }
-    else if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    else if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
     {
         auto ubo = data->downcast_pointer<OGLGraphicsData>();
         glBindBufferBase(GL_UNIFORM_BUFFER, blockPoint, ubo->getInstanceID());
         return true;
     }
     return false;
+}
+
+bool ProgramShader::setUniform(GLint location, GLint v) const
+{
+    if (location < 0) return false;
+    glUniform1i(location, v);
+    return true;
+}
+
+bool ProgramShader::setUniform(GLint location, GLfloat v) const
+{
+    if (location < 0) return false;
+    glUniform1f(location, v);
+    return true;
+}
+
+bool ProgramShader::setUniform(GLint location, const glm::vec3& v) const
+{
+    if (location < 0) return false;
+    glUniform3fv(location, 1, glm::value_ptr(v));
+    return true;
+}
+
+bool ProgramShader::setUniform(GLint location, const glm::mat4& v) const
+{
+    if (location < 0) return false;
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(v));
+    return true;
+}
+
+bool ProgramShader::bindTexture(GLint location, const GraphicsTexturePtr& texture, GLint unit)
+{
+    if (location < 0) return false;
+    // Bind the buffer object to the texture 
+    if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    {
+        auto tex = texture->downcast_pointer<OGLCoreTexture>();
+        tex->bind(unit);
+        glUniform1i(location, unit);
+        return true;
+    }
+    else if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    {
+        auto tex = texture->downcast_pointer<OGLTexture>();
+        tex->bind(unit);
+        glUniform1i(location, unit);
+        return true;
+    }
+    return true;
 }
 
 bool ProgramShader::bindImage(const std::string& name, const GraphicsTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access)
@@ -366,19 +410,15 @@ bool ProgramShader::bindImage(const std::string& name, const OGLCoreTexturePtr &
         return false;
     }
 
-    auto device = m_Device.lock();
-    if (!device) return false;
-    auto type = device->getGraphicsDeviceDesc().getDeviceType();
-
     // Bind the buffer object to the uniform block
-    if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+    if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
     {
         auto tex = texture->downcast_pointer<OGLCoreTexture>();
         glBindImageTexture(unit, tex->getTextureID(), level, layered, layer, access, tex->getFormat());
         glUniform1i(loc, unit);
         return true;
     }
-    else if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+    else if (m_DeviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
     {
         auto tex = texture->downcast_pointer<OGLTexture>();
         glBindImageTexture(unit, tex->getTextureID(), level, layered, layer, access, tex->getFormat());

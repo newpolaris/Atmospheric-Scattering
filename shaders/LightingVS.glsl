@@ -22,6 +22,6 @@ void main()
     vTexcoords = inTexcoords;
     vNormalWS = mat3(uMatWorld) * inNormal;
     vPositionWS = vec3(uMatWorld * position);
-    vPositionLS = uMatLight * position;
+    vPositionLS = uMatLight * vec4(vPositionWS, 1.0);
     gl_Position = uMatWorldViewProject * position;
 }

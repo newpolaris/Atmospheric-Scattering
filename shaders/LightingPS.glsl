@@ -1,26 +1,5 @@
 #version 450
 
-// IN
-in vec2 vTexcoords;
-in vec3 vNormalWS;
-in vec3 vPositionWS;
-in vec4 vPositionLS;
-
-// OUT
-out vec4 FragColor;
-
-uniform vec3 uEyePositionWS;
-uniform float uSpecularPower = 0.f;
-uniform float uMatSpecularIntensity = 0.f;
-
-uniform float uAmbientIntensity;
-uniform float uDiffuseIntensity;
-uniform float uCutoff;
-uniform vec3 uPosition;
-uniform vec3 uColor;
-uniform vec3 uDirection;
-uniform vec3 uAttenuation;
-
 const int MAX_POINT_LIGHTS = 2;                                                     
 const int MAX_SPOT_LIGHTS = 2;                                                      
 
@@ -51,11 +30,36 @@ struct SpotLight
     float Cutoff;
 };
 
-uniform int gNumPointLights;                                                                
-uniform int gNumSpotLights;                                                                 
-uniform DirectionalLight gDirectionalLight;                                                 
-uniform PointLight gPointLights[MAX_POINT_LIGHTS];                                          
-uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];                                             
+// IN
+in vec2 vTexcoords;
+in vec3 vNormalWS;
+in vec3 vPositionWS;
+in vec4 vPositionLS;
+
+// OUT
+out vec4 FragColor;
+
+uniform vec3 uEyePositionWS;
+uniform float uSpecularPower = 0.f;
+uniform float uMatSpecularIntensity = 0.f;
+
+uniform int uNumPointLights;                                                                
+uniform int uNumSpotLights;                                                                 
+uniform DirectionalLight uDirectionalLight;                                                 
+uniform PointLight uPointLights[MAX_POINT_LIGHTS];                                          
+uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];                                             
+
+uniform sampler2D uTexShadowmap;
+
+float CalcShadowFacotr(vec4 positionLS)
+{
+    vec3 ProjCoords = positionLS.xyz / positionLS.w;
+    vec3 UVCoords = 0.5 * ProjCoords + 0.5;
+    float Depth = texture(uTexShadowmap, UVCoords.xy).x;
+    if (Depth < UVCoords.z + 1e-5f)
+        return 0.5;
+    return 1.0;
+}
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal, float ShadowFactor)
 {
@@ -90,7 +94,7 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec4 positionLS)
     vec3 LightDirection = vPositionWS - light.Position;
     float Distance = length(LightDirection);
     LightDirection = normalize(LightDirection);
-    float ShadowFactor = 1.0;
+    float ShadowFactor = CalcShadowFacotr(positionLS);
 
     vec4 Color = CalcLightInternal(light.Base, LightDirection, normal, ShadowFactor);
     float Attenuation = light.Attenuation.x + light.Attenuation.y * Distance + light.Attenuation.z * Distance * Distance;
@@ -100,7 +104,7 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec4 positionLS)
 vec4 CalcSpotLight(SpotLight light, vec3 normal, vec4 positionLS)
 {
     vec3 LightToPixel = normalize(vPositionWS - light.Base.Position);
-    float SpotFactor = dot(LightToPixel, uDirection);
+    float SpotFactor = dot(LightToPixel, light.Direction);
 
     if (SpotFactor > light.Cutoff) {
         vec4 Color = CalcPointLight(light.Base, normal, positionLS);
@@ -111,17 +115,11 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal, vec4 positionLS)
 
 void main()
 {
-    SpotLight light;
-    light.Base.Base.Color = uColor;
-    light.Base.Base.AmbientIntensity = uAmbientIntensity;
-    light.Base.Base.DiffuseIntensity = uDiffuseIntensity;
-    light.Base.Position = uPosition;
-    light.Base.Attenuation = uAttenuation;
-    light.Direction = uDirection;
-    light.Cutoff = uCutoff;
-
     vec3 normal = normalize(vNormalWS);
-    vec4 sumLight = CalcSpotLight(light, normal, vPositionLS);
-
+    vec4 sumLight = vec4(0.0);
+    for (int i = 0; i < uNumPointLights; i++)
+        sumLight += CalcPointLight(uPointLights[i], normal, vPositionLS);
+    for (int i = 0; i < uNumSpotLights; i++)
+        sumLight += CalcSpotLight(uSpotLights[i], normal, vPositionLS);
     FragColor = sumLight;
 }

@@ -23,6 +23,7 @@
 #include <GraphicsTypes.h>
 #include <PhaseFunctions.h>
 #include <Mesh.h>
+#include <LightingTechnique.h>
 
 #include <fstream>
 #include <memory>
@@ -51,30 +52,6 @@ struct SceneSettings
     glm::vec3 position = glm::vec3(-20.0f, 20.0f, 5.0f);
 };
 
-struct BaseLight
-{
-    std::string Name;
-    glm::vec3 Color;
-    float AmbientIntensity;
-    float DiffuseIntensity;
-};
-
-struct DirectionalLight : public BaseLight
-{
-    glm::vec3 Direction;
-};
-
-struct PointLight : public BaseLight
-{
-    glm::vec3 Position;
-    glm::vec3 Attenuation; // constant, linear, exp
-};
-
-struct SpotLight : public PointLight
-{
-    glm::vec3 Direction;
-    float Cutoff;
-};
 
 glm::mat4 OrthoProjectTransform(float l, float r, float t, float b, float n, float f)
 {
@@ -130,9 +107,9 @@ private:
     SphereMesh m_SphereMini;
     PlaneMesh m_Ground;
     FullscreenTriangleMesh m_ScreenTraingle;
+    LightingTechnique m_LightTechnique;
     ProgramShader m_FlatShader;
     ProgramShader m_ShadowMapShader;
-    ProgramShader m_LightingShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsTexturePtr m_ScreenColorTex;
     GraphicsDevicePtr m_Device;
@@ -186,11 +163,8 @@ void LightScattering::startup() noexcept
     m_FlatShader.addShader(GL_FRAGMENT_SHADER, "Flat.Fragment");
     m_FlatShader.link();
 
-    m_LightingShader.setDevice(m_Device);
-    m_LightingShader.initialize();
-    m_LightingShader.addShader(GL_VERTEX_SHADER, "LightingVS.glsl");
-    m_LightingShader.addShader(GL_FRAGMENT_SHADER, "LightingPS.glsl");
-    m_LightingShader.link();
+    m_LightTechnique.setDevice(m_Device);
+    m_LightTechnique.initialize();
 
 	m_PostProcessHDRShader.setDevice(m_Device);
 	m_PostProcessHDRShader.initialize();
@@ -260,6 +234,7 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+            ImGui::Separator();
             bUpdated |= ImGui::SliderFloat("Light X", &m_Settings.lightDirection.x, -1.f, 1.f);
             bUpdated |= ImGui::SliderFloat("Light Y", &m_Settings.lightDirection.y, -1.f, 1.f);
             bUpdated |= ImGui::SliderFloat("Light Z", &m_Settings.lightDirection.z, -1.f, 1.f);
@@ -285,9 +260,8 @@ void LightScattering::render() noexcept
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
-    const auto matViewInverse = glm::inverse(m_Camera.getViewMatrix());
-    const auto matProjectInverse = glm::inverse(m_Camera.getProjectionMatrix());
-    const auto matViewProjectInverse = glm::inverse(m_Camera.getViewProjMatrix());
+    m_SpotLight.Direction = m_Settings.lightDirection;
+    m_SpotLight.Position = m_Settings.position;
 
     ShadowMapPass(context);
     RenderPass(context);
@@ -305,7 +279,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 
     m_ShadowMapShader.bind();
     m_ShadowMapShader.setUniform("uMatShadow", GetShadowMatrix());
-    m_SphereMini.draw();
+    m_Cube.draw();
     m_ShadowMapShader.unbind();
 }
 
@@ -320,24 +294,15 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     glm::mat4 matWorld(1.0);
     glm::mat4 matWorldViewProject = m_Camera.getViewProjMatrix()*matWorld;
 
-    m_SpotLight.Direction = m_Settings.lightDirection;
-    m_SpotLight.Position = m_Settings.position;
-
-    m_LightingShader.bind();
-    m_LightingShader.setUniform("uColor", m_SpotLight.Color);
-    m_LightingShader.setUniform("uAmbientIntensity", m_SpotLight.AmbientIntensity);
-    m_LightingShader.setUniform("uDiffuseIntensity", m_SpotLight.DiffuseIntensity);
-    m_LightingShader.setUniform("uPosition", m_SpotLight.Position);
-    m_LightingShader.setUniform("uDirection", glm::normalize(m_SpotLight.Direction));
-    m_LightingShader.setUniform("uCutoff", glm::cos(glm::radians(m_SpotLight.Cutoff)));
-    m_LightingShader.setUniform("uAttenuation", m_SpotLight.Attenuation);
-    m_LightingShader.setUniform("uMatWorld", matWorld);
-    m_LightingShader.setUniform("uMatWorldViewProject", matWorldViewProject);
-    m_LightingShader.setUniform("uMatLight", GetShadowMatrix());
-    m_LightingShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    m_LightingShader.bindTexture("uTexShadow", Graphics::g_ShadowMap, 0);
+    m_LightTechnique.bind();
+    m_LightTechnique.setSpotLights(1, &m_SpotLight);
+    m_LightTechnique.setMatWorld(matWorld);
+    m_LightTechnique.setMatWorldViewProject(matWorldViewProject);
+    m_LightTechnique.setMatLight(GetShadowMatrix());
+    m_LightTechnique.setEyePositionWS(m_Camera.getPosition());
+    m_LightTechnique.setShadowMap(Graphics::g_ShadowMap);
     m_Ground.draw();
-    m_SphereMini.draw();
+    m_Cube.draw();
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
@@ -361,11 +326,9 @@ glm::vec3 LightScattering::GetSunDirection() const
 glm::mat4 LightScattering::GetShadowMatrix() const
 {
     const glm::mat4 identity(1.f);
-    glm::mat4 rotate = glm::rotate(identity, 0.f, glm::vec3(0, 1, 0));
-    glm::mat4 translate = glm::translate(identity, glm::vec3(0.f, 0.f, 5.f));
-    glm::mat4 view = glm::lookAtRH(m_SpotLight.Position, m_SpotLight.Direction, glm::vec3(0, 1, 0));
+    glm::mat4 view = glm::lookAtRH(m_SpotLight.Position, m_SpotLight.Position + m_SpotLight.Direction, glm::vec3(0, 1, 0));
     glm::mat4 project = glm::perspectiveFovRH_NO(glm::radians(60.f), float(Graphics::g_NativeWidth), float(Graphics::g_NativeHeight), 0.1f, 100.f);
-    glm::mat4 matShadow = project * view * translate * rotate;
+    glm::mat4 matShadow = project * view;
     return matShadow;
 }
 

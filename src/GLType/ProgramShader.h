@@ -50,6 +50,17 @@ public:
     bool bindTexture(const std::string& name, const GraphicsTexturePtr& texture, GLint unit);
     bool bindBuffer(const std::string& name, const GraphicsDataPtr& data);
 
+    bool setUniform(GLint location, GLint v) const;
+    bool setUniform(GLint location, GLfloat v) const;
+    bool setUniform(GLint location, const glm::vec2& v) const;
+    bool setUniform(GLint location, const glm::vec3& v) const;
+    bool setUniform(GLint location, const glm::vec4& v) const;
+    bool setUniform(GLint location, const glm::vec2* v, size_t count) const;
+    bool setUniform(GLint location, const glm::vec4* v, size_t count) const;
+    bool setUniform(GLint location, const glm::mat3& v) const;
+    bool setUniform(GLint location, const glm::mat4& v) const;
+    bool bindTexture(GLint location, const GraphicsTexturePtr& texture, GLint unit);
+
     // Compute
     bool bindImage(const std::string& name, const GraphicsTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access);
     bool bindImage(const std::string& name, const OGLCoreTexturePtr& texture, GLint unit, GLint level, GLboolean layered, GLint layer, GLenum access);
@@ -70,6 +81,7 @@ protected:
 
     GLuint m_ShaderID;
     GLuint m_BlockPointCounter;
+    GraphicsDeviceType m_DeviceType;
     GraphicsDeviceWeakPtr m_Device;
     std::map<std::string, GLuint> m_BlockPoints;
 };
