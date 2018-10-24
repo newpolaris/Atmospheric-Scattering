@@ -59,6 +59,13 @@ bool ModelAssImp::loadFromFile(const std::string& filename)
 {
 	Assimp::Importer Importer;
 
+#if _DEBUG
+    int postprocess = aiProcess_Triangulate 
+        | aiProcess_GenSmoothNormals 
+        | aiProcess_FlipUVs 
+        | aiProcess_JoinIdenticalVertices
+        ;
+#else
 	int postprocess = aiProcess_Triangulate 
 		| aiProcess_GenSmoothNormals 
 		| aiProcess_SplitLargeMeshes
@@ -66,7 +73,7 @@ bool ModelAssImp::loadFromFile(const std::string& filename)
 		| aiProcess_OptimizeMeshes
 		| aiProcess_CalcTangentSpace
 		| aiProcess_JoinIdenticalVertices
-		;
+#endif
 
 	const aiScene* pScene = Importer.ReadFile(filename.c_str(), postprocess);
 	assert(pScene != nullptr);

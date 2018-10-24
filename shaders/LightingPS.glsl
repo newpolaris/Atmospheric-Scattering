@@ -43,21 +43,21 @@ uniform vec3 uEyePositionWS;
 uniform float uSpecularPower = 0.f;
 uniform float uMatSpecularIntensity = 0.f;
 
-uniform int uNumPointLights;                                                                
-uniform int uNumSpotLights;                                                                 
+uniform int uNumPointLights = 0;                                                                
+uniform int uNumSpotLights = 0;                                                                 
 uniform DirectionalLight uDirectionalLight;                                                 
 uniform PointLight uPointLights[MAX_POINT_LIGHTS];                                          
 uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];                                             
 
 uniform sampler2D uTexShadowmap;
+uniform sampler2D uTexWood;
 
 float CalcShadowFactor(vec4 positionLS)
 {
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
-    float currentZ = UVCoords.z;
     float Depth = texture(uTexShadowmap, UVCoords.xy).x;
-    if (currentZ - 0.01 > Depth.x)
+    if (UVCoords.z - 0.01 > Depth)
         return 0.5;
     return 1.0;
 }
@@ -115,13 +115,13 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal, vec4 positionLS)
     return vec4(0, 0, 0, 0);
 }
 
-vec4 DepthPrint(vec4 positionLS)
+vec3 DepthPrint(vec4 positionLS)
 {
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
     float Depth = texture(uTexShadowmap, UVCoords.xy).x;
-    return vec4(UVCoords.z, 0.0, Depth.x, 1.0);
-    return vec4(UVCoords.z - 0.01 > Depth.x ? 0.0 : 1.0, 0.0, 0.0, 1.0);
+    return vec3(UVCoords.z - 0.01 > Depth.x ? 0.1 : 1.0);
+    return vec3(UVCoords.z, 0.0, Depth.x);
 }
 
 void main()
@@ -132,7 +132,14 @@ void main()
         sumLight += CalcPointLight(uPointLights[i], normal, vPositionLS);
     for (int i = 0; i < uNumSpotLights; i++)
         sumLight += CalcSpotLight(uSpotLights[i], normal, vPositionLS);
-    // sumLight = DepthPrint(vPositionLS);
-    // sumLight = vec4(normal, 1.);
-    FragColor = sumLight;
+
+#define PRINT 2
+#if PRINT == 0
+    FragColor = vec4(DepthPrint(vPositionLS), 1.0);
+#elif PRINT == 1
+    FragColor = vec4(normal, 1.0);
+#elif PRINT == 2
+    vec3 SampledColor = texture2D(uTexWood, vTexcoords).rgb;
+    FragColor = vec4(vec3(sumLight)*SampledColor, 1.0);
+#endif
 }

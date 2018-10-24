@@ -22,16 +22,23 @@ void LightingTechnique::initialize()
         return glGetUniformLocation(shaderid, util::format(uniform, index).c_str());
     };
     m_texShadowLoc = GetUniformLocation("uTexShadowmap");
+    m_texWoodLoc = GetUniformLocation("uTexWood");
     m_matLightLoc = GetUniformLocation("uMatLight");
     m_matModelLoc = GetUniformLocation("uMatModel");
     m_matViewLoc = GetUniformLocation("uMatView");
     m_matProjectLoc = GetUniformLocation("uMatProject");
     m_eyePositionWSLoc = GetUniformLocation("uEyePositionWS");
 
+    #define INVALID_UNIFORM_LOCATION 0xffffffff
+
+    if (m_texShadowLoc == INVALID_UNIFORM_LOCATION
+     || m_texWoodLoc == INVALID_UNIFORM_LOCATION
+     || m_matLightLoc == INVALID_UNIFORM_LOCATION)
+        assert(false);
+
     m_numPointLightsLocation = GetUniformLocation("uNumPointLights");
     m_numSpotLightsLocation = GetUniformLocation("uNumSpotLights");
 
-    #define INVALID_UNIFORM_LOCATION 0xffffffff
     #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
     m_dirLightLocation.Color = GetUniformLocation("uDirectionalLight.Base.Color");
@@ -112,6 +119,11 @@ void LightingTechnique::setEyePositionWS(const glm::vec3& position)
 void LightingTechnique::setShadowMap(const GraphicsTexturePtr& texture)
 {
     m_shader.bindTexture(m_texShadowLoc, texture, 0);
+}
+
+void LightingTechnique::setTexWood(const GraphicsTexturePtr& texture)
+{
+    m_shader.bindTexture(m_texWoodLoc, texture, 1);
 }
 
 void LightingTechnique::setDirectionalLight(const DirectionalLight& Light)

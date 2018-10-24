@@ -23,6 +23,7 @@
 #include <GraphicsTypes.h>
 #include <PhaseFunctions.h>
 #include <Mesh.h>
+#include <ModelAssImp.h>
 #include <LightingTechnique.h>
 
 #include <fstream>
@@ -39,9 +40,10 @@ namespace
 {
     float s_CpuTick = 0.f;
     float s_GpuTick = 0.f;
-
-    float near_plane = 1.0f, far_plane = 12.5f;
-    glm::vec3 lightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
+    const int s_NumMeshes = 5;
+    float near_plane = -10.0f, far_plane = 100.0f;
+    glm::mat4 m_MatMeshModel[s_NumMeshes];
+    glm::vec3 lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 struct SceneSettings
@@ -109,8 +111,8 @@ private:
     SceneSettings m_Settings;
 	TCamera m_Camera;
     SimpleTimer m_Timer;
+    ModelAssImp m_Dragon;
     DirectionalLight m_DirectionalLight;
-    SpotLight m_SpotLight;
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
     SphereMesh m_SphereMini;
@@ -130,18 +132,9 @@ CREATE_APPLICATION(LightScattering);
 
 LightScattering::LightScattering() noexcept :
     m_Sphere(32, 1.0e2f),
-    m_SphereMini(48, 2.0f)
+    m_SphereMini(48, 2.0f),
+    m_Ground(1000.f, 32.f, 10.f)
 {
-    m_SpotLight.AmbientIntensity = 0.0f;
-    m_SpotLight.DiffuseIntensity = 0.9f;
-    m_SpotLight.Color = glm::vec3(1.0f);
-    m_SpotLight.Attenuation.x = 0.5f;
-    m_SpotLight.Attenuation.y = 0.0f;
-    m_SpotLight.Attenuation.z = 0.0f;
-    m_SpotLight.Position = glm::vec3(-20.0f, 20.0f, 5.0f);
-    m_SpotLight.Direction = glm::vec3(1.f, -1.f, 0.f);
-    m_SpotLight.Cutoff = 20.0f;
-
     m_DirectionalLight.AmbientIntensity = 0.5f;
     m_DirectionalLight.DiffuseIntensity = 0.9f;
     m_DirectionalLight.Color = glm::vec3(1.f, 1.f, 1.f);
@@ -158,7 +151,7 @@ void LightScattering::startup() noexcept
 
     m_Timer.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
-    m_Camera.setViewParams(glm::vec3(0.f), glm::vec3(0.f, 0.f, -1.f));
+    m_Camera.setViewParams(glm::vec3(8.f, 21.f, -23.f), glm::vec3(8.f, 21.f, -23.f) + glm::vec3(-0.7f, -0.44f, 0.9f));
 
 	GraphicsDeviceDesc deviceDesc;
 #if __APPLE__
@@ -170,6 +163,8 @@ void LightScattering::startup() noexcept
 
     GraphicsTextureDesc woodDesc;
     woodDesc.setFilename("resources/wood.png");
+    woodDesc.setWrapS(GL_REPEAT);
+    woodDesc.setWrapT(GL_REPEAT);
     m_TexWood = m_Device->createTexture(woodDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
@@ -209,6 +204,13 @@ void LightScattering::startup() noexcept
     m_Sphere.create();
     m_SphereMini.create();
     m_Ground.create();
+    m_Dragon.create();
+    m_Dragon.loadFromFile("resources/dragon.obj");
+
+    for (int i = 0; i < s_NumMeshes; i++) {
+        glm::mat4 model(1.f);
+        m_MatMeshModel[i] = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.f + i * 30.f));
+    }
 }
 
 void LightScattering::closeup() noexcept
@@ -218,6 +220,7 @@ void LightScattering::closeup() noexcept
     m_SphereMini.destroy();
     m_Ground.destroy();
     m_ScreenTraingle.destroy();
+    m_Dragon.destroy();
 	profiler::shutdown();
 }
 
@@ -239,15 +242,7 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
-
-    float currentFrame = float(glfwGetTime());
-    lightPosition.x = glm::sin(currentFrame) * m_Settings.position.x;
-    lightPosition.z = glm::cos(currentFrame) * m_Settings.position.y;
-    lightPosition.y = m_Settings.position.z + glm::cos(currentFrame);
     lightPosition = m_Settings.position;
-
-    m_SpotLight.Position = lightPosition;
-    m_SpotLight.Direction = -glm::normalize(lightPosition);
 }
 
 void LightScattering::updateHUD() noexcept
@@ -333,7 +328,7 @@ void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
 
     m_DebugDepthShader.bind();
-    m_DebugDepthShader.setUniform("ubOrthographic", false);
+    m_DebugDepthShader.setUniform("ubOrthographic", true);
     m_DebugDepthShader.setUniform("uNearPlane", near_plane);
     m_DebugDepthShader.setUniform("uFarPlane", far_plane);
     m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);
@@ -352,17 +347,18 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
     m_LightTechnique.bind();
-    m_LightTechnique.setSpotLights(1, &m_SpotLight);
+    m_LightTechnique.setDirectionalLight(m_DirectionalLight);
     m_LightTechnique.setMatView(view);
     m_LightTechnique.setMatProject(project);
     m_LightTechnique.setMatLightSpace(GetLightSpaceMatrix());
     m_LightTechnique.setEyePositionWS(m_Camera.getPosition());
     m_LightTechnique.setShadowMap(Graphics::g_ShadowMap);
+    m_LightTechnique.setTexWood(m_TexWood);
 
     RenderScene(m_LightTechnique);
 }
 
-void LightScattering::RenderPass2(GraphicsContext & gfxContext)
+void LightScattering::RenderPass2(GraphicsContext& gfxContext)
 {
     gfxContext.SetFramebuffer(Graphics::g_MainFramebuffer);
     gfxContext.SetViewport(0, 0, Graphics::g_NativeWidth, Graphics::g_NativeHeight); 
@@ -381,6 +377,7 @@ void LightScattering::RenderPass2(GraphicsContext & gfxContext)
     m_LightingShader.setUniform("uMatLightSpace", GetLightSpaceMatrix()); 
     m_LightingShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);
     m_LightingShader.bindTexture("uTexWood", m_TexWood, 1);
+
     RenderScene(m_LightingShader);
 } 
 
@@ -397,54 +394,25 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 
 void LightScattering::RenderScene(const ProgramShader& shader)
 {
-    // floor
-    glm::mat4 model(1.f);
-    model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0));
-    shader.setUniform("uMatModel", model);
+    shader.setUniform("uMatModel", glm::mat4(1.f));
     m_Ground.draw();
-    // cubes
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setUniform("uMatModel", model);
-    m_Cube.draw();
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setUniform("uMatModel", model);
-    m_Cube.draw();
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
-    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    model = glm::scale(model, glm::vec3(0.25));
-    shader.setUniform("uMatModel", model);
-    m_Cube.draw();
+
+    for (int i = 0; i < s_NumMeshes; i++)
+    {
+        shader.setUniform("uMatModel", m_MatMeshModel[i]);
+        m_Dragon.render();
+    }
 }
 
 void LightScattering::RenderScene(LightingTechnique& technique)
 {
-    // floor
-    glm::mat4 model(1.f);
-    model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0));
-    technique.setMatModel(model);
+    technique.setMatModel(glm::mat4(1.f));
     m_Ground.draw();
-    // cubes
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    technique.setMatModel(model);
-    m_Cube.draw();
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-    model = glm::scale(model, glm::vec3(0.5f));
-    technique.setMatModel(model);
-    m_Cube.draw();
-    model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
-    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    model = glm::scale(model, glm::vec3(0.25));
-    technique.setMatModel(model);
-    m_Cube.draw();
+    for (int i = 0; i < s_NumMeshes; i++)
+    {
+        technique.setMatModel(m_MatMeshModel[i]);
+        m_Dragon.render();
+    }
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
@@ -456,25 +424,10 @@ glm::vec3 LightScattering::GetSunDirection() const
 
 glm::mat4 LightScattering::GetLightSpaceMatrix() const
 {
-    glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-#define DIRECTIONAL 0
-#if DIRECTIONAL
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-#else
-    glm::mat4 lightProjection = glm::perspective(glm::radians(45.0f), 1.f, near_plane, far_plane);
-#endif
+    glm::mat4 lightView = glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
+    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);
     return lightProjection * lightView;
-
-#if 1
-    glm::mat4 view = glm::lookAtRH(m_SpotLight.Position, m_SpotLight.Position + m_SpotLight.Direction, glm::vec3(0, 1, 0));
-    glm::mat4 project = glm::perspectiveFovRH_NO(glm::radians(60.f), float(Graphics::g_ShadowMapSize), float(Graphics::g_ShadowMapSize), 0.1f, 100.f);
-    glm::mat4 matShadow = project * view;
-#else
-    glm::mat4 view = glm::lookAtRH(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0, 1, 0));
-    glm::mat4 project = glm::orthoRH_NO(-20.f, 20.f, -20.f, 20.f, -10.f, 50.f);
-    glm::mat4 matShadow = project * view;
-#endif
-    return matShadow;
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
@@ -502,7 +455,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(45.0f, aspectRatio, 0.1f, 100.f);
+	m_Camera.setProjectionParams(45.0f, aspectRatio, 1.0f, 1000.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 

@@ -52,6 +52,7 @@ public:
     void setSpotLights(uint32_t NumLights, const SpotLight* pLights);
     void setPointLights(uint32_t NumLights, const PointLight* pLights);
     void setShadowMap(const GraphicsTexturePtr& texture);
+    void setTexWood(const GraphicsTexturePtr& texture);
 
     GraphicsDeviceWeakPtr m_Device;
     ProgramShader m_shader;
@@ -89,4 +90,5 @@ public:
     GLuint m_numPointLightsLocation;
     GLuint m_numSpotLightsLocation;
     GLuint m_texShadowLoc;
+    GLuint m_texWoodLoc;
 };
