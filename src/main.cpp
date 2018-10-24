@@ -424,7 +424,9 @@ glm::vec3 LightScattering::GetSunDirection() const
 
 glm::mat4 LightScattering::GetLightSpaceMatrix() const
 {
-    glm::mat4 lightView = glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
+    // poisition zero and direction make similar result;
+    glm::mat4 lightView = glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
+    // glm::mat4 lightView = glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
     // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
     glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);
     return lightProjection * lightView;
