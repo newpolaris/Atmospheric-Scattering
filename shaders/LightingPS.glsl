@@ -120,6 +120,7 @@ vec4 DepthPrint(vec4 positionLS)
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
     float Depth = texture(uTexShadowmap, UVCoords.xy).x;
+    return vec4(UVCoords.z, 0.0, Depth.x, 1.0);
     return vec4(UVCoords.z - 0.01 > Depth.x ? 0.0 : 1.0, 0.0, 0.0, 1.0);
 }
 

@@ -49,11 +49,17 @@ GraphicsDataPtr OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noex
     return nullptr;
 }
 
+template <typename T, typename E>
+bool any_of(T list, const E& elem)
+{
+    return std::any_of(list.begin(), list.end(), [&](const E& tag) { return tag == elem; });
+}
+
 GraphicsTexturePtr OGLDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
-    assert(desc.getWrapS() == GL_CLAMP_TO_EDGE || desc.getWrapS() == GL_MIRRORED_REPEAT || desc.getWrapS() == GL_REPEAT);
-    assert(desc.getWrapT() == GL_CLAMP_TO_EDGE || desc.getWrapT() == GL_MIRRORED_REPEAT || desc.getWrapT() == GL_REPEAT);
-    assert(desc.getWrapR() == GL_CLAMP_TO_EDGE || desc.getWrapR() == GL_MIRRORED_REPEAT || desc.getWrapR() == GL_REPEAT);
+    assert(desc.getWrapS() != GL_CLAMP);
+    assert(desc.getWrapT() != GL_CLAMP);
+    assert(desc.getWrapR() != GL_CLAMP);
     assert(desc.getMagFilter() == GL_NEAREST || desc.getMagFilter() == GL_LINEAR);
 
     if (m_Desc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
