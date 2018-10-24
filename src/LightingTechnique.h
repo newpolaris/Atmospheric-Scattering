@@ -44,9 +44,10 @@ public:
     void bind();
     void setDevice(const GraphicsDevicePtr& device);
     void setEyePositionWS(const glm::vec3& position);
-    void setMatLight(const glm::mat4& mat);
-    void setMatWorld(const glm::mat4& mat);
-    void setMatWorldViewProject(const glm::mat4& mat);
+    void setMatLightSpace(const glm::mat4& mat);
+    void setMatModel(const glm::mat4& mat);
+    void setMatView(const glm::mat4& mat);
+    void setMatProject(const glm::mat4& mat);
     void setDirectionalLight(const DirectionalLight& Light);
     void setSpotLights(uint32_t NumLights, const SpotLight* pLights);
     void setPointLights(uint32_t NumLights, const PointLight* pLights);
@@ -82,8 +83,9 @@ public:
 
     GLuint m_eyePositionWSLoc;
     GLuint m_matLightLoc;
-    GLuint m_matWorldLoc;
-    GLuint m_matWorldViewProjectLoc;
+    GLuint m_matModelLoc;
+    GLuint m_matViewLoc;
+    GLuint m_matProjectLoc;
     GLuint m_numPointLightsLocation;
     GLuint m_numSpotLightsLocation;
     GLuint m_texShadowLoc;

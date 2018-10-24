@@ -133,5 +133,6 @@ void main()
     for (int i = 0; i < uNumSpotLights; i++)
         sumLight += CalcSpotLight(uSpotLights[i], normal, vPositionLS);
     // sumLight = DepthPrint(vPositionLS);
+    // sumLight = vec4(normal, 1.);
     FragColor = sumLight;
 }

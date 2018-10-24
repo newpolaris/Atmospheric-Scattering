@@ -23,8 +23,9 @@ void LightingTechnique::initialize()
     };
     m_texShadowLoc = GetUniformLocation("uTexShadowmap");
     m_matLightLoc = GetUniformLocation("uMatLight");
-    m_matWorldLoc = GetUniformLocation("uMatWorld");
-    m_matWorldViewProjectLoc = GetUniformLocation("uMatWorldViewProject");
+    m_matModelLoc = GetUniformLocation("uMatModel");
+    m_matViewLoc = GetUniformLocation("uMatView");
+    m_matProjectLoc = GetUniformLocation("uMatProject");
     m_eyePositionWSLoc = GetUniformLocation("uEyePositionWS");
 
     m_numPointLightsLocation = GetUniformLocation("uNumPointLights");
@@ -83,19 +84,24 @@ void LightingTechnique::setDevice(const GraphicsDevicePtr& device)
     m_Device = device;
 }
 
-void LightingTechnique::setMatLight(const glm::mat4& mat)
+void LightingTechnique::setMatLightSpace(const glm::mat4& mat)
 {
     m_shader.setUniform(m_matLightLoc, mat);
 }
 
-void LightingTechnique::setMatWorld(const glm::mat4& mat)
+void LightingTechnique::setMatModel(const glm::mat4& mat)
 {
-    m_shader.setUniform(m_matWorldLoc, mat);
+    m_shader.setUniform(m_matModelLoc, mat);
 }
 
-void LightingTechnique::setMatWorldViewProject(const glm::mat4& mat)
+void LightingTechnique::setMatView(const glm::mat4 & mat)
 {
-    m_shader.setUniform(m_matWorldViewProjectLoc , mat);
+    m_shader.setUniform(m_matViewLoc, mat);
+}
+
+void LightingTechnique::setMatProject(const glm::mat4 & mat)
+{
+    m_shader.setUniform(m_matProjectLoc, mat);
 }
 
 void LightingTechnique::setEyePositionWS(const glm::vec3& position)

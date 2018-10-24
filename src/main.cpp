@@ -42,10 +42,6 @@ namespace
 
     float near_plane = 1.0f, far_plane = 12.5f;
     glm::vec3 lightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
-    glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    glm::mat4 lightProjection = glm::perspective(glm::radians(45.0f), 1.f, near_plane, far_plane);
-    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 }
 
 struct SceneSettings
@@ -104,9 +100,10 @@ private:
     void RenderPass2(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
     void RenderScene(const ProgramShader& shader);
+    void RenderScene(LightingTechnique& technique);
 
     glm::vec3 GetSunDirection() const;
-    glm::mat4 GetShadowMatrix() const;
+    glm::mat4 GetLightSpaceMatrix() const;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -161,8 +158,6 @@ void LightScattering::startup() noexcept
 
     m_Timer.initialize();
 	m_Camera.setMoveCoefficient(0.35f);
-	// m_Camera.setViewParams(glm::vec3(8.0f, 8.0f, 15.0f), glm::vec3(8.0f, 8.0f, 0.0f));
-    // m_Camera.setViewParams(m_SpotLight.Position, m_SpotLight.Position + m_SpotLight.Direction);
     m_Camera.setViewParams(glm::vec3(0.f), glm::vec3(0.f, 0.f, -1.f));
 
 	GraphicsDeviceDesc deviceDesc;
@@ -251,8 +246,8 @@ void LightScattering::update() noexcept
     lightPosition.y = m_Settings.position.z + glm::cos(currentFrame);
     lightPosition = m_Settings.position;
 
-    lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    lightSpaceMatrix = lightProjection * lightView;
+    m_SpotLight.Position = lightPosition;
+    m_SpotLight.Direction = -glm::normalize(lightPosition);
 }
 
 void LightScattering::updateHUD() noexcept
@@ -306,13 +301,9 @@ void LightScattering::render() noexcept
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
-    m_DirectionalLight.Direction = m_Settings.lightDirection;
-    m_SpotLight.Direction = m_Settings.lightDirection;
-    m_SpotLight.Position = m_Settings.position;
-
     ShadowMapPass(context);
-    RenderPass2(context);
     RenderDebugDepth(context);
+    RenderPass(context);
     TonemapPass(context);
 
     profiler::stop(kProfilerTypeRender);
@@ -327,7 +318,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
     gfxContext.Clear(kDepthBufferBit);
 
     m_ShadowMapShader.bind();
-    m_ShadowMapShader.setUniform("uMatLightSpace", lightSpaceMatrix);
+    m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix());
     RenderScene(m_ShadowMapShader);
 
     m_ShadowMapShader.unbind();
@@ -357,20 +348,18 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
 
-    glm::mat4 matWorld(1.0);
-    glm::mat4 matWorldViewProject = m_Camera.getViewProjMatrix()*matWorld;
+    glm::mat4 view = m_Camera.getViewMatrix();
+    glm::mat4 project = m_Camera.getProjectionMatrix();
 
     m_LightTechnique.bind();
     m_LightTechnique.setSpotLights(1, &m_SpotLight);
-    m_LightTechnique.setMatWorld(matWorld);
-    m_LightTechnique.setMatWorldViewProject(matWorldViewProject);
-    m_LightTechnique.setMatLight(GetShadowMatrix());
+    m_LightTechnique.setMatView(view);
+    m_LightTechnique.setMatProject(project);
+    m_LightTechnique.setMatLightSpace(GetLightSpaceMatrix());
     m_LightTechnique.setEyePositionWS(m_Camera.getPosition());
     m_LightTechnique.setShadowMap(Graphics::g_ShadowMap);
 
-    m_Ground.draw();
-    m_Cube.draw();
-    m_SphereMini.draw();
+    RenderScene(m_LightTechnique);
 }
 
 void LightScattering::RenderPass2(GraphicsContext & gfxContext)
@@ -389,7 +378,7 @@ void LightScattering::RenderPass2(GraphicsContext & gfxContext)
     m_LightingShader.setUniform("uMatProject", project);
     m_LightingShader.setUniform("uViewPosition", m_Camera.getPosition());
     m_LightingShader.setUniform("uLightPosition", lightPosition);
-    m_LightingShader.setUniform("uMatLightSpace", lightSpaceMatrix); 
+    m_LightingShader.setUniform("uMatLightSpace", GetLightSpaceMatrix()); 
     m_LightingShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);
     m_LightingShader.bindTexture("uTexWood", m_TexWood, 1);
     RenderScene(m_LightingShader);
@@ -432,6 +421,32 @@ void LightScattering::RenderScene(const ProgramShader& shader)
     m_Cube.draw();
 }
 
+void LightScattering::RenderScene(LightingTechnique& technique)
+{
+    // floor
+    glm::mat4 model(1.f);
+    model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0));
+    technique.setMatModel(model);
+    m_Ground.draw();
+    // cubes
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    technique.setMatModel(model);
+    m_Cube.draw();
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    technique.setMatModel(model);
+    m_Cube.draw();
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    model = glm::scale(model, glm::vec3(0.25));
+    technique.setMatModel(model);
+    m_Cube.draw();
+}
+
 glm::vec3 LightScattering::GetSunDirection() const
 {
     const float angle = glm::radians(m_Settings.angle);
@@ -439,8 +454,17 @@ glm::vec3 LightScattering::GetSunDirection() const
     return glm::normalize(sunDir);
 }
 
-glm::mat4 LightScattering::GetShadowMatrix() const
+glm::mat4 LightScattering::GetLightSpaceMatrix() const
 {
+    glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+#define DIRECTIONAL 0
+#if DIRECTIONAL
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+#else
+    glm::mat4 lightProjection = glm::perspective(glm::radians(45.0f), 1.f, near_plane, far_plane);
+#endif
+    return lightProjection * lightView;
+
 #if 1
     glm::mat4 view = glm::lookAtRH(m_SpotLight.Position, m_SpotLight.Position + m_SpotLight.Direction, glm::vec3(0, 1, 0));
     glm::mat4 project = glm::perspectiveFovRH_NO(glm::radians(60.f), float(Graphics::g_ShadowMapSize), float(Graphics::g_ShadowMapSize), 0.1f, 100.f);

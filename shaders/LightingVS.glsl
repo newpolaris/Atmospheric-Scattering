@@ -12,16 +12,17 @@ out vec3 vPositionWS;
 out vec4 vPositionLS;
 
 // UNIFORM
-uniform mat4 uMatWorld;
-uniform mat4 uMatWorldViewProject;
+uniform mat4 uMatModel;
+uniform mat4 uMatView;
+uniform mat4 uMatProject;
 uniform mat4 uMatLight;
 
 void main()
 {
     vec4 position = vec4(inPosition, 1.0);
     vTexcoords = inTexcoords;
-    vNormalWS = mat3(uMatWorld) * inNormal;
-    vPositionWS = vec3(uMatWorld * position);
-    vPositionLS = uMatLight * vec4(vPositionWS, 1.0);
-    gl_Position = uMatWorldViewProject * position;
+    vNormalWS = transpose(inverse(mat3(uMatModel))) * inNormal;
+    vPositionWS = vec3(uMatModel * position);
+    vPositionLS = uMatLight * uMatModel * position;
+    gl_Position = uMatProject * uMatView * uMatModel * position;
 }
