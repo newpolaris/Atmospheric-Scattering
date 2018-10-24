@@ -40,10 +40,11 @@ namespace
     float s_CpuTick = 0.f;
     float s_GpuTick = 0.f;
 
-    float near_plane = 1.0f, far_plane = 7.5f;
+    float near_plane = 1.0f, far_plane = 12.5f;
     glm::vec3 lightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
     glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightProjection = glm::perspective(glm::radians(45.0f), 1.f, near_plane, far_plane);
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 }
 
@@ -56,7 +57,7 @@ struct SceneSettings
     float angle = 76.f;
     float fov = 45.f;
     glm::vec3 lightDirection = glm::vec3(1.f, -1.f, 0.f);
-    glm::vec3 position = glm::vec3(-20.0f, 20.0f, 5.0f);
+    glm::vec3 position = glm::vec3(0.7f, 9.5f, -1.0f);
 };
 
 
@@ -245,12 +246,12 @@ void LightScattering::update() noexcept
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
 
     float currentFrame = float(glfwGetTime());
-    lightPosition.x = glm::sin(currentFrame) * 3.0f;
-    lightPosition.z = glm::cos(currentFrame) * 2.0f;
-    lightPosition.y = 5.0f + glm::cos(currentFrame);
+    lightPosition.x = glm::sin(currentFrame) * m_Settings.position.x;
+    lightPosition.z = glm::cos(currentFrame) * m_Settings.position.y;
+    lightPosition.y = m_Settings.position.z + glm::cos(currentFrame);
+    lightPosition = m_Settings.position;
 
     lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
     lightSpaceMatrix = lightProjection * lightView;
 }
 
@@ -310,8 +311,8 @@ void LightScattering::render() noexcept
     m_SpotLight.Position = m_Settings.position;
 
     ShadowMapPass(context);
-    RenderDebugDepth(context);
     RenderPass2(context);
+    RenderDebugDepth(context);
     TonemapPass(context);
 
     profiler::stop(kProfilerTypeRender);
@@ -341,7 +342,7 @@ void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
 
     m_DebugDepthShader.bind();
-    m_DebugDepthShader.setUniform("ubOrthographic", true);
+    m_DebugDepthShader.setUniform("ubOrthographic", false);
     m_DebugDepthShader.setUniform("uNearPlane", near_plane);
     m_DebugDepthShader.setUniform("uFarPlane", far_plane);
     m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);

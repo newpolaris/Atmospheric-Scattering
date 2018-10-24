@@ -39,6 +39,6 @@ void main()
 {
     float depth = float(textureLod(uTexShadowmap, vTexcoords, 0.0));
     if (!ubOrthographic)
-        depth = LinearizeDepth(depth);
+        depth = LinearizeDepth(depth) / uFarPlane; // view depth / far distance
     FragColor = vec4(vec3(depth), 1.0);
 }
