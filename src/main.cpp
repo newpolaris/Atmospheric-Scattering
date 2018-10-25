@@ -53,9 +53,11 @@ namespace
 
 struct SceneSettings
 {
+    bool bDebugDepth = false;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
+    float depthIndex = 0.0;
 	float m_exposure = 0.f;
     float angle = 76.f;
     float fov = 45.f;
@@ -110,6 +112,7 @@ private:
     void RenderScene(LightingTechnique& technique);
 
     glm::vec3 GetSunDirection() const;
+    glm::mat4 GetLightViewMatrix() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
 
     static const uint32_t m_NumCascades = 3;
@@ -221,10 +224,10 @@ void LightScattering::startup() noexcept
         m_MatMeshModel[i] = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.f + i * 30.f));
     }
 
-    m_CascadeEnd[0] = near_plane;
-    m_CascadeEnd[1] = 25.f;
-    m_CascadeEnd[2] = 90.f;
-    m_CascadeEnd[3] = far_plane;
+    m_CascadeEnd[0] = -near_plane;
+    m_CascadeEnd[1] = -25.f;
+    m_CascadeEnd[2] = -90.f;
+    m_CascadeEnd[3] = -far_plane;
 }
 
 void LightScattering::closeup() noexcept
@@ -285,13 +288,8 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             ImGui::Separator();
-            bUpdated |= ImGui::SliderFloat("Light X", &m_Settings.lightDirection.x, -1.f, 1.f);
-            bUpdated |= ImGui::SliderFloat("Light Y", &m_Settings.lightDirection.y, -1.f, 1.f);
-            bUpdated |= ImGui::SliderFloat("Light Z", &m_Settings.lightDirection.z, -1.f, 1.f);
-            ImGui::Separator();
-            bUpdated |= ImGui::SliderFloat("Position X", &m_Settings.position.x, -20.f, 20.f);
-            bUpdated |= ImGui::SliderFloat("Position Y", &m_Settings.position.y, -20.f, 20.f);
-            bUpdated |= ImGui::SliderFloat("Position Z", &m_Settings.position.z, -20.f, 20.f);
+            bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
+            bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
         }
     }
     ImGui::Unindent();
@@ -312,8 +310,8 @@ void LightScattering::render() noexcept
 
     CalcOrthoProjections();
     ShadowMapPass(context);
-    RenderDebugDepth(context);
-    RenderPass(context);
+    if (m_Settings.bDebugDepth) RenderDebugDepth(context);
+    else RenderPass(context);
     TonemapPass(context);
 
     profiler::stop(kProfilerTypeRender);
@@ -323,25 +321,21 @@ void LightScattering::render() noexcept
 void LightScattering::CalcOrthoProjections()
 {
     glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
+    glm::mat4 lightView = GetLightViewMatrix();
 
-    // From ogldev tutorial49
-    // "Since we are dealing with a directional light that has no origin 
-    //  we just need to rotate the world so that the light direction becomes 
-    //  aligned with the positive Z axis. The origin of light can simply be
-    //  the origin of the light space coordinate system (which means we don't 
-    //  need any translation)"
-    glm::mat4 lightView = glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
-
-    float aspect = (float)Graphics::g_NativeWidth/Graphics::g_NativeHeight;
+    float aspect = (float)Graphics::g_NativeHeight/Graphics::g_NativeWidth;
     float tanHalfHorizontalFOV = glm::tan(glm::radians(m_Settings.fov) / 2.f);
     float tanHalfVerticalFOV = glm::tan(glm::radians(m_Settings.fov*aspect) / 2.f);
 
     for (uint32_t i = 0; i < m_NumCascades; i++)
     {
-        float xn = m_CascadeEnd[i] * tanHalfHorizontalFOV;
-        float yn = m_CascadeEnd[i] * tanHalfVerticalFOV;
-        float xf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
-        float yf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
+        float xn = -m_CascadeEnd[i] * tanHalfHorizontalFOV;
+        float yn = -m_CascadeEnd[i] * tanHalfVerticalFOV;
+        float xf = -m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
+        float yf = -m_CascadeEnd[i+1] * tanHalfVerticalFOV;
+
+        // printf("xn %f xf %f\n", xn, xf);
+        // printf("yn %f yf %f\n", yn, yf);
 
         auto frustumCorners = {
             // near face
@@ -358,20 +352,22 @@ void LightScattering::CalcOrthoProjections()
         };
 
         glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
-        glm::vec3 maxPoint = glm::vec3(std::numeric_limits<float>::min());
+        glm::vec3 maxPoint = glm::vec3(-std::numeric_limits<float>::max());
 
         for (auto it : frustumCorners)
         {
             // Transform the frustum coordinate from view to world space
             glm::vec4 positionWS = viewInv * it;
+            // printf("Frustum: %f, %f, %f\n", positionWS.x, positionWS.y, positionWS.z);
 
             // Transform the frustum coordinate from world to light space
             glm::vec3 positionLS = glm::vec3(lightView * positionWS);
+            // printf("Light Space: %f, %f, %f\n", positionLS.x, positionLS.y, positionLS.z);
 
             minPoint = glm::min(minPoint, positionLS);
             maxPoint = glm::max(maxPoint, positionLS);
 
-            m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, minPoint.z, maxPoint.z };
+            m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, -maxPoint.z, -minPoint.z };
         }
     }
 }
@@ -400,7 +396,7 @@ void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
 
     m_DebugDepthShader.bind();
     m_DebugDepthShader.setUniform("ubOrthographic", true);
-    m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap[2], 0);
+    m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap[int(m_Settings.depthIndex)], 0);
     m_ScreenTraingle.draw();
 }
 
@@ -425,7 +421,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightTechnique.setShadowMap(m_NumCascades, Graphics::g_ShadowMap);
     m_LightTechnique.setTexWood(m_TexWood);
     for (uint32_t i = 0; i < m_NumCascades; i++) {
-        glm::vec4 vView(0.f, 0.f, -m_CascadeEnd[i + 1], 1.0f);
+        glm::vec4 vView(0.f, 0.f, m_CascadeEnd[i + 1], 1.0f);
         glm::vec4 vClip = project * vView;
         printf("%f, %f, %f, %f\n", vClip.x, vClip.y, vClip.z, vClip.w);
         m_LightTechnique.setCascadeEndClipSpace(i, vClip.z);
@@ -475,15 +471,27 @@ glm::vec3 LightScattering::GetSunDirection() const
     return glm::normalize(sunDir);
 }
 
-glm::mat4 LightScattering::GetLightSpaceMatrix(uint32_t i) const
+glm::mat4 LightScattering::GetLightViewMatrix() const
 {
     // poisition zero and direction make similar result;
-    glm::mat4 lightView = glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
-    // glm::mat4 lightView = glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
+    return glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
+    // From ogldev tutorial49
+    // "Since we are dealing with a directional light that has no origin 
+    //  we just need to rotate the world so that the light direction becomes 
+    //  aligned with the positive Z axis. The origin of light can simply be
+    //  the origin of the light space coordinate system (which means we don't 
+    //  need any translation)"
+    return glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
+}
 
+glm::mat4 LightScattering::GetLightSpaceMatrix(uint32_t i) const
+{
     const auto& info = m_ShadowOrthoProject[i];
+    // glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 10.f);
+    // glm::mat4 lightProjection = glm::ortho(-100.f, 100.f, -100.f, 100.f, near_plane, far_plane);
     glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, info.n, info.f);
-    return lightProjection * lightView;
+    // glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, near_plane, far_plane);
+    return lightProjection * GetLightViewMatrix();
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
@@ -511,7 +519,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, near_plane, far_plane);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 1.f, 1000.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 

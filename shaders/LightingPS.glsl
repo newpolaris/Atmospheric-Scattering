@@ -122,18 +122,18 @@ void main()
     vec3 normal = normalize(vNormalWS);
 
     float ShadowFactor = 0.0;
-    vec4 CascadeIndicator = vec4(0.0);
+    vec4 CascadeIndicator = vec4(0.3, 0.0, 0.3, 0.0);
 
     for (int i = 0; i < NUM_CASCADES; i++)
     {
         if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
             ShadowFactor = CalcShadowFactor(i, vPositionLS[i]);
             if (i == 0)
-                CascadeIndicator = vec4(0.1, 0.0, 0.0, 0.0);
+                CascadeIndicator = vec4(0.3, 0.0, 0.0, 0.0);
             else if (i == 1)
-                CascadeIndicator = vec4(0.0, 0.1, 0.0, 0.0);
+                CascadeIndicator = vec4(0.0, 0.3, 0.0, 0.0);
             else if (i == 2)
-                CascadeIndicator = vec4(0.0, 0.0, 0.1, 0.0);
+                CascadeIndicator = vec4(0.0, 0.0, 0.3, 0.0);
             break;
         }
     }

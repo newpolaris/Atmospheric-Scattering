@@ -20,8 +20,8 @@ void main()
 in vec2 vTexcoords;
 
 uniform bool ubOrthographic = false;
-uniform float uNearPlane;
-uniform float uFarPlane;
+uniform float uNearPlane = 1.0;
+uniform float uFarPlane = 100.0;
 uniform sampler2D uTexShadowmap;
 
 // OUT
@@ -37,7 +37,7 @@ float LinearizeDepth(float depth)
 // ----------------------------------------------------------------------------
 void main() 
 {
-    float depth = float(textureLod(uTexShadowmap, vTexcoords, 0.0));
+    float depth = float(texture(uTexShadowmap, vTexcoords));
     if (!ubOrthographic)
         depth = LinearizeDepth(depth) / uFarPlane; // view depth / far distance
     FragColor = vec4(vec3(depth), 1.0);
