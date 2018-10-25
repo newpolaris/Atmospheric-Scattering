@@ -61,6 +61,8 @@ struct SceneSettings
 	float m_exposure = 0.f;
     float angle = 76.f;
     float fov = 45.f;
+    float Slice1 = 25.f;
+    float Slice2 = 90.f;
     glm::vec3 lightDirection = glm::vec3(1.f, -1.f, 0.f);
     glm::vec3 position = glm::vec3(0.7f, 9.5f, -1.0f);
 };
@@ -223,11 +225,6 @@ void LightScattering::startup() noexcept
         glm::mat4 model(1.f);
         m_MatMeshModel[i] = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.f + i * 30.f));
     }
-
-    m_CascadeEnd[0] = -near_plane;
-    m_CascadeEnd[1] = -25.f;
-    m_CascadeEnd[2] = -90.f;
-    m_CascadeEnd[3] = -far_plane;
 }
 
 void LightScattering::closeup() noexcept
@@ -260,6 +257,11 @@ void LightScattering::update() noexcept
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
     lightPosition = m_Settings.position;
+
+    m_CascadeEnd[0] = -near_plane;
+    m_CascadeEnd[1] = -m_Settings.Slice1;
+    m_CascadeEnd[2] = -m_Settings.Slice2;
+    m_CascadeEnd[3] = -far_plane;
 }
 
 void LightScattering::updateHUD() noexcept
@@ -286,10 +288,12 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
-            bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             ImGui::Separator();
             bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
             bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
+            bUpdated |= ImGui::SliderFloat("Near", &near_plane, -10.f, m_Settings.Slice1);
+            bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, near_plane, m_Settings.Slice2);
+            bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, far_plane);
         }
     }
     ImGui::Unindent();
