@@ -35,6 +35,7 @@ class LightingTechnique
 {
 public:
 
+    static const uint32_t numCascade = 3;
     static const uint32_t MAX_POINT_LIGHTS = 2;
     static const uint32_t MAX_SPOT_LIGHTS = 2;
 
@@ -44,14 +45,15 @@ public:
     void bind();
     void setDevice(const GraphicsDevicePtr& device);
     void setEyePositionWS(const glm::vec3& position);
-    void setMatLightSpace(const glm::mat4& mat);
+    void setCascadeEndClipSpace(uint32_t i, float vClipZ);
+    void setMatLightSpace(uint32_t i, const glm::mat4& mat);
     void setMatModel(const glm::mat4& mat);
     void setMatView(const glm::mat4& mat);
     void setMatProject(const glm::mat4& mat);
     void setDirectionalLight(const DirectionalLight& Light);
     void setSpotLights(uint32_t NumLights, const SpotLight* pLights);
     void setPointLights(uint32_t NumLights, const PointLight* pLights);
-    void setShadowMap(const GraphicsTexturePtr& texture);
+    void setShadowMap(uint32_t numCascade, const GraphicsTexturePtr* texture);
     void setTexWood(const GraphicsTexturePtr& texture);
 
     GraphicsDeviceWeakPtr m_Device;
@@ -83,12 +85,13 @@ public:
     } m_spotLightsLocation[MAX_SPOT_LIGHTS];
 
     GLuint m_eyePositionWSLoc;
-    GLuint m_matLightLoc;
     GLuint m_matModelLoc;
     GLuint m_matViewLoc;
     GLuint m_matProjectLoc;
     GLuint m_numPointLightsLocation;
     GLuint m_numSpotLightsLocation;
-    GLuint m_texShadowLoc;
+    GLuint m_cascadeEndClipSpaceLoc[numCascade];
+    GLuint m_matLightLoc[numCascade];
+    GLuint m_texShadowLoc[numCascade];
     GLuint m_texWoodLoc;
 };

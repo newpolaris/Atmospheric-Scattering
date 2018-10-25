@@ -49,12 +49,6 @@ GraphicsDataPtr OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noex
     return nullptr;
 }
 
-template <typename T, typename E>
-bool any_of(T list, const E& elem)
-{
-    return std::any_of(list.begin(), list.end(), [&](const E& tag) { return tag == elem; });
-}
-
 GraphicsTexturePtr OGLDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
     assert(desc.getWrapS() != GL_CLAMP);

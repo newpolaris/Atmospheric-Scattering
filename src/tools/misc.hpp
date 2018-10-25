@@ -116,30 +116,6 @@ namespace nv_helpers
         return float(rand() % RAND_MAX) / float(RAND_MAX);
     }
 
-    inline int mipMapLevels(int size) {
-        int num = 0;
-        while (size) {
-            num++;
-            size /= 2;
-        }
-        return num;
-    }
-
-    inline void permutation(std::vector<unsigned int> &data)
-    {
-        size_t size = data.size();
-        assert(size < RAND_MAX);
-
-        for (size_t i = 0; i < size; i++) {
-            data[i] = (unsigned int)(i);
-        }
-
-        for (size_t i = size - 1; i > 0 ; i--) {
-            size_t other = rand() % (i + 1);
-            std::swap(data[i], data[other]);
-        }
-    }
-
     class Frustum
     {
     public:
@@ -204,6 +180,46 @@ namespace nv_helpers
 
         float  m_planes[NUM_PLANES][4];
     };
+}
+
+namespace util
+{
+    inline int mipMapLevels(int size) {
+        int num = 0;
+        while (size) {
+            num++;
+            size /= 2;
+        }
+        return num;
+    }
+
+    inline void permutation(std::vector<unsigned int> &data)
+    {
+        size_t size = data.size();
+        assert(size < RAND_MAX);
+
+        for (size_t i = 0; i < size; i++) {
+            data[i] = (unsigned int)(i);
+        }
+
+        for (size_t i = size - 1; i > 0 ; i--) {
+            size_t other = rand() % (i + 1);
+            std::swap(data[i], data[other]);
+        }
+    }
+
+    template <typename T, typename E>
+    bool any_of(T list, const E& elem)
+    {
+        return std::any_of(list.begin(), list.end(), [&](const E& tag) { return tag == elem; });
+    }
+
+    template <typename T, typename E>
+    bool any_of(T _first, T _last, const E& elem)
+    {
+        return std::any_of(_first, _last, [&](const E& tag) { return tag == elem; });
+    }
+
 }
 
 #endif

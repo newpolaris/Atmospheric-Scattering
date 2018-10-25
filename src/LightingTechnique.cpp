@@ -1,5 +1,6 @@
 #include <LightingTechnique.h>
 #include <tools/string.h>
+#include <tools/misc.hpp>
 
 LightingTechnique::LightingTechnique()
 {
@@ -21,19 +22,27 @@ void LightingTechnique::initialize()
     auto GetUniformLocationL = [shaderid](const std::string& uniform, uint32_t index) {
         return glGetUniformLocation(shaderid, util::format(uniform, index).c_str());
     };
-    m_texShadowLoc = GetUniformLocation("uTexShadowmap");
+
+    #define INVALID_UNIFORM_LOCATION 0xffffffff
+
+    for (uint32_t i = 0; i < numCascade; i++)
+    {
+        m_texShadowLoc[i] = GetUniformLocationL("uTexShadowmap[{0}]", i);
+        m_matLightLoc[i] = GetUniformLocationL("uMatLight[{0}]", i);
+        m_cascadeEndClipSpaceLoc[i] = GetUniformLocationL("uCascadeEndClipSpace[{0}]", i);
+    }
+    if (util::any_of(m_texShadowLoc, m_texShadowLoc + numCascade, INVALID_UNIFORM_LOCATION)
+     || util::any_of(m_matLightLoc, m_matLightLoc + numCascade, INVALID_UNIFORM_LOCATION)
+     || util::any_of(m_cascadeEndClipSpaceLoc, m_cascadeEndClipSpaceLoc + numCascade, INVALID_UNIFORM_LOCATION))
+        assert(false);
+
     m_texWoodLoc = GetUniformLocation("uTexWood");
-    m_matLightLoc = GetUniformLocation("uMatLight");
     m_matModelLoc = GetUniformLocation("uMatModel");
     m_matViewLoc = GetUniformLocation("uMatView");
     m_matProjectLoc = GetUniformLocation("uMatProject");
     m_eyePositionWSLoc = GetUniformLocation("uEyePositionWS");
 
-    #define INVALID_UNIFORM_LOCATION 0xffffffff
-
-    if (m_texShadowLoc == INVALID_UNIFORM_LOCATION
-     || m_texWoodLoc == INVALID_UNIFORM_LOCATION
-     || m_matLightLoc == INVALID_UNIFORM_LOCATION)
+    if (m_texWoodLoc == INVALID_UNIFORM_LOCATION)
         assert(false);
 
     m_numPointLightsLocation = GetUniformLocation("uNumPointLights");
@@ -91,9 +100,9 @@ void LightingTechnique::setDevice(const GraphicsDevicePtr& device)
     m_Device = device;
 }
 
-void LightingTechnique::setMatLightSpace(const glm::mat4& mat)
+void LightingTechnique::setMatLightSpace(uint32_t i, const glm::mat4& mat)
 {
-    m_shader.setUniform(m_matLightLoc, mat);
+    m_shader.setUniform(m_matLightLoc[i], mat);
 }
 
 void LightingTechnique::setMatModel(const glm::mat4& mat)
@@ -116,14 +125,21 @@ void LightingTechnique::setEyePositionWS(const glm::vec3& position)
     m_shader.setUniform(m_eyePositionWSLoc, position);
 }
 
-void LightingTechnique::setShadowMap(const GraphicsTexturePtr& texture)
+void LightingTechnique::setCascadeEndClipSpace(uint32_t i, float vClipZ)
 {
-    m_shader.bindTexture(m_texShadowLoc, texture, 0);
+    m_shader.setUniform(m_cascadeEndClipSpaceLoc[i], vClipZ);
+}
+
+void LightingTechnique::setShadowMap(uint32_t numCascade, const GraphicsTexturePtr* texture)
+{
+    m_shader.bindTexture(m_texShadowLoc[0], texture[0], 1);
+    m_shader.bindTexture(m_texShadowLoc[1], texture[1], 2);
+    m_shader.bindTexture(m_texShadowLoc[2], texture[2], 3);
 }
 
 void LightingTechnique::setTexWood(const GraphicsTexturePtr& texture)
 {
-    m_shader.bindTexture(m_texWoodLoc, texture, 1);
+    m_shader.bindTexture(m_texWoodLoc, texture, 0);
 }
 
 void LightingTechnique::setDirectionalLight(const DirectionalLight& Light)

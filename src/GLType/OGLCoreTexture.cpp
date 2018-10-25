@@ -39,10 +39,48 @@ bool OGLCoreTexture::create(GLint width, GLint height, GLenum target, GraphicsFo
 	glTextureStorage2D(TextureID, levels, Format.Internal, width, height);
     if (data != nullptr && size != 0)
     {
+        // Per miplevel data initialize requires per miplevel data
+        assert(levels == 1);
+        GLuint level = 0;
         if (gli::is_compressed(format))
-            glCompressedTextureSubImage2D(TextureID, 0, 0, 0, width, height, Format.Internal, size, data);
+            glCompressedTextureSubImage2D(TextureID, level, 0, 0, width, height, Format.Internal, size, data);
         else
-            glTextureSubImage2D(TextureID, 0, 0, 0, width, height, Format.External, Type, data);
+            glTextureSubImage2D(TextureID, level, 0, 0, width, height, Format.External, Type, data);
+    }
+
+	m_Target = target;
+	m_TextureID = TextureID;
+	m_Format = Format.Internal;
+    m_Type = Type;
+
+	return true;
+}
+
+bool OGLCoreTexture::create(GLint width, GLint height, GLint depth, GLenum target, GraphicsFormat format, GLuint levels, const uint8_t* data, uint32_t size) noexcept
+{
+    using namespace gli;
+
+    const gl GL(gl::PROFILE_GL33);
+    const swizzles swizzle(gl::SWIZZLE_RED, gl::SWIZZLE_GREEN, gl::SWIZZLE_BLUE, gl::SWIZZLE_ALPHA);
+    const auto Format = GL.translate(format, swizzle);
+
+    GLenum Type = Format.Type;
+    if (Type == GL_HALF_FLOAT)
+        Type = GL_FLOAT;
+
+	GLuint TextureID = 0;
+	glCreateTextures(target, 1, &TextureID);
+	glTextureStorage3D(TextureID, levels, Format.Internal, width, height, depth);
+    if (data != nullptr && size != 0)
+    {
+        // support only miplevel 0, no layered texture, faces 0
+        const GLuint level = 0;
+        assert(levels == 1);
+        if (gli::is_compressed(format))
+
+            glCompressedTextureSubImage3D(TextureID, level, 0, 0, 0, width, height, depth, Format.Internal, size, data);
+        else
+            glTextureSubImage3D(TextureID, level, 0, 0, 0, width, height, depth, Format.External, Type, data);
     }
 
 	m_Target = target;
@@ -55,6 +93,9 @@ bool OGLCoreTexture::create(GLint width, GLint height, GLenum target, GraphicsFo
 
 bool OGLCoreTexture::create(const GraphicsTextureDesc& desc) noexcept
 {
+    // requires TARGET_3D  / TARGET_2D_ARRAY
+    assert(!(desc.getDepth() > 1 && desc.getTarget() == gli::TARGET_2D));
+
     m_TextureDesc = desc;
 
     bool bSuccess = false;
@@ -65,12 +106,16 @@ bool OGLCoreTexture::create(const GraphicsTextureDesc& desc) noexcept
     {
         auto width = desc.getWidth();
         auto height = desc.getHeight();
+        auto depth = desc.getDepth();
         auto levels = desc.getLevels();
         auto format = desc.getFormat();
         auto data = desc.getStream();
         auto size = desc.getStreamSize();
         auto target = OGLTypes::translate(desc.getTarget());
-        bSuccess = create(width, height, target, format, levels, data, size);
+        if (depth > 1)
+            bSuccess = create(width, height, depth, target, format, levels, data, size);
+        else
+            bSuccess = create(width, height, target, format, levels, data, size);
     }
     if (bSuccess) applyParameters(desc);
     return bSuccess;

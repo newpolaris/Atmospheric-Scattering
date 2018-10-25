@@ -6,10 +6,11 @@
 
 namespace Graphics
 {
+    const uint32_t g_NumShadowCascade = 3;
+    const uint32_t g_ShadowMapSize = 1024;
+
     uint32_t g_NativeWidth = 0;
     uint32_t g_NativeHeight = 0;
-
-    uint32_t g_ShadowMapSize = 1024;
 
     GraphicsDeviceWeakPtr g_DeviceWeakPtr;
 
@@ -17,8 +18,8 @@ namespace Graphics
     GraphicsTexturePtr g_DepthMap;
     GraphicsFramebufferPtr g_MainFramebuffer;
 
-    GraphicsTexturePtr g_ShadowMap;
-    GraphicsFramebufferPtr g_ShadowMapFramebuffer;
+    GraphicsTexturePtr g_ShadowMap[g_NumShadowCascade];
+    GraphicsFramebufferPtr g_ShadowMapFramebuffer[g_NumShadowCascade];
 
     GraphicsTexturePtr g_EnvLightMap;
     GraphicsTexturePtr g_EnvLightAlphaMap;
@@ -81,11 +82,14 @@ void Graphics::initializeRenderingBuffers(const GraphicsDevicePtr& device, uint3
     shadowDesc.setWrapS(GL_CLAMP_TO_EDGE);
     shadowDesc.setWrapT(GL_CLAMP_TO_EDGE);
     shadowDesc.setFormat(gli::FORMAT_D24_UNORM_S8_UINT_PACK32);
-    g_ShadowMap = device->createTexture(shadowDesc);
+    for (int i = 0; i < g_NumShadowCascade; i++)
+        g_ShadowMap[i] = device->createTexture(shadowDesc);
 
     GraphicsFramebufferDesc shadowmapFrameDesc;
-    shadowmapFrameDesc.addComponent(GraphicsAttachmentBinding(g_ShadowMap, GL_DEPTH_STENCIL_ATTACHMENT));
-    g_ShadowMapFramebuffer = device->createFramebuffer(shadowmapFrameDesc);
+    for (int i = 0; i < g_NumShadowCascade; i++) {
+        shadowmapFrameDesc.addComponent(GraphicsAttachmentBinding(g_ShadowMap[i], GL_DEPTH_STENCIL_ATTACHMENT));
+        g_ShadowMapFramebuffer[i] = device->createFramebuffer(shadowmapFrameDesc);
+    }
 
     GraphicsTextureDesc envLightDesc;
     envLightDesc.setWrapS(GL_CLAMP_TO_EDGE);
@@ -169,8 +173,10 @@ void Graphics::destroyRenderingBuffers()
     g_Gbuffer7Map.reset();
     g_Gbuffer8Map.reset();
 
-    g_ShadowMapFramebuffer.reset();
-    g_ShadowMap.reset();
+    for (int i = 0; i < g_NumShadowCascade; i++) {
+        g_ShadowMapFramebuffer[i].reset();
+        g_ShadowMap[i].reset();
+    }
 
     g_EnvLightFramebuffer.reset();
     g_EnvLightMap.reset();

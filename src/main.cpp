@@ -36,12 +36,17 @@
 
 enum ProfilerType { kProfilerTypeRender = 0, kProfilerTypeUpdate };
 
+struct OrthographicProjection
+{
+    float l, r, b, t, n, f;
+};
+
 namespace 
 {
     float s_CpuTick = 0.f;
     float s_GpuTick = 0.f;
     const int s_NumMeshes = 5;
-    float near_plane = -10.0f, far_plane = 100.0f;
+    float near_plane = 1.0f, far_plane = 200.0f;
     glm::mat4 m_MatMeshModel[s_NumMeshes];
     glm::vec3 lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 }
@@ -96,16 +101,20 @@ public:
 
 private:
 
+    void CalcOrthoProjections();
     void ShadowMapPass(GraphicsContext& gfxContext);
     void RenderDebugDepth(GraphicsContext& gfxContext);
     void RenderPass(GraphicsContext& gfxContext);
-    void RenderPass2(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
     void RenderScene(const ProgramShader& shader);
     void RenderScene(LightingTechnique& technique);
 
     glm::vec3 GetSunDirection() const;
-    glm::mat4 GetLightSpaceMatrix() const;
+    glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
+
+    static const uint32_t m_NumCascades = 3;
+    float m_CascadeEnd[m_NumCascades+1];
+    OrthographicProjection m_ShadowOrthoProject[m_NumCascades]; 
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -211,6 +220,11 @@ void LightScattering::startup() noexcept
         glm::mat4 model(1.f);
         m_MatMeshModel[i] = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.f + i * 30.f));
     }
+
+    m_CascadeEnd[0] = near_plane;
+    m_CascadeEnd[1] = 25.f;
+    m_CascadeEnd[2] = 90.f;
+    m_CascadeEnd[3] = far_plane;
 }
 
 void LightScattering::closeup() noexcept
@@ -296,6 +310,7 @@ void LightScattering::render() noexcept
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
+    CalcOrthoProjections();
     ShadowMapPass(context);
     RenderDebugDepth(context);
     RenderPass(context);
@@ -305,18 +320,74 @@ void LightScattering::render() noexcept
     profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
 }
 
+void LightScattering::CalcOrthoProjections()
+{
+    glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
+
+    // From ogldev tutorial49
+    // "Since we are dealing with a directional light that has no origin 
+    //  we just need to rotate the world so that the light direction becomes 
+    //  aligned with the positive Z axis. The origin of light can simply be
+    //  the origin of the light space coordinate system (which means we don't 
+    //  need any translation)"
+    glm::mat4 lightView = glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
+
+    float aspect = (float)Graphics::g_NativeWidth/Graphics::g_NativeHeight;
+    float tanHalfHorizontalFOV = glm::tan(glm::radians(m_Settings.fov) / 2.f);
+    float tanHalfVerticalFOV = glm::tan(glm::radians(m_Settings.fov*aspect) / 2.f);
+
+    for (uint32_t i = 0; i < m_NumCascades; i++)
+    {
+        float xn = m_CascadeEnd[i] * tanHalfHorizontalFOV;
+        float yn = m_CascadeEnd[i] * tanHalfVerticalFOV;
+        float xf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
+        float yf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
+
+        auto frustumCorners = {
+            // near face
+            glm::vec4( xn,  yn, m_CascadeEnd[i], 1.f),
+            glm::vec4(-xn,  yn, m_CascadeEnd[i], 1.f),
+            glm::vec4( xn, -yn, m_CascadeEnd[i], 1.f),
+            glm::vec4(-xn, -yn, m_CascadeEnd[i], 1.f),
+
+            // far face
+            glm::vec4( xf,  yf, m_CascadeEnd[i+1], 1.f),
+            glm::vec4(-xf,  yf, m_CascadeEnd[i+1], 1.f),
+            glm::vec4( xf, -yf, m_CascadeEnd[i+1], 1.f),
+            glm::vec4(-xf, -yf, m_CascadeEnd[i+1], 1.f),
+        };
+
+        glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
+        glm::vec3 maxPoint = glm::vec3(std::numeric_limits<float>::min());
+
+        for (auto it : frustumCorners)
+        {
+            // Transform the frustum coordinate from view to world space
+            glm::vec4 positionWS = viewInv * it;
+
+            // Transform the frustum coordinate from world to light space
+            glm::vec3 positionLS = glm::vec3(lightView * positionWS);
+
+            minPoint = glm::min(minPoint, positionLS);
+            maxPoint = glm::max(maxPoint, positionLS);
+
+            m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, minPoint.z, maxPoint.z };
+        }
+    }
+}
+
 void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 {
-    gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer);
-    gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize); 
-    gfxContext.ClearDepth(1.0f);
-    gfxContext.Clear(kDepthBufferBit);
-
     m_ShadowMapShader.bind();
-    m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix());
-    RenderScene(m_ShadowMapShader);
-
-    m_ShadowMapShader.unbind();
+    for (int i = 0; i < m_NumCascades; i++)
+    {
+        gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
+        gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize);
+        gfxContext.ClearDepth(1.0f);
+        gfxContext.Clear(kDepthBufferBit);
+        m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix(i));
+        RenderScene(m_ShadowMapShader);
+    }
 }
 
 void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
@@ -329,9 +400,7 @@ void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
 
     m_DebugDepthShader.bind();
     m_DebugDepthShader.setUniform("ubOrthographic", true);
-    m_DebugDepthShader.setUniform("uNearPlane", near_plane);
-    m_DebugDepthShader.setUniform("uFarPlane", far_plane);
-    m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);
+    m_DebugDepthShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap[2], 0);
     m_ScreenTraingle.draw();
 }
 
@@ -350,36 +419,20 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightTechnique.setDirectionalLight(m_DirectionalLight);
     m_LightTechnique.setMatView(view);
     m_LightTechnique.setMatProject(project);
-    m_LightTechnique.setMatLightSpace(GetLightSpaceMatrix());
+    for (uint32_t i = 0; i < m_NumCascades; i++)
+        m_LightTechnique.setMatLightSpace(i, GetLightSpaceMatrix(i));
     m_LightTechnique.setEyePositionWS(m_Camera.getPosition());
-    m_LightTechnique.setShadowMap(Graphics::g_ShadowMap);
+    m_LightTechnique.setShadowMap(m_NumCascades, Graphics::g_ShadowMap);
     m_LightTechnique.setTexWood(m_TexWood);
+    for (uint32_t i = 0; i < m_NumCascades; i++) {
+        glm::vec4 vView(0.f, 0.f, -m_CascadeEnd[i + 1], 1.0f);
+        glm::vec4 vClip = project * vView;
+        printf("%f, %f, %f, %f\n", vClip.x, vClip.y, vClip.z, vClip.w);
+        m_LightTechnique.setCascadeEndClipSpace(i, vClip.z);
+    }
 
     RenderScene(m_LightTechnique);
 }
-
-void LightScattering::RenderPass2(GraphicsContext& gfxContext)
-{
-    gfxContext.SetFramebuffer(Graphics::g_MainFramebuffer);
-    gfxContext.SetViewport(0, 0, Graphics::g_NativeWidth, Graphics::g_NativeHeight); 
-    gfxContext.ClearColor(glm::vec4(0, 0, 0, 0));
-    gfxContext.ClearDepth(1.0f);
-    gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
-
-    glm::mat4 view = m_Camera.getViewMatrix();
-    glm::mat4 project = m_Camera.getProjectionMatrix();
-
-    m_LightingShader.bind();
-    m_LightingShader.setUniform("uMatView", view);
-    m_LightingShader.setUniform("uMatProject", project);
-    m_LightingShader.setUniform("uViewPosition", m_Camera.getPosition());
-    m_LightingShader.setUniform("uLightPosition", lightPosition);
-    m_LightingShader.setUniform("uMatLightSpace", GetLightSpaceMatrix()); 
-    m_LightingShader.bindTexture("uTexShadowmap", Graphics::g_ShadowMap, 0);
-    m_LightingShader.bindTexture("uTexWood", m_TexWood, 1);
-
-    RenderScene(m_LightingShader);
-} 
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 {
@@ -422,13 +475,14 @@ glm::vec3 LightScattering::GetSunDirection() const
     return glm::normalize(sunDir);
 }
 
-glm::mat4 LightScattering::GetLightSpaceMatrix() const
+glm::mat4 LightScattering::GetLightSpaceMatrix(uint32_t i) const
 {
     // poisition zero and direction make similar result;
     glm::mat4 lightView = glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
     // glm::mat4 lightView = glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
-    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);
+
+    const auto& info = m_ShadowOrthoProject[i];
+    glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, info.n, info.f);
     return lightProjection * lightView;
 }
 
@@ -457,7 +511,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(45.0f, aspectRatio, 1.0f, 1000.f);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, near_plane, far_plane);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 
