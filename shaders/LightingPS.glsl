@@ -41,6 +41,7 @@ in vec4 vPositionLS[NUM_CASCADES];
 // OUT
 out vec4 FragColor;
 
+uniform int uDebugType = 0;
 uniform vec3 uEyePositionWS;
 uniform float uSpecularPower = 0.f;
 uniform float uMatSpecularIntensity = 0.f;
@@ -55,12 +56,14 @@ uniform SpotLight uSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D uTexWood;
 uniform sampler2D uTexShadowmap[NUM_CASCADES];
 
-float CalcShadowFactor(int CascadeIndex, vec4 positionLS)
+float CalcShadowFactor(int CascadeIndex, vec4 positionLS, vec3 normal, vec3 lightDirection)
 {
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
     float Depth = texture(uTexShadowmap[CascadeIndex], UVCoords.xy).x;
-    if (UVCoords.z - 0.01 > Depth)
+    float angleBias = 0.006;
+    float bias = max(angleBias * (1.0 - dot(normal, -lightDirection)), 0.0008);
+    if (UVCoords.z <= 1.0 && UVCoords.z - bias > Depth)
         return 0.5;
     return 1.0;
 }
@@ -117,6 +120,26 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal)
     return vec4(0, 0, 0, 0);
 }
 
+vec3 DepthPrint(vec3 normal)
+{
+    vec3 color = vec3(0.f);
+    for (int i = 0; i < NUM_CASCADES; i++)
+    {
+        vec4 positionLS = vPositionLS[i];
+        if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
+            vec3 ProjCoords = positionLS.xyz / positionLS.w;
+            vec3 UVCoords = 0.5 * ProjCoords + 0.5;
+            float Depth = texture(uTexShadowmap[i], UVCoords.xy).x;
+            if (uDebugType == 1) 
+                color = vec3(UVCoords.x, 0.0, UVCoords.y);
+            else
+                color = vec3(UVCoords.z, 0.0, Depth);
+            break;
+        }
+    }
+    return color;
+}
+
 void main()
 {
     vec3 normal = normalize(vNormalWS);
@@ -127,7 +150,7 @@ void main()
     for (int i = 0; i < NUM_CASCADES; i++)
     {
         if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
-            ShadowFactor = CalcShadowFactor(i, vPositionLS[i]);
+            ShadowFactor = CalcShadowFactor(i, vPositionLS[i], normal, uDirectionalLight.Direction);
             if (i == 0)
                 CascadeIndicator = vec4(0.3, 0.0, 0.0, 0.0);
             else if (i == 1)
@@ -144,13 +167,11 @@ void main()
     for (int i = 0; i < uNumSpotLights; i++)
         sumLight += CalcSpotLight(uSpotLights[i], normal);
 
-#define PRINT 2
-#if PRINT == 0
-    FragColor = vec4(DepthPrint(vPositionLS), 1.0);
-#elif PRINT == 1
-    FragColor = vec4(normal, 1.0);
-#elif PRINT == 2
-    vec3 SampledColor = texture2D(uTexWood, vTexcoords).rgb;
-    FragColor = vec4(vec3(sumLight)*SampledColor, 1.0) + CascadeIndicator;
-#endif
+    if (uDebugType > 0)
+        FragColor = vec4(DepthPrint(normal), 1.0);
+    else
+    {
+        vec3 SampledColor = texture2D(uTexWood, vTexcoords).rgb;
+        FragColor = vec4(vec3(sumLight)*SampledColor, 1.0) + CascadeIndicator;
+    }
 }

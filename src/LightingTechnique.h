@@ -55,6 +55,7 @@ public:
     void setPointLights(uint32_t NumLights, const PointLight* pLights);
     void setShadowMap(uint32_t numCascade, const GraphicsTexturePtr* texture);
     void setTexWood(const GraphicsTexturePtr& texture);
+    void setDebugType(int32_t type);
 
     GraphicsDeviceWeakPtr m_Device;
     ProgramShader m_shader;

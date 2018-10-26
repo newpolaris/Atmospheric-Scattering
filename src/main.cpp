@@ -53,11 +53,12 @@ namespace
 
 struct SceneSettings
 {
+    float debugType = 0.f;
     bool bDebugDepth = false;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
-    float depthIndex = 0.0;
+    float depthIndex = 0.f;
 	float m_exposure = 0.f;
     float angle = 76.f;
     float fov = 45.f;
@@ -289,8 +290,11 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             ImGui::Separator();
+            bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.debugType, 0.f, 2.f);
+            ImGui::Separator();
             bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
             bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
+            ImGui::Separator();
             bUpdated |= ImGui::SliderFloat("Near", &near_plane, -10.f, m_Settings.Slice1);
             bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, near_plane, m_Settings.Slice2);
             bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, far_plane);
@@ -328,15 +332,15 @@ void LightScattering::CalcOrthoProjections()
     glm::mat4 lightView = GetLightViewMatrix();
 
     float aspect = (float)Graphics::g_NativeHeight/Graphics::g_NativeWidth;
-    float tanHalfHorizontalFOV = glm::tan(glm::radians(m_Settings.fov) / 2.f);
-    float tanHalfVerticalFOV = glm::tan(glm::radians(m_Settings.fov*aspect) / 2.f);
+    float tanHalfHorizontalFOV = glm::tan(glm::radians(m_Settings.fov / 2.f));
+    float tanHalfVerticalFOV = glm::tan(glm::radians(m_Settings.fov*aspect/ 2.f));
 
     for (uint32_t i = 0; i < m_NumCascades; i++)
     {
-        float xn = -m_CascadeEnd[i] * tanHalfHorizontalFOV;
-        float yn = -m_CascadeEnd[i] * tanHalfVerticalFOV;
-        float xf = -m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
-        float yf = -m_CascadeEnd[i+1] * tanHalfVerticalFOV;
+        float xn = m_CascadeEnd[i] * tanHalfHorizontalFOV;
+        float yn = m_CascadeEnd[i] * tanHalfVerticalFOV;
+        float xf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
+        float yf = m_CascadeEnd[i+1] * tanHalfVerticalFOV;
 
         // printf("xn %f xf %f\n", xn, xf);
         // printf("yn %f yf %f\n", yn, yf);
@@ -379,6 +383,9 @@ void LightScattering::CalcOrthoProjections()
 void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 {
     m_ShadowMapShader.bind();
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_CLAMP);
+    glCullFace(GL_FRONT);
     for (int i = 0; i < m_NumCascades; i++)
     {
         gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
@@ -388,6 +395,8 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
         m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix(i));
         RenderScene(m_ShadowMapShader);
     }
+    glDisable(GL_DEPTH_CLAMP);
+    glCullFace(GL_BACK);
 }
 
 void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
@@ -416,6 +425,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
     m_LightTechnique.bind();
+    m_LightTechnique.setDebugType(int32_t(m_Settings.debugType));
     m_LightTechnique.setDirectionalLight(m_DirectionalLight);
     m_LightTechnique.setMatView(view);
     m_LightTechnique.setMatProject(project);

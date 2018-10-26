@@ -142,6 +142,11 @@ void LightingTechnique::setTexWood(const GraphicsTexturePtr& texture)
     m_shader.bindTexture(m_texWoodLoc, texture, 0);
 }
 
+void LightingTechnique::setDebugType(int32_t type)
+{
+    m_shader.setUniform("uDebugType", type);
+}
+
 void LightingTechnique::setDirectionalLight(const DirectionalLight& Light)
 {
     m_shader.setUniform(m_dirLightLocation.Color, Light.Color);
