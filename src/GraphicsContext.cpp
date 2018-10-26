@@ -43,6 +43,23 @@ void GraphicsContext::SetFrontFace(FrontFaceType flag)
     glFrontFace((flag == kCountClockWise) ? GL_CCW : GL_CW);
 }
 
+void GraphicsContext::SetCullFace(CullFaceType flag)
+{
+    glCullFace([&]() {
+        if (flag == kCullFront)
+            return GL_FRONT;
+        else if (flag == kCullBack)
+            return GL_BACK;
+        return GL_FRONT_AND_BACK;
+    }());
+}
+
+void GraphicsContext::SetDepthClamp(bool bFlag)
+{
+    const auto func = bFlag ? glEnable : glDisable;
+    func(GL_DEPTH_CLAMP);
+}
+
 void GraphicsContext::SetDepthTest(bool bFlag)
 {
     const auto func = bFlag ? glEnable : glDisable;

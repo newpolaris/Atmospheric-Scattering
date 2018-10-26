@@ -3,6 +3,7 @@
 #include <GraphicsTypes.h>
 
 enum FrontFaceType { kCountClockWise = 0, kClockWise };
+enum CullFaceType { kCullFront, kCullBack, kCullAll };
 enum ClearBitType
 {
     kColorBufferBit = 1,
@@ -23,6 +24,8 @@ public:
 
     void SetViewport(int x, int y, size_t width, size_t height);
     void SetFrontFace(FrontFaceType flag);
+    void SetCullFace(CullFaceType flag);
+    void SetDepthClamp(bool bFlag);
     void SetDepthTest(bool bFlag);
     void SetCubemapSeamless(bool bFlag);
     void SetFramebuffer(const GraphicsFramebufferPtr& framebuffer) noexcept;

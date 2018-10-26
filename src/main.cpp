@@ -168,6 +168,11 @@ void LightScattering::startup() noexcept
 	m_Camera.setMoveCoefficient(0.35f);
     m_Camera.setViewParams(glm::vec3(8.f, 21.f, -23.f), glm::vec3(8.f, 21.f, -23.f) + glm::vec3(-0.7f, -0.44f, 0.9f));
 
+    glm::vec3 p = { -9.85913467, 25.9683094, -18.1401157 };
+    glm::vec3 c = {-9.82689571, 25.1048946, -17.6366520 };
+    glm::vec3 u = {0.0551749095, 0.504494607, 0.861650109};
+    m_Camera.setViewParams(p, c);
+
 	GraphicsDeviceDesc deviceDesc;
 #if __APPLE__
 	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL);
@@ -290,7 +295,7 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
             ImGui::Separator();
-            bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.debugType, 0.f, 2.f);
+            bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.debugType, 0.f, 3.f);
             ImGui::Separator();
             bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
             bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
@@ -331,9 +336,10 @@ void LightScattering::CalcOrthoProjections()
     glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
     glm::mat4 lightView = GetLightViewMatrix();
 
-    float aspect = (float)Graphics::g_NativeHeight/Graphics::g_NativeWidth;
-    float tanHalfHorizontalFOV = glm::tan(glm::radians(m_Settings.fov / 2.f));
-    float tanHalfVerticalFOV = glm::tan(glm::radians(m_Settings.fov*aspect/ 2.f));
+    float aspect = (float)Graphics::g_NativeWidth/Graphics::g_NativeHeight;
+    float halfFovY = glm::radians(m_Settings.fov / 2.f);
+    float tanHalfVerticalFOV = glm::tan(halfFovY);
+    float tanHalfHorizontalFOV = tanHalfVerticalFOV*aspect;
 
     for (uint32_t i = 0; i < m_NumCascades; i++)
     {
@@ -374,18 +380,52 @@ void LightScattering::CalcOrthoProjections()
 
             minPoint = glm::min(minPoint, positionLS);
             maxPoint = glm::max(maxPoint, positionLS);
-
-            m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, -maxPoint.z, -minPoint.z };
         }
+        m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, -maxPoint.z, -minPoint.z };
+
+        auto view = m_Camera.getViewMatrix();
+        auto proj = m_Camera.getProjectionMatrix();
+        auto mat = GetLightSpaceMatrix(i);
+        glm::vec3 posWS = glm::vec3(0.78, 0, 0.12)*20.f;
+        auto k = view*glm::vec4(posWS, 1.0);
+        auto p = proj*k;
+        glm::vec4 positionLS = mat*glm::vec4(posWS, 1.0);
+        glm::vec4 uvs = positionLS * 0.5f + 0.5f;
+        for (auto it : frustumCorners)
+        {
+            glm::vec4 positionWS = viewInv * it;
+            glm::vec4 positionLS = mat*glm::vec4(posWS, 1.0);
+            glm::vec4 uvs = positionLS * 0.5f + 0.5f;
+        }
+
+		glm::vec3 frustumCornersWS[8] =
+		{
+			glm::vec3(-1.0f,  1.0f, -1.0f),
+			glm::vec3( 1.0f,  1.0f, -1.0f),
+			glm::vec3( 1.0f, -1.0f, -1.0f),
+			glm::vec3(-1.0f, -1.0f, -1.0f),
+			glm::vec3(-1.0f,  1.0f,  1.0f),
+			glm::vec3( 1.0f,  1.0f,  1.0f),
+			glm::vec3( 1.0f, -1.0f,  1.0f),
+			glm::vec3(-1.0f, -1.0f,  1.0f),
+		};
+
+		glm::mat4 invViewProj = glm::inverse(proj * view);
+		for (unsigned int i = 0; i < 8; ++i)
+		{
+			glm::vec4 inversePoint = invViewProj * glm::vec4(frustumCornersWS[i], 1.0f);
+			frustumCornersWS[i] = glm::vec3(inversePoint / inversePoint.w);
+		}
     }
 }
 
 void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 {
     m_ShadowMapShader.bind();
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_DEPTH_CLAMP);
-    glCullFace(GL_FRONT);
+    // depth clamping so that the shadow maps keep from moving 
+    // through objects which causes shadows to disappear.
+    gfxContext.SetDepthClamp(true);
+    gfxContext.SetCullFace(kCullFront);
     for (int i = 0; i < m_NumCascades; i++)
     {
         gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
@@ -395,8 +435,8 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
         m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix(i));
         RenderScene(m_ShadowMapShader);
     }
-    glDisable(GL_DEPTH_CLAMP);
-    glCullFace(GL_BACK);
+    gfxContext.SetDepthClamp(false);
+    gfxContext.SetCullFace(kCullBack);
 }
 
 void LightScattering::RenderDebugDepth(GraphicsContext& gfxContext)
@@ -437,8 +477,8 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     for (uint32_t i = 0; i < m_NumCascades; i++) {
         glm::vec4 vView(0.f, 0.f, m_CascadeEnd[i + 1], 1.0f);
         glm::vec4 vClip = project * vView;
-        printf("%f, %f, %f, %f\n", vClip.x, vClip.y, vClip.z, vClip.w);
-        m_LightTechnique.setCascadeEndClipSpace(i, vClip.z);
+        // printf("%f, %f, %f, %f\n", vClip.x, vClip.y, vClip.z, vClip.w);
+        m_LightTechnique.setCascadeEndClipSpace(i, m_CascadeEnd[i + 1]);
     }
 
     RenderScene(m_LightTechnique);
