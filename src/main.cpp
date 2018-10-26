@@ -31,6 +31,7 @@
 #include <vector>
 #include <algorithm>
 #include <GameCore.h>
+#include <tools/string.h>
 #include <GraphicsContext.h>
 #include <GLType/GraphicsTexture.h>
 
@@ -133,11 +134,10 @@ private:
     SphereMesh m_SphereMini;
     PlaneMesh m_Ground;
     FullscreenTriangleMesh m_ScreenTraingle;
-    LightingTechnique m_LightTechnique;
+    ProgramShader m_LightShader;
     ProgramShader m_FlatShader;
     ProgramShader m_ShadowMapShader;
     ProgramShader m_DebugDepthShader;
-    ProgramShader m_LightingShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsDevicePtr m_Device;
     GraphicsTexturePtr m_TexWood;
@@ -204,14 +204,11 @@ void LightScattering::startup() noexcept
     m_DebugDepthShader.addShader(GL_FRAGMENT_SHADER, "DebugDepth.Fragment");
     m_DebugDepthShader.link();
 
-    m_LightingShader.setDevice(m_Device);
-    m_LightingShader.initialize();
-    m_LightingShader.addShader(GL_VERTEX_SHADER, "Lighting.Vertex");
-    m_LightingShader.addShader(GL_FRAGMENT_SHADER, "Lighting.Fragment");
-    m_LightingShader.link();
-
-    m_LightTechnique.setDevice(m_Device);
-    m_LightTechnique.initialize();
+    m_LightShader.setDevice(m_Device);
+    m_LightShader.initialize();
+    m_LightShader.addShader(GL_VERTEX_SHADER, "LightingVS.glsl");
+    m_LightShader.addShader(GL_FRAGMENT_SHADER, "LightingPS.glsl");
+    m_LightShader.link();
 
 	m_PostProcessHDRShader.setDevice(m_Device);
 	m_PostProcessHDRShader.initialize();
@@ -348,9 +345,6 @@ void LightScattering::CalcOrthoProjections()
         float xf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
         float yf = m_CascadeEnd[i+1] * tanHalfVerticalFOV;
 
-        // printf("xn %f xf %f\n", xn, xf);
-        // printf("yn %f yf %f\n", yn, yf);
-
         auto frustumCorners = {
             // near face
             glm::vec4( xn,  yn, m_CascadeEnd[i], 1.f),
@@ -372,50 +366,14 @@ void LightScattering::CalcOrthoProjections()
         {
             // Transform the frustum coordinate from view to world space
             glm::vec4 positionWS = viewInv * it;
-            // printf("Frustum: %f, %f, %f\n", positionWS.x, positionWS.y, positionWS.z);
-
             // Transform the frustum coordinate from world to light space
             glm::vec3 positionLS = glm::vec3(lightView * positionWS);
-            // printf("Light Space: %f, %f, %f\n", positionLS.x, positionLS.y, positionLS.z);
 
             minPoint = glm::min(minPoint, positionLS);
             maxPoint = glm::max(maxPoint, positionLS);
         }
+        // glm::orth espect camera n, f which is > 0, so revert it
         m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, -maxPoint.z, -minPoint.z };
-
-        auto view = m_Camera.getViewMatrix();
-        auto proj = m_Camera.getProjectionMatrix();
-        auto mat = GetLightSpaceMatrix(i);
-        glm::vec3 posWS = glm::vec3(0.78, 0, 0.12)*20.f;
-        auto k = view*glm::vec4(posWS, 1.0);
-        auto p = proj*k;
-        glm::vec4 positionLS = mat*glm::vec4(posWS, 1.0);
-        glm::vec4 uvs = positionLS * 0.5f + 0.5f;
-        for (auto it : frustumCorners)
-        {
-            glm::vec4 positionWS = viewInv * it;
-            glm::vec4 positionLS = mat*glm::vec4(posWS, 1.0);
-            glm::vec4 uvs = positionLS * 0.5f + 0.5f;
-        }
-
-		glm::vec3 frustumCornersWS[8] =
-		{
-			glm::vec3(-1.0f,  1.0f, -1.0f),
-			glm::vec3( 1.0f,  1.0f, -1.0f),
-			glm::vec3( 1.0f, -1.0f, -1.0f),
-			glm::vec3(-1.0f, -1.0f, -1.0f),
-			glm::vec3(-1.0f,  1.0f,  1.0f),
-			glm::vec3( 1.0f,  1.0f,  1.0f),
-			glm::vec3( 1.0f, -1.0f,  1.0f),
-			glm::vec3(-1.0f, -1.0f,  1.0f),
-		};
-
-		glm::mat4 invViewProj = glm::inverse(proj * view);
-		for (unsigned int i = 0; i < 8; ++i)
-		{
-			glm::vec4 inversePoint = invViewProj * glm::vec4(frustumCornersWS[i], 1.0f);
-			frustumCornersWS[i] = glm::vec3(inversePoint / inversePoint.w);
-		}
     }
 }
 
@@ -464,24 +422,25 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     glm::mat4 view = m_Camera.getViewMatrix();
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
-    m_LightTechnique.bind();
-    m_LightTechnique.setDebugType(int32_t(m_Settings.debugType));
-    m_LightTechnique.setDirectionalLight(m_DirectionalLight);
-    m_LightTechnique.setMatView(view);
-    m_LightTechnique.setMatProject(project);
+    m_LightShader.bind();
+    m_LightShader.setUniform("uDebugType", int32_t(m_Settings.debugType));
+    m_LightShader.setUniform("uDirectionalLight.Base.Color", m_DirectionalLight.Color);
+    m_LightShader.setUniform("uDirectionalLight.Base.AmbientIntensity", m_DirectionalLight.AmbientIntensity);
+    m_LightShader.setUniform("uDirectionalLight.Direction", glm::normalize(m_DirectionalLight.Direction));
+    m_LightShader.setUniform("uDirectionalLight.Base.DiffuseIntensity", m_DirectionalLight.DiffuseIntensity);
+    m_LightShader.setUniform("uMatView", view);
+    m_LightShader.setUniform("uMatProject", project);
     for (uint32_t i = 0; i < m_NumCascades; i++)
-        m_LightTechnique.setMatLightSpace(i, GetLightSpaceMatrix(i));
-    m_LightTechnique.setEyePositionWS(m_Camera.getPosition());
-    m_LightTechnique.setShadowMap(m_NumCascades, Graphics::g_ShadowMap);
-    m_LightTechnique.setTexWood(m_TexWood);
-    for (uint32_t i = 0; i < m_NumCascades; i++) {
+    {
         glm::vec4 vView(0.f, 0.f, m_CascadeEnd[i + 1], 1.0f);
         glm::vec4 vClip = project * vView;
-        // printf("%f, %f, %f, %f\n", vClip.x, vClip.y, vClip.z, vClip.w);
-        m_LightTechnique.setCascadeEndClipSpace(i, m_CascadeEnd[i + 1]);
+        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), vClip.z);
+        m_LightShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
+        m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
     }
-
-    RenderScene(m_LightTechnique);
+    m_LightShader.setUniform("uEyePositionWS", m_Camera.getPosition());
+    m_LightShader.bindTexture("uTexWood", m_TexWood, 0);
+    RenderScene(m_LightShader);
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
@@ -541,10 +500,7 @@ glm::mat4 LightScattering::GetLightViewMatrix() const
 glm::mat4 LightScattering::GetLightSpaceMatrix(uint32_t i) const
 {
     const auto& info = m_ShadowOrthoProject[i];
-    // glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 10.f);
-    // glm::mat4 lightProjection = glm::ortho(-100.f, 100.f, -100.f, 100.f, near_plane, far_plane);
     glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, info.n, info.f);
-    // glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, near_plane, far_plane);
     return lightProjection * GetLightViewMatrix();
 }
 

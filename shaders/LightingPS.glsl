@@ -68,6 +68,30 @@ float CalcShadowFactor(int CascadeIndex, vec4 positionLS, vec3 normal, vec3 ligh
     return 1.0;
 }
 
+vec3 DepthPrint(vec3 normal)
+{
+    vec3 color = vec3(0.f);
+    for (int i = 0; i < NUM_CASCADES; i++)
+    {
+        vec4 positionLS = vPositionLS[i];
+        if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
+            vec3 ProjCoords = positionLS.xyz / positionLS.w;
+            vec3 UVCoords = 0.5 * ProjCoords + 0.5;
+            float Depth = texture(uTexShadowmap[i], UVCoords.xy).x;
+            if (uDebugType == 1) 
+                color = vec3(UVCoords.x, 0.0, UVCoords.y);
+            else if (uDebugType == 2)
+                color = vec3(UVCoords.z, 0.0, Depth);
+            else if (UVCoords.x > 1.0 || UVCoords.x < 0.0)
+                color = vec3(0, 0, 1);
+            else if (UVCoords.y > 1.0 || UVCoords.y < 0.0)
+                color = vec3(1, 0, 0);
+            break;
+        }
+    }
+    return color;
+}
+
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal, float ShadowFactor)
 {
     vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0);
@@ -119,31 +143,6 @@ vec4 CalcSpotLight(SpotLight light, vec3 normal)
     }
     return vec4(0, 0, 0, 0);
 }
-
-vec3 DepthPrint(vec3 normal)
-{
-    vec3 color = vec3(0.f);
-    for (int i = 0; i < NUM_CASCADES; i++)
-    {
-        vec4 positionLS = vPositionLS[i];
-        if (vClipSpacePosZ > uCascadeEndClipSpace[i]) {
-            vec3 ProjCoords = positionLS.xyz / positionLS.w;
-            vec3 UVCoords = 0.5 * ProjCoords + 0.5;
-            float Depth = texture(uTexShadowmap[i], UVCoords.xy).x;
-            if (uDebugType == 1) 
-                color = vec3(UVCoords.x, 0.0, UVCoords.y);
-	    else if (uDebugType == 2)
-	    	color = vec3(UVCoords.z, 0.0, Depth);
-            else if (UVCoords.x > 1.0 || UVCoords.x < 0.0)
-                color = vec3(0, 0, 1);
-            else if (UVCoords.y > 1.0 || UVCoords.y < 0.0)
-                color = vec3(1, 0, 0);
-            break;
-        }
-    }
-    return color;
-}
-
 void main()
 {
     vec3 normal = normalize(vNormalWS);
@@ -153,7 +152,7 @@ void main()
 
     for (int i = 0; i < NUM_CASCADES; i++)
     {
-        if (vClipSpacePosZ > uCascadeEndClipSpace[i]) {
+        if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
             ShadowFactor = CalcShadowFactor(i, vPositionLS[i], normal, uDirectionalLight.Direction);
             if (i == 0)
                 CascadeIndicator = vec4(0.3, 0.0, 0.0, 0.0);

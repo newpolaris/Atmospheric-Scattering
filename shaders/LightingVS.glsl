@@ -29,5 +29,5 @@ void main()
     for (int i = 0; i < NUM_CASCADES; i++)
         vPositionLS[i] = uMatLight[i] * uMatModel * position;
     gl_Position = uMatProject * uMatView * uMatModel * position;
-    vClipSpacePosZ = (uMatView * uMatModel * position).z;
+    vClipSpacePosZ = gl_Position.z;
 }
