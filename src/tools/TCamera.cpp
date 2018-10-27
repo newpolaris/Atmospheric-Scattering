@@ -19,17 +19,17 @@ TCamera::TCamera()
 {
     // Default projection parameters
     m_aspect = 1.333333f;
-    m_fov = 45.0f;
+    m_fovy = 45.0f;
     m_zNear = 1.0f;
     m_zFar = 10000.0f;
-    setProjectionParams(m_fov, 1.0f, m_zNear, m_zFar);
+    setProjectionParams(m_fovy, 1.0f, m_zNear, m_zFar);
 
     // Default view parameters
     m_position = glm::vec3(0.0f);
     m_target = glm::vec3(0.0f, 0.0f, -1.0f);
     m_up = glm::vec3(0.f, 1.f, 0.f);
 
-    m_direction = glm::vec3(0.f);
+    m_forward = glm::vec3(0.f);
 
     // Camera control
     m_pitchAngle = 0.0f;
@@ -58,16 +58,18 @@ TCamera::TCamera()
 
     m_bEnableRotation = true;
     m_bEnableMove = true;
+
+    update(0.f);
 }
 
 void TCamera::setProjectionParams(float fov, float aspect, float zNear, float zFar)
 {
-    m_fov = fov;
+    m_fovy = fov;
     m_zNear = zNear;
     m_zFar = zFar;
     m_aspect = aspect;
 
-    m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspect, m_zNear, m_zFar);
+    m_projectionMatrix = glm::perspective(glm::radians(m_fovy), m_aspect, m_zNear, m_zFar);
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;
 }
 
@@ -77,14 +79,14 @@ void TCamera::setViewParams(const glm::vec3 &pos, const glm::vec3 &target)
     m_target = target;
 
     // .Compute the view direction 
-    m_direction = m_target - m_position;
-    m_direction = glm::normalize(m_direction);
+    m_forward = m_target - m_position;
+    m_forward = glm::normalize(m_forward);
 
     // .Compute the UP vector
     // treat the case where the direction vector is parallel to the Y Axis
-    if ((fabs(m_direction.x) < FLT_EPSILON) && (fabs(m_direction.z) < FLT_EPSILON))
+    if ((fabs(m_forward.x) < FLT_EPSILON) && (fabs(m_forward.z) < FLT_EPSILON))
     {
-        if (m_direction.y > 0.0f) {
+        if (m_forward.y > 0.0f) {
             m_up = glm::vec3(0.0f, 0.0f, 1.0f);
         }
         else {
@@ -96,10 +98,10 @@ void TCamera::setViewParams(const glm::vec3 &pos, const glm::vec3 &target)
         m_up = glm::vec3(0.0f, 1.0f, 0.0f);
     }
 
-    glm::vec3 left = glm::cross(m_up, m_direction);
-    left = glm::normalize(left);
+    m_Right = glm::cross(m_up, m_forward);
+    m_Right = glm::normalize(m_Right);
 
-    m_up = glm::cross(m_direction, left);
+    m_up = glm::cross(m_Right, m_forward);
     m_up = glm::normalize(m_up);
 
     // .Create the matrix
@@ -107,7 +109,7 @@ void TCamera::setViewParams(const glm::vec3 &pos, const glm::vec3 &target)
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;
 
     // .Retrieve the yaw & pitch angle  
-    glm::vec3 zAxis = -m_direction;  // (it's also the third row of the viewMatrix)
+    glm::vec3 zAxis = -m_forward;  // (it's also the third row of the viewMatrix)
 
     m_yawAngle = atan2f(zAxis.x, zAxis.z);
 
@@ -206,20 +208,19 @@ bool TCamera::update(float deltaT)
     glm::mat3 cameraRotate = glm::mat3(glm::yawPitchRoll(m_yawAngle, m_pitchAngle, 0.0f));
 
     const glm::vec3 front(0.0f, 0.0f, -1.0f);
-    m_direction = cameraRotate * front;
-    m_direction = glm::normalize(m_direction);
+    m_forward = cameraRotate * front;
+    m_forward = glm::normalize(m_forward);
 
-    const glm::vec3 left(-1.0f, 0.0f, 0.0f);
-    glm::vec3 worldLeft = cameraRotate * left;
-    worldLeft = glm::normalize(worldLeft);
-
+    const glm::vec3 right(1.0f, 0.0f, 0.0f);
+    m_Right  = cameraRotate * right;
+    m_Right = glm::normalize(m_Right);
 
     // .Compute the new view parameters
     m_position += cameraRotate * m_moveVelocity;
-    m_target = m_position + m_direction;
-    m_up = glm::cross(m_direction, worldLeft);
+    m_target = m_position + m_forward;
+    m_up = glm::cross(m_Right, m_forward);
 
-    m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspect, m_zNear, m_zFar);
+    m_projectionMatrix = glm::perspective(glm::radians(m_fovy), m_aspect, m_zNear, m_zFar);
 
     m_viewMatrix = glm::lookAt(m_position, m_target, m_up);
     m_viewProjMatrix = m_projectionMatrix * m_viewMatrix;
@@ -236,11 +237,52 @@ bool TCamera::update(float deltaT)
         m_PrevViewMatrix = m_viewMatrix;
     }
 
+    updateFrustum();
+
     /**/
 
     //Having the camera model matrix can be helpful + it holds position / target & up in
     // its columns
     //camera = view^-1
     return bUpdated;
+}
+
+void TCamera::updateFrustum()
+{
+	// Just to visualise it http://www.panohelp.com/lensfov.html
+	float nearHeight = 2 * glm::tan(m_fovy / 2) * m_zNear;
+	float nearWidth = nearHeight * m_aspect;
+
+	float farHeight = 2 * glm::tan(m_fovy / 2) * m_zFar;
+	float farWidth = farHeight * m_aspect;
+
+	glm::vec3 fc = m_position + m_forward * m_zFar;
+	glm::vec3 nc = m_position + m_forward * m_zNear;
+
+    m_Frustum.near = m_zNear;
+    m_Frustum.far = m_zFar;
+    m_Frustum.fovy = m_fovy;
+    m_Frustum.aspect = m_aspect;
+
+	m_Frustum.frustumCorners[4] = fc + (m_up * farHeight / 2.0f) - (m_Right * farWidth / 2.0f); // 
+	m_Frustum.frustumCorners[5] = fc + (m_up * farHeight / 2.0f) + (m_Right * farWidth / 2.0f); // 
+	m_Frustum.frustumCorners[7] = fc - (m_up * farHeight / 2.0f) - (m_Right * farWidth / 2.0f); // 
+	m_Frustum.frustumCorners[6] = fc - (m_up * farHeight / 2.0f) + (m_Right * farWidth / 2.0f); // 
+
+	m_Frustum.frustumCorners[0] = nc + (m_up * nearHeight / 2.0f) - (m_Right * nearWidth / 2.0f); // 
+	m_Frustum.frustumCorners[1] = nc + (m_up * nearHeight / 2.0f) + (m_Right * nearWidth / 2.0f); // 
+	m_Frustum.frustumCorners[3] = nc - (m_up * nearHeight / 2.0f) - (m_Right * nearWidth / 2.0f); // 
+	m_Frustum.frustumCorners[2] = nc - (m_up * nearHeight / 2.0f) + (m_Right * nearWidth / 2.0f); // 
+
+
+	//                         0--------1
+	//                        /|       /|
+	//     Y ^               / |      / |
+	//     | _              4--------5  |
+	//     | /' -Z          |  |     |  |
+	//     |/               |  2-----|--3
+	//     + ---> X         | /      | /
+	//                      |/       |/
+	//                      6--------7
 }
 

@@ -59,8 +59,9 @@ struct SceneSettings
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
+    bool bClipSplitLogUniform = true;
     float depthIndex = 0.f;
-	float m_exposure = 0.f;
+	float lambda = 1.f;
     float angle = 76.f;
     float fov = 45.f;
     float Slice1 = 25.f;
@@ -119,7 +120,7 @@ private:
     glm::mat4 GetLightViewMatrix() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
 
-    static const uint32_t m_NumCascades = 3;
+    static const uint32_t m_NumCascades = 4;
     float m_CascadeEnd[m_NumCascades+1];
     OrthographicProjection m_ShadowOrthoProject[m_NumCascades]; 
 
@@ -261,10 +262,7 @@ void LightScattering::update() noexcept
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
     lightPosition = m_Settings.position;
 
-    m_CascadeEnd[0] = -near_plane;
-    m_CascadeEnd[1] = -m_Settings.Slice1;
-    m_CascadeEnd[2] = -m_Settings.Slice2;
-    m_CascadeEnd[3] = -far_plane;
+    CalcOrthoProjections();
 }
 
 void LightScattering::updateHUD() noexcept
@@ -306,7 +304,7 @@ void LightScattering::updateHUD() noexcept
     ImGui::Separator();
     ImGui::Text("Post processing:");
     ImGui::Indent();
-    ImGui::SliderFloat("Exposure", &m_Settings.m_exposure, -4.0f, 4.0f);
+    ImGui::SliderFloat("Lambda", &m_Settings.lambda, 0.0f, 1.0f);
     ImGui::Unindent();
     ImGui::End();
 
@@ -318,7 +316,6 @@ void LightScattering::render() noexcept
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
 
-    CalcOrthoProjections();
     ShadowMapPass(context);
     if (m_Settings.bDebugDepth) RenderDebugDepth(context);
     else RenderPass(context);
@@ -330,6 +327,46 @@ void LightScattering::render() noexcept
 
 void LightScattering::CalcOrthoProjections()
 {
+    if (m_Settings.bClipSplitLogUniform)
+    {
+        auto frustum = m_Camera.getFrustum();
+        const auto numSplit = m_NumCascades;
+
+        // Between 0 and 1, change these to check the results
+        float minDistance = 0.0f;
+        float maxDistance = 1.0f;
+
+        auto nearClip = frustum.near;
+        auto farClip = frustum.far;
+        auto clipRange = farClip - nearClip;
+
+        auto minZ = nearClip + minDistance * clipRange;
+        auto maxZ = nearClip + maxDistance * clipRange;
+
+        auto range = maxZ - minZ;
+        auto ratio = maxZ / minZ;
+
+        // The algorithm to calculate the split distances is explained in 
+        // detail by Nvidia here: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch10.html 
+        // and it works by using a logarithmic and uniform split scheme 
+        // to get the most optimal split distances.
+        for (uint32_t i = 0; i <= numSplit; i++)
+        {
+            auto p = float(i) / numSplit;
+            auto log = minZ * glm::pow(ratio, p);
+            auto uniform = minZ + range * p;
+            auto d = m_Settings.lambda * (log - uniform) + uniform;
+            m_CascadeEnd[i] = -d;
+        }
+    }
+    else
+    {
+        m_CascadeEnd[0] = -near_plane;
+        m_CascadeEnd[1] = -m_Settings.Slice1;
+        m_CascadeEnd[2] = -m_Settings.Slice2;
+        m_CascadeEnd[3] = -far_plane;
+    }
+
     glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
     glm::mat4 lightView = GetLightViewMatrix();
 
@@ -432,9 +469,9 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightShader.setUniform("uMatProject", project);
     for (uint32_t i = 0; i < m_NumCascades; i++)
     {
-        glm::vec4 vView(0.f, 0.f, m_CascadeEnd[i + 1], 1.0f);
-        glm::vec4 vClip = project * vView;
-        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), vClip.z);
+        glm::vec4 pointVS(0.f, 0.f, m_CascadeEnd[i + 1], 1.f);
+        glm::vec4 pointCS = project * pointVS;
+        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), pointCS.z);
         m_LightShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
         m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
     }

@@ -1,6 +1,6 @@
 #version 450
 
-const int NUM_CASCADES = 3;
+const int NUM_CASCADES = 4;
 
 // IN
 layout(location = 0) in vec3 inPosition;

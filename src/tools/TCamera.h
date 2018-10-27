@@ -1,17 +1,3 @@
-/**
- *
- *          \file TCamera.hpp
- *          \note
- *                Improvements : use Quaternion
- *                               add Arc Ball
- *
- *                Separate Event / Location / Frustum
- *
- *                Add FRUSTUM PLANE & frustum tests
- *
- *                rethink it totally
- */
-
 #ifndef TCAMERA_HPP
 #define TCAMERA_HPP
 
@@ -19,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <limits>
 #include <cmath>
+#include <array>
 
 enum CameraKeys
 {
@@ -32,9 +19,16 @@ enum CameraKeys
     NUM_CAMERAKEYS
 };
 
+struct Frustum
+{
+    float near, far, fovy, aspect;
+    std::array<glm::vec3, 8> frustumCorners;
+};
+
 class TCamera
 {
 protected:
+
     glm::mat4 m_PrevProjMatrix;
     glm::mat4 m_PrevViewMatrix;
     glm::mat4 m_projectionMatrix;
@@ -42,16 +36,19 @@ protected:
     glm::mat4 m_viewProjMatrix;
 
     // Projection parameters
-    float m_fov;
+    float m_fovy;
     float m_aspect;
     float m_zNear;
     float m_zFar;
+
+    Frustum m_Frustum;
 
     // Look At parameters
     glm::vec3 m_position;               // camera (eye) position
     glm::vec3 m_target;                 // camera target
     glm::vec3 m_up;                     // camera UP vector, compute automatically
-    glm::vec3 m_direction;              // direction of the camera
+    glm::vec3 m_forward;                // direction of the camera
+    glm::vec3 m_Right;                  // right
 
     // Camera control    
     float m_pitchAngle;                 // x-axis rotation angle (in radians)
@@ -77,10 +74,12 @@ protected:
     bool m_bEnableMove;
 
 public:
+
     TCamera();
 
     // .Update the camera attributes with user input
     bool update(float deltaT = 1.0f);
+    void updateFrustum();
 
     // .EVENT HANDLERS
     void keyboardHandler(CameraKeys key, bool bPressed);
@@ -111,17 +110,18 @@ public:
     // Or use the row of the view matrix
     const glm::vec3& getPosition() const { return m_position; }
     const glm::vec3& getTarget() const { return m_target; }
-    const glm::vec3& getDirection() const { return m_direction; }
+    const glm::vec3& getDirection() const { return m_forward; }
 
-    void setFov(float fov) { m_fov = fov; }
+    void setFov(float fov) { m_fovy = fov; }
 
     float getMoveCoefficient() const { return m_moveCoef; }
     float getRotationCoefficient() const { return m_rotationCoef; }
     float getInertiaCoefficient() const { return m_inertiaCoef; }
     float getFar() const { return m_zFar; }
     float getNear() const { return m_zNear; }
-    float getFov() const { return m_fov; }
+    float getFov() const { return m_fovy; }
     float getAspect() const { return m_aspect; }
+    const Frustum& getFrustum() const { return m_Frustum; }
 
     bool isXAxisLimited() const { return m_bLimitPitchAngle; }
     bool isXAxisInverted() const { return m_bInvertPitch; }

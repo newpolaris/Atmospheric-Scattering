@@ -1,6 +1,6 @@
 #version 450
 
-const int NUM_CASCADES = 3;
+const int NUM_CASCADES = 4;
 const int MAX_POINT_LIGHTS = 2;                                                     
 const int MAX_SPOT_LIGHTS = 2;                                                      
 
