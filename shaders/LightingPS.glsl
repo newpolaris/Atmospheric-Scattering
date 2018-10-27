@@ -83,9 +83,9 @@ vec3 DepthPrint(vec3 normal)
             else if (uDebugType == 2)
                 color = vec3(UVCoords.z, 0.0, Depth);
             else if (UVCoords.x > 1.0 || UVCoords.x < 0.0)
-                color = vec3(0, 0, 1);
+                color = vec3(1, 0, 1);
             else if (UVCoords.y > 1.0 || UVCoords.y < 0.0)
-                color = vec3(1, 0, 0);
+                color = vec3(0, 0, 1);
             break;
         }
     }

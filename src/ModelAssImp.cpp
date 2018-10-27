@@ -73,6 +73,7 @@ bool ModelAssImp::loadFromFile(const std::string& filename)
 		| aiProcess_OptimizeMeshes
 		| aiProcess_CalcTangentSpace
 		| aiProcess_JoinIdenticalVertices
+        ;
 #endif
 
 	const aiScene* pScene = Importer.ReadFile(filename.c_str(), postprocess);

@@ -70,23 +70,6 @@ struct SceneSettings
     glm::vec3 position = glm::vec3(0.7f, 9.5f, -1.0f);
 };
 
-
-glm::mat4 OrthoProjectTransform(float l, float r, float t, float b, float n, float f)
-{
-    float X = 2.f / (r - l);
-    float Y = 2.f / (t - b);
-    float Z = 2.f / (f - n);
-    float Tx = -(r + l)/(r - l);
-    float Ty = -(t + b)/(t - b);
-    float Tz = -(f + n)/(f - n);
-
-    return glm::mat4(
-        X,   0.f,  0.f,  Tx,
-        0.f,   Y,  0.f,  Ty,
-        0.f, 0.f,    Z,  Tz,
-        0.f, 0.f,  0.f, 1.f);
-}
-
 class LightScattering final : public gamecore::IGameApp
 {
 public:
@@ -117,12 +100,11 @@ private:
     void RenderScene(LightingTechnique& technique);
 
     glm::vec3 GetSunDirection() const;
-    glm::mat4 GetLightViewMatrix() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
 
     static const uint32_t m_NumCascades = 4;
     float m_CascadeEnd[m_NumCascades+1];
-    OrthographicProjection m_ShadowOrthoProject[m_NumCascades]; 
+    glm::mat4 m_lightSpace[m_NumCascades];
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -368,7 +350,6 @@ void LightScattering::CalcOrthoProjections()
     }
 
     glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
-    glm::mat4 lightView = GetLightViewMatrix();
 
     float aspect = (float)Graphics::g_NativeWidth/Graphics::g_NativeHeight;
     float halfFovY = glm::radians(m_Settings.fov / 2.f);
@@ -396,21 +377,43 @@ void LightScattering::CalcOrthoProjections()
             glm::vec4(-xf, -yf, m_CascadeEnd[i+1], 1.f),
         };
 
-        glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
-        glm::vec3 maxPoint = glm::vec3(-std::numeric_limits<float>::max());
+        std::vector<glm::vec3> frustumCornersWS;
 
+        // Transform the frustum coordinate from view to world space
         for (auto it : frustumCorners)
-        {
-            // Transform the frustum coordinate from view to world space
-            glm::vec4 positionWS = viewInv * it;
-            // Transform the frustum coordinate from world to light space
-            glm::vec3 positionLS = glm::vec3(lightView * positionWS);
+            frustumCornersWS.push_back(glm::vec3(viewInv * it));
 
-            minPoint = glm::min(minPoint, positionLS);
-            maxPoint = glm::max(maxPoint, positionLS);
+        glm::vec3 center(0.f);
+        for (auto it : frustumCornersWS)
+            center += it;
+        center /= 8.f;
+
+        auto radius = 0.f;
+        for (auto it : frustumCornersWS)
+            radius = glm::max(radius, glm::length(it - center));
+        radius = glm::ceil(radius * 16.f) / 16.f;
+
+        auto maxExtents = glm::vec3(radius);
+        auto minExtents = glm::vec3(-radius);
+
+        auto lightDirection = glm::normalize(m_Settings.lightDirection);
+
+		// Position the viewmatrix looking down the center of the frustum with an arbitrary lighht direction
+        glm::vec3 position = center - lightDirection * -minExtents.z;
+		auto lightview = glm::lookAt(position, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::vec3 cascadeExtents = maxExtents - minExtents;
+		auto lightproject = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.f, cascadeExtents.z);
+
+        m_lightSpace[i] = lightproject * lightview;
+
+        for (auto it : frustumCornersWS)
+        {
+            auto pts = GetLightSpaceMatrix(i)*glm::vec4(it, 1.f);
+            auto uvs = pts * 0.5f + 0.5f;
+            assert(uvs.x <= 1.f && uvs.x >= 0.f);
+            assert(uvs.y <= 1.f && uvs.y >= 0.f);
         }
-        // glm::orth espect camera n, f which is > 0, so revert it
-        m_ShadowOrthoProject[i] = { minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, -maxPoint.z, -minPoint.z };
     }
 }
 
@@ -521,24 +524,9 @@ glm::vec3 LightScattering::GetSunDirection() const
     return glm::normalize(sunDir);
 }
 
-glm::mat4 LightScattering::GetLightViewMatrix() const
-{
-    // poisition zero and direction make similar result;
-    return glm::lookAt(-5.f*m_DirectionalLight.Direction, glm::vec3(0.f), glm::vec3(0.0, 1.0, 0.0));
-    // From ogldev tutorial49
-    // "Since we are dealing with a directional light that has no origin 
-    //  we just need to rotate the world so that the light direction becomes 
-    //  aligned with the positive Z axis. The origin of light can simply be
-    //  the origin of the light space coordinate system (which means we don't 
-    //  need any translation)"
-    return glm::lookAt(glm::vec3(0.f), m_DirectionalLight.Direction, glm::vec3(0.0, 1.0, 0.0));
-}
-
 glm::mat4 LightScattering::GetLightSpaceMatrix(uint32_t i) const
 {
-    const auto& info = m_ShadowOrthoProject[i];
-    glm::mat4 lightProjection = glm::ortho(info.l, info.r, info.b, info.t, info.n, info.f);
-    return lightProjection * GetLightViewMatrix();
+    return m_lightSpace[i];
 }
 
 void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
