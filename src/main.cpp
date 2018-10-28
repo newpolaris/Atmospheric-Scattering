@@ -25,50 +25,27 @@
 #include <Mesh.h>
 #include <ModelAssImp.h>
 #include <LightingTechnique.h>
+#include <ShadowTechnique.h>
 
 #include <fstream>
 #include <memory>
 #include <vector>
 #include <algorithm>
 #include <GameCore.h>
+#include <SceneSettings.h>
 #include <tools/string.h>
 #include <GraphicsContext.h>
 #include <GLType/GraphicsTexture.h>
 
 enum ProfilerType { kProfilerTypeRender = 0, kProfilerTypeUpdate };
 
-struct OrthographicProjection
-{
-    float l, r, b, t, n, f;
-};
-
 namespace 
 {
     float s_CpuTick = 0.f;
     float s_GpuTick = 0.f;
     const int s_NumMeshes = 5;
-    float near_plane = 1.0f, far_plane = 200.0f;
     glm::mat4 m_MatMeshModel[s_NumMeshes];
-    glm::vec3 lightPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 }
-
-struct SceneSettings
-{
-    float debugType = 0.f;
-    bool bDebugDepth = false;
-    bool bUiChanged = false;
-    bool bResized = false;
-    bool bUpdated = true;
-    bool bClipSplitLogUniform = true;
-    float depthIndex = 0.f;
-	float lambda = 1.f;
-    float angle = 76.f;
-    float fov = 45.f;
-    float Slice1 = 25.f;
-    float Slice2 = 90.f;
-    glm::vec3 lightDirection = glm::vec3(1.f, -1.f, 0.f);
-    glm::vec3 position = glm::vec3(0.7f, 9.5f, -1.0f);
-};
 
 class LightScattering final : public gamecore::IGameApp
 {
@@ -91,7 +68,6 @@ public:
 
 private:
 
-    void CalcOrthoProjections();
     void ShadowMapPass(GraphicsContext& gfxContext);
     void RenderDebugDepth(GraphicsContext& gfxContext);
     void RenderPass(GraphicsContext& gfxContext);
@@ -102,9 +78,8 @@ private:
     glm::vec3 GetSunDirection() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
 
-    static const uint32_t m_NumCascades = 4;
-    float m_CascadeEnd[m_NumCascades+1];
-    glm::mat4 m_lightSpace[m_NumCascades];
+    std::vector<float> m_CascadeEnd;
+    std::vector<glm::mat4> m_lightSpace;
 
     std::vector<glm::vec2> m_Samples;
     SceneSettings m_Settings;
@@ -242,9 +217,8 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
-    lightPosition = m_Settings.position;
 
-    CalcOrthoProjections();
+    Graphics::CalcOrthoProjections(m_Settings, m_Camera, m_DirectionalLight.Direction, m_CascadeEnd, m_lightSpace);
 }
 
 void LightScattering::updateHUD() noexcept
@@ -277,9 +251,9 @@ void LightScattering::updateHUD() noexcept
             bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
             bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
             ImGui::Separator();
-            bUpdated |= ImGui::SliderFloat("Near", &near_plane, -10.f, m_Settings.Slice1);
-            bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, near_plane, m_Settings.Slice2);
-            bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, far_plane);
+            bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, m_Camera.getNear(), m_Settings.Slice2);
+            bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, m_Settings.Slice3);
+            bUpdated |= ImGui::SliderFloat("Slice3", &m_Settings.Slice3, m_Settings.Slice2, m_Camera.getFar());
         }
     }
     ImGui::Unindent();
@@ -307,116 +281,6 @@ void LightScattering::render() noexcept
     profiler::tick(kProfilerTypeRender, s_CpuTick, s_GpuTick);
 }
 
-void LightScattering::CalcOrthoProjections()
-{
-    if (m_Settings.bClipSplitLogUniform)
-    {
-        auto frustum = m_Camera.getFrustum();
-        const auto numSplit = m_NumCascades;
-
-        // Between 0 and 1, change these to check the results
-        float minDistance = 0.0f;
-        float maxDistance = 1.0f;
-
-        auto nearClip = frustum.near;
-        auto farClip = frustum.far;
-        auto clipRange = farClip - nearClip;
-
-        auto minZ = nearClip + minDistance * clipRange;
-        auto maxZ = nearClip + maxDistance * clipRange;
-
-        auto range = maxZ - minZ;
-        auto ratio = maxZ / minZ;
-
-        // The algorithm to calculate the split distances is explained in 
-        // detail by Nvidia here: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch10.html 
-        // and it works by using a logarithmic and uniform split scheme 
-        // to get the most optimal split distances.
-        for (uint32_t i = 0; i <= numSplit; i++)
-        {
-            auto p = float(i) / numSplit;
-            auto log = minZ * glm::pow(ratio, p);
-            auto uniform = minZ + range * p;
-            auto d = m_Settings.lambda * (log - uniform) + uniform;
-            m_CascadeEnd[i] = -d;
-        }
-    }
-    else
-    {
-        m_CascadeEnd[0] = -near_plane;
-        m_CascadeEnd[1] = -m_Settings.Slice1;
-        m_CascadeEnd[2] = -m_Settings.Slice2;
-        m_CascadeEnd[3] = -far_plane;
-    }
-
-    glm::mat4 viewInv = glm::inverse(m_Camera.getViewMatrix());
-
-    float aspect = (float)Graphics::g_NativeWidth/Graphics::g_NativeHeight;
-    float halfFovY = glm::radians(m_Settings.fov / 2.f);
-    float tanHalfVerticalFOV = glm::tan(halfFovY);
-    float tanHalfHorizontalFOV = tanHalfVerticalFOV*aspect;
-
-    for (uint32_t i = 0; i < m_NumCascades; i++)
-    {
-        float xn = m_CascadeEnd[i] * tanHalfHorizontalFOV;
-        float yn = m_CascadeEnd[i] * tanHalfVerticalFOV;
-        float xf = m_CascadeEnd[i+1] * tanHalfHorizontalFOV;
-        float yf = m_CascadeEnd[i+1] * tanHalfVerticalFOV;
-
-        auto frustumCorners = {
-            // near face
-            glm::vec4( xn,  yn, m_CascadeEnd[i], 1.f),
-            glm::vec4(-xn,  yn, m_CascadeEnd[i], 1.f),
-            glm::vec4( xn, -yn, m_CascadeEnd[i], 1.f),
-            glm::vec4(-xn, -yn, m_CascadeEnd[i], 1.f),
-
-            // far face
-            glm::vec4( xf,  yf, m_CascadeEnd[i+1], 1.f),
-            glm::vec4(-xf,  yf, m_CascadeEnd[i+1], 1.f),
-            glm::vec4( xf, -yf, m_CascadeEnd[i+1], 1.f),
-            glm::vec4(-xf, -yf, m_CascadeEnd[i+1], 1.f),
-        };
-
-        std::vector<glm::vec3> frustumCornersWS;
-
-        // Transform the frustum coordinate from view to world space
-        for (auto it : frustumCorners)
-            frustumCornersWS.push_back(glm::vec3(viewInv * it));
-
-        glm::vec3 center(0.f);
-        for (auto it : frustumCornersWS)
-            center += it;
-        center /= 8.f;
-
-        auto radius = 0.f;
-        for (auto it : frustumCornersWS)
-            radius = glm::max(radius, glm::length(it - center));
-        radius = glm::ceil(radius * 16.f) / 16.f;
-
-        auto maxExtents = glm::vec3(radius);
-        auto minExtents = glm::vec3(-radius);
-
-        auto lightDirection = glm::normalize(m_Settings.lightDirection);
-
-		// Position the viewmatrix looking down the center of the frustum with an arbitrary lighht direction
-        glm::vec3 position = center - lightDirection * -minExtents.z;
-		auto lightview = glm::lookAt(position, center, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		glm::vec3 cascadeExtents = maxExtents - minExtents;
-		auto lightproject = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.f, cascadeExtents.z);
-
-        m_lightSpace[i] = lightproject * lightview;
-
-        for (auto it : frustumCornersWS)
-        {
-            auto pts = GetLightSpaceMatrix(i)*glm::vec4(it, 1.f);
-            auto uvs = pts * 0.5f + 0.5f;
-            assert(uvs.x <= 1.f && uvs.x >= 0.f);
-            assert(uvs.y <= 1.f && uvs.y >= 0.f);
-        }
-    }
-}
-
 void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
 {
     m_ShadowMapShader.bind();
@@ -424,7 +288,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
     // through objects which causes shadows to disappear.
     gfxContext.SetDepthClamp(true);
     gfxContext.SetCullFace(kCullFront);
-    for (int i = 0; i < m_NumCascades; i++)
+    for (int i = 0; i < SceneSettings::NumCascades; i++)
     {
         gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
         gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize);
@@ -470,11 +334,9 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightShader.setUniform("uDirectionalLight.Base.DiffuseIntensity", m_DirectionalLight.DiffuseIntensity);
     m_LightShader.setUniform("uMatView", view);
     m_LightShader.setUniform("uMatProject", project);
-    for (uint32_t i = 0; i < m_NumCascades; i++)
+    for (uint32_t i = 0; i < SceneSettings::NumCascades; i++)
     {
-        glm::vec4 pointVS(0.f, 0.f, m_CascadeEnd[i + 1], 1.f);
-        glm::vec4 pointCS = project * pointVS;
-        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), pointCS.z);
+        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), m_CascadeEnd[i]);
         m_LightShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
         m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
     }
