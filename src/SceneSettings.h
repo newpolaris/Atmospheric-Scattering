@@ -4,15 +4,14 @@
 
 struct SceneSettings
 {
-    static const uint32_t NumCascades = 4;
-
     float debugType = 0.f;
     bool bDebugDepth = false;
     bool bUiChanged = false;
     bool bResized = false;
     bool bUpdated = true;
     bool bBoundSphere = true;
-    bool bClipSplitLogUniform = false;
+    bool bReduceShimmer = true;
+    bool bClipSplitLogUniform = true;
     float depthIndex = 0.f;
 	float lambda = 1.f;
     float angle = 76.f;

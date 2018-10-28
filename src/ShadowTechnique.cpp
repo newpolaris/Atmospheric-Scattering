@@ -10,7 +10,7 @@ void Graphics::CalcOrthoProjections(
     std::vector<float>& m_ClipspaceCascadeEnd,
     std::vector<glm::mat4>& lightSpace)
 {
-    float cascadeEnd[SceneSettings::NumCascades+1];
+    std::vector<float> cascadeEnd(Graphics::g_NumShadowCascade+1);
 
     if (settings.bClipSplitLogUniform)
     {
@@ -33,9 +33,9 @@ void Graphics::CalcOrthoProjections(
         // to get the most optimal split distances,
         // it works by using a logarithmic and uniform split scheme 
         // detail by Nvidia here: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch10.html 
-        for (uint32_t i = 0; i <= SceneSettings::NumCascades; i++)
+        for (uint32_t i = 0; i <= Graphics::g_NumShadowCascade; i++)
         {
-            auto p = float(i) / SceneSettings::NumCascades;
+            auto p = float(i) / Graphics::g_NumShadowCascade;
             auto log = minZ * glm::pow(ratio, p);
             auto uniform = minZ + range * p;
             auto d = settings.lambda * (log - uniform) + uniform;
@@ -58,8 +58,8 @@ void Graphics::CalcOrthoProjections(
     float tanHalfVerticalFOV = glm::tan(halfFovY);
     float tanHalfHorizontalFOV = tanHalfVerticalFOV*aspect;
 
-    lightSpace.resize(SceneSettings::NumCascades);
-    for (uint32_t i = 0; i < SceneSettings::NumCascades; i++)
+    lightSpace.resize(Graphics::g_NumShadowCascade);
+    for (uint32_t i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
         float xn = cascadeEnd[i] * tanHalfHorizontalFOV;
         float yn = cascadeEnd[i] * tanHalfVerticalFOV;
@@ -110,8 +110,23 @@ void Graphics::CalcOrthoProjections(
             glm::vec3 cascadeExtents = maxExtents - minExtents;
             auto lightproject = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.f, cascadeExtents.z);
 
+            if (settings.bReduceShimmer)
+            {
+                auto shadowmapSize =  float(Graphics::g_ShadowMapSize);
+                // The rounding matrix that ensures that shadow edges do not shimmer
+                auto shadowspace = lightproject * lightview;
+                auto shadowOrigin = glm::vec4(0.f, 0.f, 0.f, 1.f);
+                shadowOrigin = shadowspace * shadowOrigin;
+                shadowOrigin = shadowOrigin * shadowmapSize / 2.f;
+
+                auto roundedOrigin = glm::round(shadowOrigin);
+                auto roundOffset = roundedOrigin - shadowOrigin;
+                roundOffset = roundOffset * 2.f / shadowmapSize;
+                lightproject[3] += glm::vec4(roundOffset.x, roundOffset.y, 0.f, 0.f);
+            }
             lightSpace[i] = lightproject * lightview;
 
+        #if _DEBUG
             for (auto it : frustumCornersWS)
             {
                 auto pts = lightSpace[i] * glm::vec4(it, 1.f);
@@ -119,6 +134,7 @@ void Graphics::CalcOrthoProjections(
                 assert(uvs.x <= 1.f && uvs.x >= 0.f);
                 assert(uvs.y <= 1.f && uvs.y >= 0.f);
             }
+        #endif
         }
         else
         {
@@ -151,8 +167,8 @@ void Graphics::CalcOrthoProjections(
     }
 
     const auto project = camera.getProjectionMatrix();
-    m_ClipspaceCascadeEnd.resize(SceneSettings::NumCascades);
-    for (uint32_t i = 0; i < SceneSettings::NumCascades; i++)
+    m_ClipspaceCascadeEnd.resize(Graphics::g_NumShadowCascade);
+    for (uint32_t i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
         glm::vec4 pointVS(0.f, 0.f, cascadeEnd[i + 1], 1.f);
         glm::vec4 pointCS = project * pointVS;

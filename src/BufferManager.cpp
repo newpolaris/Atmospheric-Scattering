@@ -7,7 +7,7 @@
 namespace Graphics
 {
     const uint32_t g_NumShadowCascade = 4;
-    const uint32_t g_ShadowMapSize = 1024;
+    const uint32_t g_ShadowMapSize = 2048;
 
     uint32_t g_NativeWidth = 0;
     uint32_t g_NativeHeight = 0;

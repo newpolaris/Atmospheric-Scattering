@@ -245,15 +245,20 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+            bUpdated |= ImGui::Checkbox("Reduce Shimmer", &m_Settings.bReduceShimmer);
             ImGui::Separator();
             bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.debugType, 0.f, 3.f);
             ImGui::Separator();
             bUpdated |= ImGui::Checkbox("Debug depth", &m_Settings.bDebugDepth);
             bUpdated |= ImGui::SliderFloat("Debug depth index", &m_Settings.depthIndex, 0.f, 2.f);
             ImGui::Separator();
-            bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, m_Camera.getNear(), m_Settings.Slice2);
-            bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, m_Settings.Slice3);
-            bUpdated |= ImGui::SliderFloat("Slice3", &m_Settings.Slice3, m_Settings.Slice2, m_Camera.getFar());
+            bUpdated |= ImGui::Checkbox("Automatic Split using LogUniform", &m_Settings.bClipSplitLogUniform);
+            if (!m_Settings.bClipSplitLogUniform)
+            {
+                bUpdated |= ImGui::SliderFloat("Slice1", &m_Settings.Slice1, m_Camera.getNear(), m_Settings.Slice2);
+                bUpdated |= ImGui::SliderFloat("Slice2", &m_Settings.Slice2, m_Settings.Slice1, m_Settings.Slice3);
+                bUpdated |= ImGui::SliderFloat("Slice3", &m_Settings.Slice3, m_Settings.Slice2, m_Camera.getFar());
+            }
         }
     }
     ImGui::Unindent();
@@ -288,7 +293,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
     // through objects which causes shadows to disappear.
     gfxContext.SetDepthClamp(true);
     gfxContext.SetCullFace(kCullFront);
-    for (int i = 0; i < SceneSettings::NumCascades; i++)
+    for (int i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
         gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
         gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize);
@@ -334,7 +339,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightShader.setUniform("uDirectionalLight.Base.DiffuseIntensity", m_DirectionalLight.DiffuseIntensity);
     m_LightShader.setUniform("uMatView", view);
     m_LightShader.setUniform("uMatProject", project);
-    for (uint32_t i = 0; i < SceneSettings::NumCascades; i++)
+    for (uint32_t i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
         m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), m_CascadeEnd[i]);
         m_LightShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
