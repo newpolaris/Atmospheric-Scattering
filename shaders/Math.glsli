@@ -98,6 +98,59 @@ vec3 hsv2rgb(vec3 c)
     return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
 }
 
+// http://graphicrants.blogspot.com/2009/04/rgbm-color-encoding.html
+// To store HDR colors in 32 bits by packing it all into a RGBA_8888 target
+// LogLUV and RGBM
+
+// M matrix, for encoding
+const mat3 matLogLuvM = mat3(
+    0.2209, 0.3390, 0.4184,
+    0.1138, 0.6780, 0.7319,
+    0.0102, 0.1130, 0.2969);
+
+// Inverse M matrix, for decoding
+const mat3 matLogLuvInverseM = mat3(
+    6.0014, -2.7008, -1.7996,
+    -1.3320,  3.1029, -5.7721,
+    0.3008, -1.0882,  5.6268);
+
+vec4 LogLuvEncode(vec3 vRGB)  {
+    vec4 vResult;
+    vec3 Xp_Y_XYZp = matLogLuvM * vRGB;
+    Xp_Y_XYZp = max(Xp_Y_XYZp, vec3(1e-6, 1e-6, 1e-6));
+    vResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;
+    float Le = 2 * log2(Xp_Y_XYZp.y) + 127;
+    vResult.w = frac(Le);
+    vResult.z = (Le - (floor(vResult.w*255.0f))/255.0f)/255.0f;
+    return vResult;
+}
+
+vec3 LogLuvDecode(vec4 vLogLuv) {
+    float Le = vLogLuv.z * 255 + vLogLuv.w;
+    vec3 Xp_Y_XYZp;
+    Xp_Y_XYZp.y = exp2((Le - 127) / 2);
+    Xp_Y_XYZp.z = Xp_Y_XYZp.y / vLogLuv.y;
+    Xp_Y_XYZp.x = vLogLuv.x * Xp_Y_XYZp.z;
+    vec3 vRGB = matLogLuvInverseM*Xp_Y_XYZp;
+    return max(vRGB, vec3(0.0));
+}
+
+// note that 'best to convert the colors from linear to gamma space before encoding'
+vec4 EncodeRGBM(vec3 color, float range = 6)
+{
+    color *= (1.0 / range);
+    vec4 rgbm;
+    rgbm.a = saturate(max(max(color.r, color.g), max(color.b, 1e-6)));
+    rgbm.a = ceil(rgbm.a * 255.0) / 255.0;
+    rgbm.rgb = color / rgbm.a;
+    return rgbm;
+}
+
+vec3 DecodeRGBM(vec4 rgbm, float range = 6)
+{
+    return rgbm.rgb * rgbm.a * range;
+}
+
 vec2 ComputeRaySphereIntersection(vec3 pos, vec3 dir, vec3 c, float r)
 {
     vec3 tc = c - pos;
@@ -267,3 +320,4 @@ vec3 ColorBalance(vec3 color, vec4 balance)
     color *= vec3(1 + balance.rgb);
     return color;
 }
+
