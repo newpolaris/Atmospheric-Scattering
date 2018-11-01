@@ -73,7 +73,6 @@ private:
     void RenderPass(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
     void RenderScene(const ProgramShader& shader);
-    void RenderScene(LightingTechnique& technique);
 
     glm::vec3 GetSunDirection() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
@@ -86,6 +85,7 @@ private:
 	TCamera m_Camera;
     SimpleTimer m_Timer;
     ModelAssImp m_Dragon;
+    ModelAssImp m_Head;
     DirectionalLight m_DirectionalLight;
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
@@ -181,6 +181,8 @@ void LightScattering::startup() noexcept
     m_Ground.create();
     m_Dragon.create();
     m_Dragon.loadFromFile("resources/dragon.obj");
+    // m_Head.create();
+    // m_Head.loadFromFile("resources/Head/head.obj");
 
     for (int i = 0; i < s_NumMeshes; i++) {
         glm::mat4 model(1.f);
@@ -245,6 +247,7 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+            bUpdated |= ImGui::Checkbox("Bound Sphere", &m_Settings.bBoundSphere);
             bUpdated |= ImGui::Checkbox("Reduce Shimmer", &m_Settings.bReduceShimmer);
             ImGui::Separator();
             bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.debugType, 0.f, 3.f);
@@ -365,21 +368,11 @@ void LightScattering::RenderScene(const ProgramShader& shader)
 {
     shader.setUniform("uMatModel", glm::mat4(1.f));
     m_Ground.draw();
-
+    shader.setUniform("uMatModel", glm::scale(glm::mat4(1.f), glm::vec3(0.1f)));
+    // m_Head.render();
     for (int i = 0; i < s_NumMeshes; i++)
     {
         shader.setUniform("uMatModel", m_MatMeshModel[i]);
-        m_Dragon.render();
-    }
-}
-
-void LightScattering::RenderScene(LightingTechnique& technique)
-{
-    technique.setMatModel(glm::mat4(1.f));
-    m_Ground.draw();
-    for (int i = 0; i < s_NumMeshes; i++)
-    {
-        technique.setMatModel(m_MatMeshModel[i]);
         m_Dragon.render();
     }
 }
@@ -421,7 +414,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 1.f, 1000.f);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 1.f, 4000.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 
