@@ -98,7 +98,7 @@ bool ModelAssImp::loadFromFile(const std::string& filename)
 	}
 
 	// material
-	for (uint32_t i = 0; i < pScene->mNumMaterials; i++)
+	for (uint32_t i = 0; i < NumMaterials; i++)
 	{
 
 	}
@@ -121,7 +121,7 @@ bool ModelAssImp::loadFromFile(const std::string& filename)
 		// vertex buffer
 		bool bHasTex = paiMesh->HasTextureCoords(0);
 		const aiVector3D zero(0.f, 0.f, 0.f);
-		for (int i = 0u; i < NumVertices; i++)
+		for (int i = 0u; i < paiMesh->mNumVertices; i++)
 		{
 			const aiVector3D& pos = paiMesh->mVertices[i];
 			const aiVector3D& nor = paiMesh->mNormals[i];
