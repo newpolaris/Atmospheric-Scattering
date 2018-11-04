@@ -35,7 +35,7 @@ TCamera::TCamera()
     m_pitchAngle = 0.0f;
     m_yawAngle = 0.0f;
 
-    m_moveCoef = 0.5f;
+    m_moveCoef = 1.0f;
     m_rotationCoef = 0.01f;
     m_inertiaCoef = 0.85f;
 

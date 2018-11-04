@@ -35,8 +35,8 @@ void skycube::initialize()
 
 	m_skycubeShader.setDevice(device);
 	m_skycubeShader.initialize();
-	m_skycubeShader.addShader(GL_VERTEX_SHADER, "Skycube.Vertex");
-	m_skycubeShader.addShader(GL_FRAGMENT_SHADER, "Skycube.Fragment");
+	m_skycubeShader.addShader(GL_VERTEX_SHADER, "BasicTechnique/Skycube.Vertex");
+	m_skycubeShader.addShader(GL_FRAGMENT_SHADER, "BasicTechnique/Skycube.Fragment");
 	m_skycubeShader.link();
 
     m_Cube.create();
@@ -53,8 +53,8 @@ void skycube::render(GraphicsContext& gfxContext, const TCamera& camera)
     gfxContext.SetCubemapSeamless(true);
     gfxContext.SetFrontFace(FrontFaceType::kClockWise);
     m_skycubeShader.bind();
-    m_skycubeShader.setUniform("uViewMatrix", camera.getViewMatrix());
-    m_skycubeShader.setUniform("uProjMatrix", camera.getProjectionMatrix());
+    m_skycubeShader.setUniform("uMatView", camera.getViewMatrix());
+    m_skycubeShader.setUniform("uMatProject", camera.getProjectionMatrix());
     m_skycubeShader.bindTexture("uEnvmapSamp", m_skycubeTex, 0);
     m_Cube.draw();
     gfxContext.SetFrontFace(FrontFaceType::kCountClockWise);
