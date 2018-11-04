@@ -13,9 +13,10 @@ uniform mat4 uProjMatrix;
 
 void main()
 {
-	mat4 rotView = mat4(mat3(uViewMatrix));
-	vec4 clipPos = uProjMatrix * rotView * inPosition;
-	gl_Position = clipPos.xyww;
+	float scale = 100.0;
+	mat4 rotView = mat4((uViewMatrix));
+	vec4 clipPos = uProjMatrix * rotView * (inPosition*vec4(scale, scale, scale, 1.0));
+	gl_Position = clipPos.xyzw;
 
 	vDirection = inPosition.xyz;
 }
@@ -29,30 +30,9 @@ in vec3 vDirection;
 layout(location = 0) out vec4 fragColor;
 
 uniform samplerCube uEnvmapSamp;
-uniform samplerCube uEnvmapIrrSamp;
-uniform samplerCube uEnvmapPrefilterSamp;
-uniform float uBgType;
-uniform float uExposure;
 
 void main()
 {  
 	vec3 dir = normalize(vDirection);
-
-    vec4 color;
-	if (uBgType == 7.0)
-	{
-		color = texture(uEnvmapIrrSamp, dir);
-	}
-	else if (uBgType == 0.0)
-	{
-		color = texture(uEnvmapSamp, dir);
-	}
-	else
-	{
-		// Omit 0th mip which roughness is 0.0. it is similar to the result of non filtered
-		color = textureLod(uEnvmapPrefilterSamp, dir, uBgType-1);
-	}
-	color.rgb *= exp2(uExposure);
-
-	fragColor = color;
+    fragColor  = texture(uEnvmapSamp, dir);
 }

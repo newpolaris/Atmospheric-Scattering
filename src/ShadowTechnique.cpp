@@ -131,8 +131,8 @@ void Graphics::CalcOrthoProjections(
             {
                 auto pts = lightSpace[i] * glm::vec4(it, 1.f);
                 auto uvs = pts * 0.5f + 0.5f;
-                assert(uvs.x <= 1.f && uvs.x >= 0.f);
-                assert(uvs.y <= 1.f && uvs.y >= 0.f);
+                // assert(uvs.x <= 1.f && uvs.x >= 0.f);
+                // assert(uvs.y <= 1.f && uvs.y >= 0.f);
             }
         #endif
         }

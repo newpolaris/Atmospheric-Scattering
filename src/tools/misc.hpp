@@ -215,6 +215,12 @@ namespace util
     }
 
     template <typename T, typename E>
+    bool any_of(const std::initializer_list<T>& list, const E& elem)
+    {
+        return std::any_of(list.begin(), list.end(), [&](const E& tag) { return tag == elem; });
+    }
+
+    template <typename T, typename E>
     bool any_of(T _first, T _last, const E& elem)
     {
         return std::any_of(_first, _last, [&](const E& tag) { return tag == elem; });

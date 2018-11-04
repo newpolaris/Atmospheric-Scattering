@@ -26,6 +26,8 @@
 #include <ModelAssImp.h>
 #include <LightingTechnique.h>
 #include <ShadowTechnique.h>
+#include <BasicTechnique/SkyboxTechnique.h>
+#include <BasicTechnique/SkycubeTechnique.h>
 
 #include <fstream>
 #include <memory>
@@ -72,6 +74,7 @@ private:
     void RenderDebugDepth(GraphicsContext& gfxContext);
     void RenderPass(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
+    void RenderSkycube(GraphicsContext& gfxContext);
     void RenderScene(const ProgramShader& shader);
 
     glm::vec3 GetSunDirection() const;
@@ -84,19 +87,21 @@ private:
     SceneSettings m_Settings;
 	TCamera m_Camera;
     SimpleTimer m_Timer;
-    ModelAssImp m_Dragon;
-    ModelAssImp m_Head;
     DirectionalLight m_DirectionalLight;
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
     SphereMesh m_SphereMini;
     PlaneMesh m_Ground;
+    ModelAssImp m_Column;
+    ModelAssImp m_Dragon;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_LightShader;
     ProgramShader m_FlatShader;
     ProgramShader m_ShadowMapShader;
     ProgramShader m_DebugDepthShader;
     ProgramShader m_PostProcessHDRShader;
+    ProgramShader m_SkycubeShader;
+    GraphicsTexturePtr m_SkycubeTex;
     GraphicsDevicePtr m_Device;
     GraphicsTexturePtr m_TexWood;
 };
@@ -179,15 +184,20 @@ void LightScattering::startup() noexcept
     m_Sphere.create();
     m_SphereMini.create();
     m_Ground.create();
+    m_Column.create();
+    m_Column.loadFromFile("resources/WaterFlow/BasicColumnScene.x");
     m_Dragon.create();
-    m_Dragon.loadFromFile("resources/dragon.obj");
-    // m_Head.create();
-    // m_Head.loadFromFile("resources/Head/head.obj");
+    m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
 
     for (int i = 0; i < s_NumMeshes; i++) {
         glm::mat4 model(1.f);
         m_MatMeshModel[i] = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.f + i * 30.f));
     }
+
+    skybox::setDevice(m_Device);
+    skybox::initialize();
+    skycube::setDevice(m_Device);
+    skycube::initialize();
 }
 
 void LightScattering::closeup() noexcept
@@ -196,9 +206,12 @@ void LightScattering::closeup() noexcept
     m_Sphere.destroy();
     m_SphereMini.destroy();
     m_Ground.destroy();
-    m_ScreenTraingle.destroy();
+    m_Column.destroy();
     m_Dragon.destroy();
+    m_ScreenTraingle.destroy();
 	profiler::shutdown();
+    skybox::shutdown();
+    skycube::shutdown();
 }
 
 void LightScattering::update() noexcept
@@ -296,7 +309,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
     // through objects which causes shadows to disappear.
     gfxContext.SetDepthClamp(true);
     gfxContext.SetCullFace(kCullFront);
-    for (int i = 0; i < Graphics::g_NumShadowCascade; i++)
+    for (uint32_t i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
         gfxContext.SetFramebuffer(Graphics::g_ShadowMapFramebuffer[i]);
         gfxContext.SetViewport(0, 0, Graphics::g_ShadowMapSize, Graphics::g_ShadowMapSize);
@@ -331,6 +344,9 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
 
+    skybox::render(gfxContext, m_Camera);
+    skycube::render(gfxContext, m_Camera);
+
     glm::mat4 view = m_Camera.getViewMatrix();
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
@@ -353,6 +369,23 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     RenderScene(m_LightShader);
 }
 
+void LightScattering::RenderSkycube(GraphicsContext& gfxContext)
+{
+    gfxContext.SetCubemapSeamless(true);
+    gfxContext.SetFrontFace(FrontFaceType::kClockWise);
+
+    m_SkycubeShader.bind();
+    m_SkycubeShader.setUniform("uViewMatrix", m_Camera.getViewMatrix());
+    m_SkycubeShader.setUniform("uProjMatrix", m_Camera.getProjectionMatrix());
+
+    // Texture binding
+    m_SkycubeShader.bindTexture("uEnvmapSamp", m_SkycubeTex, 0);
+    m_Cube.draw();
+
+    gfxContext.SetFrontFace(FrontFaceType::kCountClockWise);
+    gfxContext.SetCubemapSeamless(false);
+}
+
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 {
     gfxContext.SetFramebuffer(nullptr);
@@ -367,14 +400,9 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 void LightScattering::RenderScene(const ProgramShader& shader)
 {
     shader.setUniform("uMatModel", glm::mat4(1.f));
-    m_Ground.draw();
-    shader.setUniform("uMatModel", glm::scale(glm::mat4(1.f), glm::vec3(0.1f)));
-    // m_Head.render();
-    for (int i = 0; i < s_NumMeshes; i++)
-    {
-        shader.setUniform("uMatModel", m_MatMeshModel[i]);
-        m_Dragon.render();
-    }
+    m_Column.render();
+    shader.setUniform("uMatModel", glm::scale(glm::mat4(1.f), glm::vec3(100.f)));
+    m_Dragon.render();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
@@ -393,19 +421,19 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 {
 	switch (key)
 	{
-	case GLFW_KEY_UP:
+	case GLFW_KEY_W:
 		m_Camera.keyboardHandler(MOVE_FORWARD, isPressed);
 		break;
 
-	case GLFW_KEY_DOWN:
+	case GLFW_KEY_S:
 		m_Camera.keyboardHandler(MOVE_BACKWARD, isPressed);
 		break;
 
-	case GLFW_KEY_LEFT:
+	case GLFW_KEY_A:
 		m_Camera.keyboardHandler(MOVE_LEFT, isPressed);
 		break;
 
-	case GLFW_KEY_RIGHT:
+	case GLFW_KEY_D:
 		m_Camera.keyboardHandler(MOVE_RIGHT, isPressed);
 		break;
 	}

@@ -5,6 +5,9 @@
 #include <tools/Rtti.h>
 #include <gli/gli.hpp>
 
+class ProgramShader;
+class TCamera;
+
 class GraphicsDeviceDesc;
 class GraphicsDataDesc;
 class GraphicsTextureDesc;
