@@ -1,6 +1,7 @@
 #include <gli/gli.hpp>
 #include <tools/stb_image.h>
 #include <tools/string.h>
+#include <tools/misc.hpp>
 #include <tools/FileUtility.h>
 #include <GLType/OGLTypes.h>
 #include <GLType/OGLCoreTexture.h>
@@ -303,11 +304,19 @@ bool OGLCoreTexture::createFromMemoryDDS(const char* data, size_t dataSize) noex
 	if (Texture.empty())
 		return false;
 
-    Texture = gli::flip(Texture);
+    GLenum flipCubemap[] =
+    {
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+    };
 
 	gli::gl GL(gli::gl::PROFILE_GL33);
 	gli::gl::format const Format = GL.translate(Texture.format(), Texture.swizzles());
 	GLenum Target = GL.translate(Texture.target());
+
+    if (!util::any_of({ gli::TARGET_CUBE, gli::TARGET_CUBE_ARRAY }, Texture.target()))
+        Texture = gli::flip(Texture);
 
 	GLuint TextureID = 0;
 	glCreateTextures(Target, 1, &TextureID);
@@ -354,7 +363,7 @@ bool OGLCoreTexture::createFromMemoryDDS(const char* data, size_t dataSize) noex
 		GLsizei const LayerGL = static_cast<GLsizei>(Layer);
 		glm::tvec3<GLsizei> Extent(Texture.extent(Level));
 		GLenum _Target = gli::is_target_cube(Texture.target())
-			? static_cast<GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + Face)
+			? static_cast<GLenum>(flipCubemap[Face])
 			: Target;
 
 		switch(Texture.target())
@@ -373,7 +382,6 @@ bool OGLCoreTexture::createFromMemoryDDS(const char* data, size_t dataSize) noex
 			break;
 		case gli::TARGET_1D_ARRAY:
 		case gli::TARGET_2D:
-		case gli::TARGET_CUBE:
 			if(gli::is_compressed(Texture.format()))
 				glCompressedTextureSubImage2D(
 					TextureID, static_cast<GLint>(Level),
@@ -391,6 +399,7 @@ bool OGLCoreTexture::createFromMemoryDDS(const char* data, size_t dataSize) noex
 					Format.External, Format.Type,
 					Texture.data(Layer, Face, Level));
 			break;
+		case gli::TARGET_CUBE:
 		case gli::TARGET_2D_ARRAY:
 		case gli::TARGET_3D:
 		case gli::TARGET_CUBE_ARRAY:
