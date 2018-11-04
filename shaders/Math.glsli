@@ -202,14 +202,17 @@ vec3 DecodeRGBT(vec4 rgbt, float range = 1024)
 }
 
 // NDC to Texture Coordinate
+
+// (x: -1 ~ +1, y: -1 ~ +1)
 vec2 PosToCoord(vec2 position)
 {
     return position * vec2(0.5, 0.5) + vec2(0.5, 0.5);
 }
 
+// (x: -1 ~ +1, y: -1 ~ +1) x 2
 vec4 PosToCoord(vec4 position)
 {
-    return position * vec4(0.5, 0.5, -0.5, -0.5) + vec4(0.5, 0.5, 0.5, 0.5);
+    return position * vec4(0.5, 0.5, 0.5, 0.5) + vec4(0.5, 0.5, 0.5, 0.5);
 }
 
 vec2 CoordToPos(vec2 coord)
@@ -283,14 +286,18 @@ mat3 CreateRotate(vec3 euler)
 // Image Based Lighting
 // 1 : Enable
 // 2 : Enable + UV filp
+
+// acos(hlsl) : +1 ~ -1 > 0 ~ pi > 0 ~ +1 > top ~ bottom
+// asin(glsl) : +1 ~ -1 > +pi/2 ~ -pi/2 > +0.5 ~ -0.5 > 1.0 ~ 0.0 > top ~ bottom
+
 vec2 ComputeSphereCoord(vec3 normal)
 {
 #if IBL_QUALITY > 1
     normal = clamp(normal, -1.0, 1.0);
-    vec2 coord = vec2(1 - (atan(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+    vec2 coord = vec2(1 - (atan(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), asin(normal.y) * InvPIE + 0.5f);
 #else
     normal = clamp(normal, -1.0, 1.0);
-    vec2 coord = vec2((atan(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+    vec2 coord = vec2((atan(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), asin(normal.y) * InvPIE + 0.5f);
 #endif
     return coord;
 }
