@@ -18,6 +18,7 @@
 #include <GLType/OGLDevice.h>
 #include <GLType/ProgramShader.h>
 #include <GLType/GraphicsFramebuffer.h>
+#include <GLType/GraphicsTexture.h>
 
 #include <BufferManager.h>
 #include <GraphicsTypes.h>
@@ -27,7 +28,7 @@
 #include <LightingTechnique.h>
 #include <ShadowTechnique.h>
 #include <BasicTechnique/SkyboxTechnique.h>
-#include <BasicTechnique/SkycubeTechnique.h>
+#include <BasicTechnique/WaterTechnique.h>
 
 #include <fstream>
 #include <memory>
@@ -37,7 +38,6 @@
 #include <SceneSettings.h>
 #include <tools/string.h>
 #include <GraphicsContext.h>
-#include <GLType/GraphicsTexture.h>
 
 enum ProfilerType { kProfilerTypeRender = 0, kProfilerTypeUpdate };
 
@@ -74,7 +74,6 @@ private:
     void RenderDebugDepth(GraphicsContext& gfxContext);
     void RenderPass(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
-    void RenderSkycube(GraphicsContext& gfxContext);
     void RenderScene(const ProgramShader& shader);
 
     glm::vec3 GetSunDirection() const;
@@ -94,14 +93,13 @@ private:
     PlaneMesh m_Ground;
     ModelAssImp m_Column;
     ModelAssImp m_Dragon;
+    WaterTechnique m_Water;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_LightShader;
     ProgramShader m_FlatShader;
     ProgramShader m_ShadowMapShader;
     ProgramShader m_DebugDepthShader;
     ProgramShader m_PostProcessHDRShader;
-    ProgramShader m_SkycubeShader;
-    GraphicsTexturePtr m_SkycubeTex;
     GraphicsDevicePtr m_Device;
     GraphicsTexturePtr m_TexWood;
 };
@@ -196,12 +194,16 @@ void LightScattering::startup() noexcept
 
     skybox::setDevice(m_Device);
     skybox::initialize();
-    skycube::setDevice(m_Device);
-    skycube::initialize();
+
+    WaterOptions waterOpts;
+
+    m_Water.setDevice(m_Device);
+    m_Water.create(waterOpts);
 }
 
 void LightScattering::closeup() noexcept
 {
+    m_Water.destroy();
     m_Cube.destroy();
     m_Sphere.destroy();
     m_SphereMini.destroy();
@@ -211,7 +213,6 @@ void LightScattering::closeup() noexcept
     m_ScreenTraingle.destroy();
 	profiler::shutdown();
     skybox::shutdown();
-    skycube::shutdown();
 }
 
 void LightScattering::update() noexcept
@@ -232,6 +233,10 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
+    static float elapsed = 0.f;
+    float delta = float(glfwGetTime()) - elapsed;
+    m_Water.update(delta);
+    elapsed += delta;
 
     Graphics::CalcOrthoProjections(m_Settings, m_Camera, m_DirectionalLight.Direction, m_CascadeEnd, m_lightSpace);
 }
@@ -296,6 +301,7 @@ void LightScattering::render() noexcept
     ShadowMapPass(context);
     if (m_Settings.bDebugDepth) RenderDebugDepth(context);
     else RenderPass(context);
+    m_Water.render(context, m_Camera);
     TonemapPass(context);
 
     profiler::stop(kProfilerTypeRender);
@@ -345,7 +351,6 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
 
     skybox::render(gfxContext, m_Camera);
-    skycube::render(gfxContext, m_Camera);
 
     glm::mat4 view = m_Camera.getViewMatrix();
     glm::mat4 project = m_Camera.getProjectionMatrix();
@@ -367,23 +372,6 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     m_LightShader.setUniform("uEyePositionWS", m_Camera.getPosition());
     m_LightShader.bindTexture("uTexWood", m_TexWood, 0);
     RenderScene(m_LightShader);
-}
-
-void LightScattering::RenderSkycube(GraphicsContext& gfxContext)
-{
-    gfxContext.SetCubemapSeamless(true);
-    gfxContext.SetFrontFace(FrontFaceType::kClockWise);
-
-    m_SkycubeShader.bind();
-    m_SkycubeShader.setUniform("uViewMatrix", m_Camera.getViewMatrix());
-    m_SkycubeShader.setUniform("uProjMatrix", m_Camera.getProjectionMatrix());
-
-    // Texture binding
-    m_SkycubeShader.bindTexture("uEnvmapSamp", m_SkycubeTex, 0);
-    m_Cube.draw();
-
-    gfxContext.SetFrontFace(FrontFaceType::kCountClockWise);
-    gfxContext.SetCubemapSeamless(false);
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)

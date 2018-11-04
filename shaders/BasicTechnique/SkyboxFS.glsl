@@ -4,6 +4,9 @@
 #include "../Common.glsli"
 #include "../Math.glsli"
 
+#define SKYBOX_HDR_RGBT_ENABLE 1
+#define SKYBOX_HDR_ENABLE 1
+
 // IN
 in vec3 vNormal;
 

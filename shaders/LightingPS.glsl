@@ -175,6 +175,6 @@ void main()
     else
     {
         vec3 SampledColor = texture2D(uTexWood, vTexcoords).rgb;
-        FragColor = vec4(vec3(sumLight)*SampledColor, 1.0) + CascadeIndicator;
+        FragColor = vec4(vec3(sumLight)*SampledColor, 1.0); // + CascadeIndicator;
     }
 }
