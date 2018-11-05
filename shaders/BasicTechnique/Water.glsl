@@ -10,6 +10,7 @@ layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec2 inTexcoord;
 
+out vec4 vPositionWS;
 out vec4 vPositionCS;
 out vec3 vToEyeWS;
 out vec2 vTexcoord;
@@ -21,12 +22,13 @@ uniform mat4 uMatViewProject;
 void main()
 {
     vec4 positionWS = uMatWorld*vec4(inPosition, 1.0);
+    vPositionWS = positionWS;
 
 	// Compute the vector from the vertex to the eye.
     vToEyeWS = vec3(positionWS) - uCameraPositionWS;
 
 	// Scroll texture coordinates.
-    vTexcoord = inTexcoord;
+    vTexcoord = vec2(inTexcoord.x, 1.0 - inTexcoord.y);
     gl_Position = vPositionCS = uMatViewProject*positionWS;
 }
 
@@ -35,6 +37,7 @@ void main()
 #include "../Common.glsli"
 #include "../Math.glsli"
 
+in vec4 vPositionWS;
 in vec4 vPositionCS;
 in vec3 vToEyeWS;
 in vec2 vTexcoord;
@@ -43,6 +46,7 @@ out vec4 fragColor;
 
 uniform vec4 uWaterColor;
 uniform vec3 uSunDirectionWS;
+uniform vec3 uCameraPositionWS;
 uniform vec4 uSunColor; 
 
 //Flow map offsets used to scroll the wave maps
@@ -60,10 +64,10 @@ uniform sampler2D uFlowMapSamp;
 uniform sampler2D uNoiseMapSamp;
 uniform sampler2D uWaveMap0Samp;
 uniform sampler2D uWaveMap1Samp;
+uniform sampler2D uRefractMapSamp;
 
 const float R0 = 0.02037f;
 
-#if 1
 void main()
 {
 	// transform the projective texcoords to NDC space
@@ -88,14 +92,52 @@ void main()
 	vec3 normalT0 = texture(uWaveMap0Samp, ( vTexcoord*uTexScale ) + flowmap * phase0 ).xyz;
 	vec3 normalT1 = texture(uWaveMap1Samp, ( vTexcoord*uTexScale ) + flowmap * phase1 ).xyz;
 
-	float f = ( abs( uHalfCycle - uFlowMapOffset0 ) / uHalfCycle );
+	float flowLerp = ( abs( uHalfCycle - uFlowMapOffset0 ) / uHalfCycle );
+
+	 //unroll the normals retrieved from the normalmaps
+    normalT0.yz = normalT0.zy;	
+	normalT1.yz = normalT1.zy;
+	
+	normalT0 = 2.0f*normalT0 - 1.0f;
+    normalT1 = 2.0f*normalT1 - 1.0f;
     
-	vec3 normalT = lerp( normalT0, normalT1, f );
-    fragColor = vec4( normalT, 1.0f );
+	vec3 normalT = lerp( normalT0, normalT1, flowLerp );
+	
+	//get the reflection vector from the eye
+	vec3 R = normalize(reflect(toEyeWS, normalT));
+	
+	vec4 finalColor;
+	finalColor.a = 1;
+
+	//compute the fresnel term to blend reflection and refraction maps
+	float ang = saturate(dot(-toEyeWS,normalT));
+	float f = R0 + (1.0f-R0) * pow(1.0f-ang,5.0);	
+	
+	//also blend based on distance
+	f = min(1.0f, f + 0.007f * uCameraPositionWS.y);	
+		
+	//compute the reflection from sunlight
+	float sunFactor = uSunFactor;
+	float sunPower = uSunPower;
+	
+	if(uCameraPositionWS.y < vPositionWS.y)
+	{
+		sunFactor = 7.0f; //these could also be sent to the shader
+		sunPower = 55.0f;
+	}
+    vec3 temp = vec3(pow(saturate(dot(R, lightVecWS)), sunPower));
+	vec3 sunlight = sunFactor * temp * vec3(uSunColor);
+
+	vec4 refl = texture(uReflectMapSamp, projTexTS.xy + projTexTS.z * normalT.xz);
+	vec4 refr = texture(uRefractMapSamp, projTexTS.xy - projTexTS.z * normalT.xz);
+	
+	//only use the refraction map if we're under water
+	if (uCameraPositionWS.y < vPositionWS.y)
+		f = 0.0f;
+	
+	//interpolate the reflection and refraction maps based on the fresnel term and add the sunlight
+	// finalColor.rgb = uWaterColor * lerp( refr, refl, f) + sunlight;
+	finalColor.rgb = vec3(uWaterColor) + sunlight;
+	
+    fragColor = finalColor;
 }
-#else
-void main()
-{
-    fragColor = texture(uWaveMap0Samp, vTexcoord);
-}
-#endif

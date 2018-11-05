@@ -18,7 +18,7 @@ void WaterTechnique::setDevice(const GraphicsDevicePtr& device)
     m_Device = device;
 }
 
-void WaterTechnique::create(const WaterOptions& options)
+void WaterTechnique::create(float waterSize, float cellSpacing)
 {
     auto device = m_Device.lock();
     assert(device);
@@ -41,11 +41,15 @@ void WaterTechnique::create(const WaterOptions& options)
     m_NoiseMapTex = device->createTexture(noiseMapDesc);
     assert(m_NoiseMapTex);
 
+    GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+
     GraphicsTextureDesc Wave0Desc;
     Wave0Desc.setWrapS(GL_REPEAT);
     Wave0Desc.setWrapT(GL_REPEAT);
     Wave0Desc.setMinFilter(GL_LINEAR);
     Wave0Desc.setMagFilter(GL_LINEAR);
+    Wave0Desc.setAnisotropyLevel(fLargest);
     Wave0Desc.setFilename("resources/WaterFlow/Textures/wave0.dds");
     m_Wave0Tex = device->createTexture(Wave0Desc);
     assert(m_Wave0Tex);
@@ -55,6 +59,7 @@ void WaterTechnique::create(const WaterOptions& options)
     Wave1Desc.setWrapT(GL_REPEAT);
     Wave1Desc.setMinFilter(GL_LINEAR);
     Wave1Desc.setMagFilter(GL_LINEAR);
+    Wave1Desc.setAnisotropyLevel(fLargest);
     Wave1Desc.setFilename("resources/WaterFlow/Textures/wave1.dds");
     m_Wave1Tex = device->createTexture(Wave1Desc);
     assert(m_Wave1Tex);
@@ -65,21 +70,27 @@ void WaterTechnique::create(const WaterOptions& options)
 	m_WaterShader.addShader(GL_FRAGMENT_SHADER, "BasicTechnique/Water.Fragment");
 	m_WaterShader.link();
 
-    m_WaterPlane.create();
+    FlowMapOffset0 = 0.0f;
+    FlowMapOffset1 = HalfCycle;
 
-    m_Options.FlowMapOffset0 = 0.0f;
-    m_Options.FlowMapOffset1 = HalfCycle;
+    float numCellRows = waterSize - 1;
+    float planesize = numCellRows*cellSpacing;
+
+    m_WaterPlane = PlaneMesh(planesize, numCellRows);
+    m_WaterPlane.create();
 }
 
-void WaterTechnique::update(float detla)
+void WaterTechnique::update(float detla, const WaterOptions& options)
 {
-    m_Options.FlowMapOffset0 += FlowSpeed * detla;
-    m_Options.FlowMapOffset1 += FlowSpeed * detla;
-    if (m_Options.FlowMapOffset0 >= Cycle)
-        m_Options.FlowMapOffset0 = fmod(m_Options.FlowMapOffset0, Cycle);
+    m_Options = options;
 
-    if (m_Options.FlowMapOffset1 >= Cycle)
-        m_Options.FlowMapOffset1 = fmod(m_Options.FlowMapOffset1, Cycle);
+    FlowMapOffset0 += FlowSpeed * detla;
+    FlowMapOffset1 += FlowSpeed * detla;
+    if (FlowMapOffset0 >= Cycle)
+        FlowMapOffset0 = glm::mod(FlowMapOffset0, Cycle);
+
+    if (FlowMapOffset1 >= Cycle)
+        FlowMapOffset1 = glm::mod(FlowMapOffset1, Cycle);
 }
 
 void WaterTechnique::destroy()
@@ -92,14 +103,16 @@ void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
 {
     m_WaterShader.bind();
     m_WaterShader.setUniform("uCameraPositionWS", camera.getPosition());
-    m_WaterShader.setUniform("uFlowMapOffset0", m_Options.FlowMapOffset0);
-    m_WaterShader.setUniform("uFlowMapOffset1", m_Options.FlowMapOffset1);
+    m_WaterShader.setUniform("uFlowMapOffset0", FlowMapOffset0);
+    m_WaterShader.setUniform("uFlowMapOffset1", FlowMapOffset1);
     m_WaterShader.setUniform("uHalfCycle", HalfCycle);
     m_WaterShader.setUniform("uTexScale", m_Options.WaveMapScale);
-    m_WaterShader.setUniform("uSunDirection", m_Options.SunDirection);
+    m_WaterShader.setUniform("uWaterColor", m_Options.WaterColor);
+    m_WaterShader.setUniform("uSunColor", m_Options.SunColor);
+    m_WaterShader.setUniform("uSunDirectionWS", glm::normalize(m_Options.SunDirection));
     m_WaterShader.setUniform("uSunFactor", m_Options.SunFactor);
     m_WaterShader.setUniform("uSunPower", m_Options.SunPower);
-    m_WaterShader.setUniform("uMatWorld", glm::mat4(1.f));
+    m_WaterShader.setUniform("uMatWorld", glm::translate(glm::mat4(1.f), glm::vec3(0.f, 3.0f, 0.f)));
     m_WaterShader.setUniform("uMatViewProject", camera.getViewProjMatrix());
     m_WaterShader.bindTexture("uFlowMapSamp", m_FlowMapTex, 0);
     m_WaterShader.bindTexture("uNoiseMapSamp", m_NoiseMapTex, 1);

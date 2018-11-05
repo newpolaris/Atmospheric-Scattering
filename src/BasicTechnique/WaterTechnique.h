@@ -9,23 +9,12 @@
 
 struct WaterOptions
 {
-    // the number of vertices in the x and z plane (must be of the form 2^n + 1)
-    // and the amount of spacing between vertices
-    int Width = 257;
-    int Height = 257;
-    float CellSpacing = .5f;
-
     // how large to scale the wave map texture in the shader
     // higher than 1 and the texture will repeat providing finer detail normals
     float WaveMapScale = 1.0f;
 
     // size of the reflection and refraction render targets' width and height
     int RenderTargetSize = 512;
-
-    // offsets for the flowmap updated every frame. These offsets are used to 
-    // simulate the water flowing through the flow map.
-    float FlowMapOffset0 = 0.f;
-    float FlowMapOffset1 = 0.f;
 
     //asset names for the normal/wave maps
     std::string FlowMapAsset;
@@ -46,12 +35,17 @@ class WaterTechnique
 public:
 
 	void setDevice(const GraphicsDevicePtr& device);
-    void create(const WaterOptions& options);
-    void update(float detla);
+    void create(float waterSize, float cellSpacing);
+    void update(float detla, const WaterOptions& options);
     void destroy();
     void render(GraphicsContext& gfxContext, const TCamera& camera);
 
 private:
+
+    // offsets for the flowmap updated every frame. These offsets are used to 
+    // simulate the water flowing through the flow map.
+    float FlowMapOffset0 = 0.f;
+    float FlowMapOffset1 = 0.f;
 
     WaterOptions m_Options;
     GraphicsDeviceWeakPtr m_Device; 

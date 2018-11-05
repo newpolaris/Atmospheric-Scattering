@@ -126,13 +126,8 @@ void LightScattering::startup() noexcept
 	profiler::initialize();
 
     m_Timer.initialize();
-	m_Camera.setMoveCoefficient(0.35f);
+	m_Camera.setMoveCoefficient(1.f);
     m_Camera.setViewParams(glm::vec3(8.f, 21.f, -23.f), glm::vec3(8.f, 21.f, -23.f) + glm::vec3(-0.7f, -0.44f, 0.9f));
-
-    glm::vec3 p = { -9.85913467, 25.9683094, -18.1401157 };
-    glm::vec3 c = {-9.82689571, 25.1048946, -17.6366520 };
-    glm::vec3 u = {0.0551749095, 0.504494607, 0.861650109};
-    m_Camera.setViewParams(p, c);
 
 	GraphicsDeviceDesc deviceDesc;
 #if __APPLE__
@@ -185,7 +180,7 @@ void LightScattering::startup() noexcept
     m_Column.create();
     m_Column.loadFromFile("resources/WaterFlow/BasicColumnScene.x");
     m_Dragon.create();
-    m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
+    // m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
 
     for (int i = 0; i < s_NumMeshes; i++) {
         glm::mat4 model(1.f);
@@ -195,10 +190,10 @@ void LightScattering::startup() noexcept
     skybox::setDevice(m_Device);
     skybox::initialize();
 
-    WaterOptions waterOpts;
-
+    const float waterSize = 65.f;
+    const float cellSpacing = 1.75f;
     m_Water.setDevice(m_Device);
-    m_Water.create(waterOpts);
+    m_Water.create(waterSize, cellSpacing);
 }
 
 void LightScattering::closeup() noexcept
@@ -233,9 +228,18 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
+
+    WaterOptions waterOpts;
+    waterOpts.WaveMapScale = 2.5f;
+    waterOpts.WaterColor = m_Settings.m_WaterColor;
+    waterOpts.SunColor = glm::vec4( 1.0f, 0.8f, 0.4f, 1.0f );
+    waterOpts.SunDirection = GetSunDirection();
+    waterOpts.SunFactor = 1.5f;
+    waterOpts.SunPower = 100.0f;
+
     static float elapsed = 0.f;
     float delta = float(glfwGetTime()) - elapsed;
-    m_Water.update(delta);
+    m_Water.update(delta, waterOpts);
     elapsed += delta;
 
     Graphics::CalcOrthoProjections(m_Settings, m_Camera, m_DirectionalLight.Direction, m_CascadeEnd, m_lightSpace);
@@ -263,8 +267,9 @@ void LightScattering::updateHUD() noexcept
         }
         ImGui::Separator();
         {
-            bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, 0.f, 120.f);
+            bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, -180.f, 180.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
+            ImGui::ColorWheel("Color:", glm::value_ptr(m_Settings.m_WaterColor), 0.6f);
             bUpdated |= ImGui::Checkbox("Bound Sphere", &m_Settings.bBoundSphere);
             bUpdated |= ImGui::Checkbox("Reduce Shimmer", &m_Settings.bReduceShimmer);
             ImGui::Separator();
@@ -387,16 +392,16 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 
 void LightScattering::RenderScene(const ProgramShader& shader)
 {
-    shader.setUniform("uMatModel", glm::mat4(1.f));
+    shader.setUniform("uMatModel", glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f)));
     m_Column.render();
     shader.setUniform("uMatModel", glm::scale(glm::mat4(1.f), glm::vec3(100.f)));
-    m_Dragon.render();
+    // m_Dragon.render();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
 {
     const float angle = glm::radians(m_Settings.angle);
-    glm::vec3 sunDir = glm::vec3(0.0f, glm::cos(angle), -glm::sin(angle));
+    glm::vec3 sunDir = glm::vec3(glm::cos(angle), -1.0f, glm::sin(angle));
     return glm::normalize(sunDir);
 }
 
