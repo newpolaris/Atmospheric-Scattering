@@ -19,6 +19,7 @@ struct SceneSettings
     float Slice1 = 25.f;
     float Slice2 = 90.f;
     float Slice3 = 150.f;
-    glm::vec4 m_WaterColor = glm::vec4( 0.5f, 0.79f, 0.75f, 1.0f );
+    float WaterTexScale = 2.5f;
+    glm::vec4 WaterColor = glm::vec4( 0.5f, 0.79f, 0.75f, 1.0f );
     glm::vec3 position = glm::vec3(0.7f, 9.5f, -1.0f);
 };

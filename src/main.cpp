@@ -230,8 +230,8 @@ void LightScattering::update() noexcept
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
 
     WaterOptions waterOpts;
-    waterOpts.WaveMapScale = 2.5f;
-    waterOpts.WaterColor = m_Settings.m_WaterColor;
+    waterOpts.WaveMapScale = m_Settings.WaterTexScale;
+    waterOpts.WaterColor = m_Settings.WaterColor;
     waterOpts.SunColor = glm::vec4( 1.0f, 0.8f, 0.4f, 1.0f );
     waterOpts.SunDirection = GetSunDirection();
     waterOpts.SunFactor = 1.5f;
@@ -269,7 +269,9 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, -180.f, 180.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
-            ImGui::ColorWheel("Color:", glm::value_ptr(m_Settings.m_WaterColor), 0.6f);
+            bUpdated |= ImGui::SliderFloat("Water Tex Scale", &m_Settings.WaterTexScale, 1.f, 10.f);
+
+            ImGui::ColorWheel("Color:", glm::value_ptr(m_Settings.WaterColor), 0.6f);
             bUpdated |= ImGui::Checkbox("Bound Sphere", &m_Settings.bBoundSphere);
             bUpdated |= ImGui::Checkbox("Reduce Shimmer", &m_Settings.bReduceShimmer);
             ImGui::Separator();
