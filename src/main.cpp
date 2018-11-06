@@ -91,10 +91,7 @@ private:
     CubeMesh m_Cube;
     SphereMesh m_Sphere;
     SphereMesh m_SphereMini;
-    PlaneMesh m_Ground;
-    ModelAssImp m_Column;
-    ModelAssImp m_Dragon;
-    WaterTechnique m_Water;
+    PlaneMesh m_Plane;
     FullscreenTriangleMesh m_ScreenTraingle;
     ProgramShader m_LightShader;
     ProgramShader m_FlatShader;
@@ -102,7 +99,7 @@ private:
     ProgramShader m_DebugDepthShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsDevicePtr m_Device;
-    GraphicsTexturePtr m_TexMarble;
+    GraphicsTexturePtr m_TexWood;
 };
 
 CREATE_APPLICATION(LightScattering);
@@ -110,12 +107,12 @@ CREATE_APPLICATION(LightScattering);
 LightScattering::LightScattering() noexcept :
     m_Sphere(32, 1.0e2f),
     m_SphereMini(48, 2.0f),
-    m_Ground(1000.f, 32.f, 10.f)
+    m_Plane(100.f, 32.f)
 {
     m_DirectionalLight.AmbientIntensity = 0.5f;
     m_DirectionalLight.DiffuseIntensity = 0.9f;
     m_DirectionalLight.Color = glm::vec3(1.f, 1.f, 1.f);
-    m_DirectionalLight.Direction = glm::vec3(1.0f, -1.f, 0.0f);
+    m_DirectionalLight.Direction = GetSunDirection();
 }
 
 LightScattering::~LightScattering() noexcept
@@ -138,11 +135,11 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 
-    GraphicsTextureDesc marbleDesc;
-    marbleDesc.setFilename("resources/WaterFlow/floor_color.png");
-    marbleDesc.setWrapS(GL_REPEAT);
-    marbleDesc.setWrapT(GL_REPEAT);
-    m_TexMarble = m_Device->createTexture(marbleDesc);
+    GraphicsTextureDesc woodDesc;
+    woodDesc.setFilename("resources/wood.png");
+    woodDesc.setWrapS(GL_REPEAT);
+    woodDesc.setWrapT(GL_REPEAT);
+    m_TexWood = m_Device->createTexture(woodDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
     m_ShadowMapShader.initialize();
@@ -177,11 +174,7 @@ void LightScattering::startup() noexcept
     m_Cube.create();
     m_Sphere.create();
     m_SphereMini.create();
-    m_Ground.create();
-    m_Column.create();
-    m_Column.loadFromFile("resources/WaterFlow/BasicColumnScene.x");
-    m_Dragon.create();
-    // m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
+    m_Plane.create();
 
     for (int i = 0; i < s_NumMeshes; i++) {
         glm::mat4 model(1.f);
@@ -190,24 +183,14 @@ void LightScattering::startup() noexcept
 
     skybox::setDevice(m_Device);
     skybox::initialize();
-
-    const float waterSize = 65.f;
-    const float cellSpacing = 1.75f;
-    m_Water.setDevice(m_Device);
-    m_Water.create(waterSize, cellSpacing);
-    auto drawfunction = [this](GraphicsContext& context, const glm::mat4& reflection){ RenderPass(context, reflection); };
-    m_Water.setDrawfunction(drawfunction);
 }
 
 void LightScattering::closeup() noexcept
 {
-    m_Water.destroy();
     m_Cube.destroy();
     m_Sphere.destroy();
     m_SphereMini.destroy();
-    m_Ground.destroy();
-    m_Column.destroy();
-    m_Dragon.destroy();
+    m_Plane.destroy();
     m_ScreenTraingle.destroy();
 	profiler::shutdown();
     skybox::shutdown();
@@ -232,19 +215,7 @@ void LightScattering::update() noexcept
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
 
-    WaterOptions waterOpts;
-    waterOpts.WaveMapScale = m_Settings.WaterTexScale;
-    waterOpts.WaterColor = m_Settings.WaterColor;
-    waterOpts.SunColor = glm::vec4( 1.0f, 0.8f, 0.4f, 1.0f );
-    waterOpts.SunDirection = GetSunDirection();
-    waterOpts.SunFactor = 1.5f;
-    waterOpts.SunPower = 100.0f;
-
-    static float elapsed = 0.f;
-    float delta = float(glfwGetTime()) - elapsed;
-    m_Water.update(delta, waterOpts);
-    elapsed += delta;
-
+    m_DirectionalLight.Direction = GetSunDirection();
     Graphics::CalcOrthoProjections(m_Settings, m_Camera, m_DirectionalLight.Direction, m_CascadeEnd, m_lightSpace);
 }
 
@@ -309,12 +280,9 @@ void LightScattering::render() noexcept
     profiler::start(kProfilerTypeRender);
     // generate shadow map
     ShadowMapPass(context);
-    // generate refract map
-    m_Water.beforerender(context);
     // scene 
     if (m_Settings.bDebugDepth) RenderDebugDepth(context);
     else RenderPass(context);
-    m_Water.render(context, m_Camera);
     TonemapPass(context);
 
     profiler::stop(kProfilerTypeRender);
@@ -387,7 +355,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& r
         m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
     }
     m_LightShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    m_LightShader.bindTexture("uTexWood", m_TexMarble, 0);
+    m_LightShader.bindTexture("uTexWood", m_TexWood, 0);
     RenderScene(m_LightShader, reflection);
 }
 
@@ -404,10 +372,8 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 
 void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& reflection)
 {
-    shader.setUniform("uMatModel", glm::rotate(reflection, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f)));
-    m_Column.render();
-    shader.setUniform("uMatModel", glm::scale(reflection, glm::vec3(100.f)));
-    // m_Dragon.render();
+    shader.setUniform("uMatModel", reflection);
+    m_Plane.draw();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const

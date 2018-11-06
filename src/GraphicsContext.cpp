@@ -43,6 +43,12 @@ void GraphicsContext::SetFrontFace(FrontFaceType flag)
     glFrontFace((flag == kCountClockWise) ? GL_CCW : GL_CW);
 }
 
+void GraphicsContext::SetCullFace(bool bFlag)
+{
+    const auto func = bFlag ? glEnable : glDisable;
+    func(GL_CULL_FACE);
+}
+
 void GraphicsContext::SetCullFace(CullFaceType flag)
 {
     glCullFace([&]() {

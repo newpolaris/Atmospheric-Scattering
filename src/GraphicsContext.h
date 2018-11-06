@@ -24,6 +24,7 @@ public:
 
     void SetViewport(int x, int y, size_t width, size_t height);
     void SetFrontFace(FrontFaceType flag);
+    void SetCullFace(bool bFlag);
     void SetCullFace(CullFaceType flag);
     void SetDepthClamp(bool bFlag);
     void SetDepthTest(bool bFlag);
