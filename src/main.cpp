@@ -115,7 +115,7 @@ LightScattering::LightScattering() noexcept :
     m_DirectionalLight.AmbientIntensity = 0.5f;
     m_DirectionalLight.DiffuseIntensity = 0.9f;
     m_DirectionalLight.Color = glm::vec3(1.f, 1.f, 1.f);
-    m_DirectionalLight.Direction = glm::vec3(1.0f, -1.f, 0.0f);
+    m_DirectionalLight.Direction = GetSunDirection();
 }
 
 LightScattering::~LightScattering() noexcept
@@ -181,7 +181,7 @@ void LightScattering::startup() noexcept
     m_Column.create();
     m_Column.loadFromFile("resources/WaterFlow/BasicColumnScene.x");
     m_Dragon.create();
-    // m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
+    m_Dragon.loadFromFile("resources/WaterFlow/dragon.x");
 
     for (int i = 0; i < s_NumMeshes; i++) {
         glm::mat4 model(1.f);
@@ -231,6 +231,8 @@ void LightScattering::update() noexcept
         bResized = true;
     }
     m_Settings.bUpdated = (m_Settings.bUiChanged || bCameraUpdated || bResized);
+
+    m_DirectionalLight.Direction = GetSunDirection();
 
     WaterOptions waterOpts;
     waterOpts.WaveMapScale = m_Settings.WaterTexScale;
@@ -407,7 +409,7 @@ void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& 
     shader.setUniform("uMatModel", glm::rotate(reflection, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f)));
     m_Column.render();
     shader.setUniform("uMatModel", glm::scale(reflection, glm::vec3(100.f)));
-    // m_Dragon.render();
+    m_Dragon.render();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const

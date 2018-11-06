@@ -137,6 +137,7 @@ void WaterTechnique::beforerender(GraphicsContext& gfxContext)
 
 void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
 {
+    gfxContext.SetCullFace(false);
     m_WaterShader.bind();
     m_WaterShader.setUniform("uCameraPositionWS", camera.getPosition());
     m_WaterShader.setUniform("uFlowMapOffset0", FlowMapOffset0);
@@ -156,4 +157,5 @@ void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
     m_WaterShader.bindTexture("uWaveMap1Samp", m_Wave1Tex, 3);
     m_WaterShader.bindTexture("uRefractMapSamp", m_RefractTex, 4);
     m_WaterPlane.draw();
+    gfxContext.SetCullFace(true);
 }
