@@ -33,8 +33,8 @@ out vec3 fragColor;
 void main() 
 {
     vec3 color = texture(uTexSource, vTexcoords).rgb;
-    // color = ColorToneMapping(color);
-    // color = linear2srgb(color);
+    color = ColorToneMapping(color);
+    color = linear2srgb(color);
 
     fragColor = color;
 }

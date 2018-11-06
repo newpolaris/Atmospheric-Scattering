@@ -72,9 +72,10 @@ private:
 
     void ShadowMapPass(GraphicsContext& gfxContext);
     void RenderDebugDepth(GraphicsContext& gfxContext);
-    void RenderPass(GraphicsContext& gfxContext);
     void TonemapPass(GraphicsContext& gfxContext);
-    void RenderScene(const ProgramShader& shader);
+    void RenderPass(GraphicsContext& gfxContext);
+    void RenderPass(GraphicsContext& gfxContext, const glm::mat4& reflection);
+    void RenderScene(const ProgramShader& shader, const glm::mat4& reflection);
 
     glm::vec3 GetSunDirection() const;
     glm::mat4 GetLightSpaceMatrix(uint32_t i) const;
@@ -101,7 +102,7 @@ private:
     ProgramShader m_DebugDepthShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsDevicePtr m_Device;
-    GraphicsTexturePtr m_TexWood;
+    GraphicsTexturePtr m_TexMarble;
 };
 
 CREATE_APPLICATION(LightScattering);
@@ -137,11 +138,11 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 
-    GraphicsTextureDesc woodDesc;
-    woodDesc.setFilename("resources/wood.png");
-    woodDesc.setWrapS(GL_REPEAT);
-    woodDesc.setWrapT(GL_REPEAT);
-    m_TexWood = m_Device->createTexture(woodDesc);
+    GraphicsTextureDesc marbleDesc;
+    marbleDesc.setFilename("resources/WaterFlow/floor_color.png");
+    marbleDesc.setWrapS(GL_REPEAT);
+    marbleDesc.setWrapT(GL_REPEAT);
+    m_TexMarble = m_Device->createTexture(marbleDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
     m_ShadowMapShader.initialize();
@@ -194,6 +195,8 @@ void LightScattering::startup() noexcept
     const float cellSpacing = 1.75f;
     m_Water.setDevice(m_Device);
     m_Water.create(waterSize, cellSpacing);
+    auto drawfunction = [this](GraphicsContext& context, const glm::mat4& reflection){ RenderPass(context, reflection); };
+    m_Water.setDrawfunction(drawfunction);
 }
 
 void LightScattering::closeup() noexcept
@@ -304,8 +307,11 @@ void LightScattering::render() noexcept
 {
     GraphicsContext context(GraphicsDeviceTypeOpenGLCore);
     profiler::start(kProfilerTypeRender);
-
+    // generate shadow map
     ShadowMapPass(context);
+    // generate refract map
+    m_Water.beforerender(context);
+    // scene 
     if (m_Settings.bDebugDepth) RenderDebugDepth(context);
     else RenderPass(context);
     m_Water.render(context, m_Camera);
@@ -329,7 +335,7 @@ void LightScattering::ShadowMapPass(GraphicsContext& gfxContext)
         gfxContext.ClearDepth(1.0f);
         gfxContext.Clear(kDepthBufferBit);
         m_ShadowMapShader.setUniform("uMatLightSpace", GetLightSpaceMatrix(i));
-        RenderScene(m_ShadowMapShader);
+        RenderScene(m_ShadowMapShader, glm::mat4(1.f));
     }
     gfxContext.SetDepthClamp(false);
     gfxContext.SetCullFace(kCullBack);
@@ -356,7 +362,11 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
     gfxContext.ClearColor(glm::vec4(0, 0, 0, 0));
     gfxContext.ClearDepth(1.0f);
     gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
+    RenderPass(gfxContext, glm::mat4(1.f));
+}
 
+void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& reflection)
+{
     skybox::render(gfxContext, m_Camera);
 
     glm::mat4 view = m_Camera.getViewMatrix();
@@ -377,8 +387,8 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext)
         m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
     }
     m_LightShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    m_LightShader.bindTexture("uTexWood", m_TexWood, 0);
-    RenderScene(m_LightShader);
+    m_LightShader.bindTexture("uTexWood", m_TexMarble, 0);
+    RenderScene(m_LightShader, reflection);
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
@@ -392,11 +402,11 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
     gfxContext.SetDepthTest(true);
 }
 
-void LightScattering::RenderScene(const ProgramShader& shader)
+void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& reflection)
 {
-    shader.setUniform("uMatModel", glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f)));
+    shader.setUniform("uMatModel", glm::rotate(reflection, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f)));
     m_Column.render();
-    shader.setUniform("uMatModel", glm::scale(glm::mat4(1.f), glm::vec3(100.f)));
+    shader.setUniform("uMatModel", glm::scale(reflection, glm::vec3(100.f)));
     // m_Dragon.render();
 }
 

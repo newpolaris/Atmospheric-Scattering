@@ -4,6 +4,7 @@
 #include <glfw3.h>
 #include <GLType/GraphicsDevice.h>
 #include <GLType/GraphicsTexture.h>
+#include <GLType/GraphicsFramebuffer.h>
 #include <tools/TCamera.h>
 
 namespace
@@ -11,11 +12,18 @@ namespace
     const float Cycle = 0.15f;
     const float HalfCycle = Cycle * 0.5f;
     const float FlowSpeed = 0.05f;
+    // size of the reflection and refraction render targets' width and height
+    const int refraceTextureSize = 512;
 }
 
 void WaterTechnique::setDevice(const GraphicsDevicePtr& device)
 {
     m_Device = device;
+}
+
+void WaterTechnique::setDrawfunction(Renderfunctiondelegator function)
+{
+    m_renderfunction = function;
 }
 
 void WaterTechnique::create(float waterSize, float cellSpacing)
@@ -68,6 +76,20 @@ void WaterTechnique::create(float waterSize, float cellSpacing)
     m_Wave1Tex = device->createTexture(Wave1Desc);
     assert(m_Wave1Tex);
 
+    GraphicsTextureDesc RefrectDesc;
+    RefrectDesc.setWrapS(GL_CLAMP_TO_EDGE);
+    RefrectDesc.setWrapT(GL_CLAMP_TO_EDGE);
+    RefrectDesc.setMinFilter(GL_NEAREST);
+    RefrectDesc.setMagFilter(GL_NEAREST);
+    RefrectDesc.setWidth(refraceTextureSize);
+    RefrectDesc.setHeight(refraceTextureSize);
+    RefrectDesc.setFormat(gli::FORMAT_RGBA8_UNORM_PACK8);
+    m_RefractTex = device->createTexture(RefrectDesc);
+
+    GraphicsFramebufferDesc refrectFramebuffer;
+    refrectFramebuffer.addComponent(GraphicsAttachmentBinding(m_RefractTex, GL_COLOR_ATTACHMENT0));
+    m_RefractFramebuffer = device->createFramebuffer(refrectFramebuffer);
+
 	m_WaterShader.setDevice(device);
 	m_WaterShader.initialize();
 	m_WaterShader.addShader(GL_VERTEX_SHADER, "BasicTechnique/Water.Vertex");
@@ -103,6 +125,16 @@ void WaterTechnique::destroy()
     m_Device.reset();
 }
 
+void WaterTechnique::beforerender(GraphicsContext& gfxContext)
+{
+    gfxContext.SetFramebuffer(m_RefractFramebuffer);
+    gfxContext.SetViewport(0, 0, refraceTextureSize, refraceTextureSize); 
+    gfxContext.ClearColor(glm::vec4(0, 0, 0, 0));
+    gfxContext.ClearDepth(1.0f);
+    gfxContext.Clear(kColorBufferBit | kDepthBufferBit);
+    m_renderfunction(gfxContext, glm::mat4(1.f));
+}
+
 void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
 {
     m_WaterShader.bind();
@@ -119,9 +151,9 @@ void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
     m_WaterShader.setUniform("uMatWorld", glm::translate(glm::mat4(1.f), glm::vec3(0.f, 3.0f, 0.f)));
     m_WaterShader.setUniform("uMatViewProject", camera.getViewProjMatrix());
     m_WaterShader.bindTexture("uFlowMapSamp", m_FlowMapTex, 0);
-    m_WaterShader.bindTexture("uNoiseMapSamp", m_NoiseMapTex, 1);
-    m_WaterShader.bindTexture("uNoiseSmoothMapSamp", m_NoiseSmoothMapTex, 2);
-    m_WaterShader.bindTexture("uWaveMap0Samp", m_Wave0Tex, 3);
-    m_WaterShader.bindTexture("uWaveMap1Samp", m_Wave1Tex, 4);
+    m_WaterShader.bindTexture("uNoiseSmoothMapSamp", m_NoiseSmoothMapTex, 1);
+    m_WaterShader.bindTexture("uWaveMap0Samp", m_Wave0Tex, 2);
+    m_WaterShader.bindTexture("uWaveMap1Samp", m_Wave1Tex, 3);
+    m_WaterShader.bindTexture("uRefractMapSamp", m_RefractTex, 4);
     m_WaterPlane.draw();
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <glm/glm.hpp>
 #include <GraphicsTypes.h>
@@ -7,14 +8,13 @@
 #include <GLType/ProgramShader.h>
 #include <Mesh.h>
 
+using Renderfunctiondelegator = std::function<void(GraphicsContext& context, const glm::mat4& reflection)>;
+
 struct WaterOptions
 {
     // how large to scale the wave map texture in the shader
     // higher than 1 and the texture will repeat providing finer detail normals
     float WaveMapScale = 1.0f;
-
-    // size of the reflection and refraction render targets' width and height
-    int RenderTargetSize = 512;
 
     //asset names for the normal/wave maps
     std::string FlowMapAsset;
@@ -35,9 +35,11 @@ class WaterTechnique
 public:
 
 	void setDevice(const GraphicsDevicePtr& device);
+    void setDrawfunction(Renderfunctiondelegator function);
     void create(float waterSize, float cellSpacing);
     void update(float detla, const WaterOptions& options);
     void destroy();
+    void beforerender(GraphicsContext& gfxContext);
     void render(GraphicsContext& gfxContext, const TCamera& camera);
 
 private:
@@ -54,6 +56,9 @@ private:
     GraphicsTexturePtr m_NoiseSmoothMapTex;
     GraphicsTexturePtr m_Wave0Tex;
     GraphicsTexturePtr m_Wave1Tex;
+    GraphicsTexturePtr m_RefractTex;
+    GraphicsFramebufferPtr m_RefractFramebuffer;
     ProgramShader m_WaterShader;
     PlaneMesh m_WaterPlane;
+    Renderfunctiondelegator m_renderfunction;
 };

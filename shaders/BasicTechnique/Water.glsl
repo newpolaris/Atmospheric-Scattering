@@ -61,7 +61,6 @@ uniform float uSunFactor; //the intensity of the sun specular term.
 uniform float uSunPower; //how shiny we want the sun specular term on the water to be.
 
 uniform sampler2D uFlowMapSamp;
-uniform sampler2D uNoiseMapSamp;
 uniform sampler2D uNoiseSmoothMapSamp;
 uniform sampler2D uWaveMap0Samp;
 uniform sampler2D uWaveMap1Samp;
@@ -69,29 +68,6 @@ uniform sampler2D uRefractMapSamp;
 uniform sampler2D uReflectMapSamp;
 
 const float R0 = 0.02037f;
-
-// noise function
-// From: https://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/
-//
-//    FAST_32_hash
-//    A very fast 2D hashing function.  Requires 32bit support.
-//
-//    The hash formula takes the form....
-//    hash = mod( coord.x * coord.x * coord.y * coord.y, SOMELARGEFLOAT ) / SOMELARGEFLOAT
-//    We truncate and offset the domain to the most interesting part of the noise.
-//
-vec4 FAST_32_hash(vec2 gridcell)
-{
-    // gridcell is assumed to be an integer coordinate
-    const vec2 OFFSET = vec2(26.0, 161.0);
-    const float DOMAIN = 71.0;
-    const float SOMELARGEFLOAT = 951.135664;
-    vec4 P = vec4(gridcell.xy, gridcell.xy + vec2(1, 1));
-    P = P - floor(P * (1.0 / DOMAIN)) * DOMAIN;    //    truncate the domain
-    P += OFFSET.xyxy;                              //    offset to interesting part of the noise
-    P *= P;                                        //    calculate and return the hash
-    return fract(P.xzxz * P.yyww * (1.0 / SOMELARGEFLOAT));
-}
 
 void main()
 {
@@ -114,14 +90,10 @@ void main()
 	float phase1 = cycleOffset * .5f + uFlowMapOffset1;
 
 	// Sample normal map.
-	vec3 normalT0 = texture(uNoiseMapSamp, ( vTexcoord*uTexScale ) + flowmap * phase0 ).xyz;
-	vec3 normalT1 = texture(uNoiseMapSamp, ( vTexcoord*uTexScale ) + flowmap * phase1 ).xyz;
+	vec3 normalT0 = texture(uWaveMap0Samp, ( vTexcoord*uTexScale ) + flowmap * phase0 ).xyz;
+	vec3 normalT1 = texture(uWaveMap1Samp, ( vTexcoord*uTexScale ) + flowmap * phase1 ).xyz;
 
 	float flowLerp = ( abs( uHalfCycle - uFlowMapOffset0 ) / uHalfCycle );
-
-	vec3 normalT2 = lerp( normalT0, normalT1, flowLerp );
-    fragColor = vec4( normalT2.xxx, 1.0 );
-    return;
 
 	 //unroll the normals retrieved from the normalmaps
     normalT0.yz = normalT0.zy;	
@@ -166,7 +138,7 @@ void main()
 	
 	//interpolate the reflection and refraction maps based on the fresnel term and add the sunlight
 	// finalColor.rgb = uWaterColor * lerp( refr, refl, f) + sunlight;
-	finalColor.rgb = vec3(uWaterColor) + sunlight;
+	finalColor.rgb = vec3(uWaterColor*refr) + sunlight;
 	
     fragColor = finalColor;
 }
