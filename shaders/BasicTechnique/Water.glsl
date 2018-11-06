@@ -62,6 +62,7 @@ uniform float uSunPower; //how shiny we want the sun specular term on the water 
 
 uniform sampler2D uFlowMapSamp;
 uniform sampler2D uNoiseMapSamp;
+uniform sampler2D uNoiseSmoothMapSamp;
 uniform sampler2D uWaveMap0Samp;
 uniform sampler2D uWaveMap1Samp;
 uniform sampler2D uRefractMapSamp;
@@ -107,18 +108,19 @@ void main()
 	
 	//get and uncompress the flow vector for this pixel
 	vec2 flowmap = texture( uFlowMapSamp, vTexcoord ).rg * 2.0f - 1.0f;
-	float cycleOffset = texture( uNoiseMapSamp, vTexcoord ).r;
+	float cycleOffset = texture( uNoiseSmoothMapSamp, vTexcoord ).r;
 
 	float phase0 = cycleOffset * .5f + uFlowMapOffset0;
 	float phase1 = cycleOffset * .5f + uFlowMapOffset1;
 
 	// Sample normal map.
-	vec3 normalT0 = texture(uNoiseMapSamp, ( vTexcoord*uTexScale ) + flowmap ).xyz;
+	vec3 normalT0 = texture(uNoiseMapSamp, ( vTexcoord*uTexScale ) + flowmap * phase0 ).xyz;
 	vec3 normalT1 = texture(uNoiseMapSamp, ( vTexcoord*uTexScale ) + flowmap * phase1 ).xyz;
 
 	float flowLerp = ( abs( uHalfCycle - uFlowMapOffset0 ) / uHalfCycle );
 
-    fragColor = vec4( normalT0.xxx, 1.0 );
+	vec3 normalT2 = lerp( normalT0, normalT1, flowLerp );
+    fragColor = vec4( normalT2.xxx, 1.0 );
     return;
 
 	 //unroll the normals retrieved from the normalmaps

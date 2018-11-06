@@ -51,6 +51,7 @@ private:
     GraphicsDeviceWeakPtr m_Device; 
     GraphicsTexturePtr m_FlowMapTex;
     GraphicsTexturePtr m_NoiseMapTex;
+    GraphicsTexturePtr m_NoiseSmoothMapTex;
     GraphicsTexturePtr m_Wave0Tex;
     GraphicsTexturePtr m_Wave1Tex;
     ProgramShader m_WaterShader;

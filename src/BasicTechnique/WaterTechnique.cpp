@@ -41,6 +41,10 @@ void WaterTechnique::create(float waterSize, float cellSpacing)
     m_NoiseMapTex = device->createTexture(noiseMapDesc);
     assert(m_NoiseMapTex);
 
+    noiseMapDesc.setFilename("resources/WaterFlow/Textures/noiseSmooth.png");
+    m_NoiseSmoothMapTex = device->createTexture(noiseMapDesc);
+    assert(m_NoiseSmoothMapTex);
+
     GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 
@@ -116,7 +120,8 @@ void WaterTechnique::render(GraphicsContext& gfxContext, const TCamera& camera)
     m_WaterShader.setUniform("uMatViewProject", camera.getViewProjMatrix());
     m_WaterShader.bindTexture("uFlowMapSamp", m_FlowMapTex, 0);
     m_WaterShader.bindTexture("uNoiseMapSamp", m_NoiseMapTex, 1);
-    m_WaterShader.bindTexture("uWaveMap0Samp", m_Wave0Tex, 2);
-    m_WaterShader.bindTexture("uWaveMap1Samp", m_Wave1Tex, 3);
+    m_WaterShader.bindTexture("uNoiseSmoothMapSamp", m_NoiseSmoothMapTex, 2);
+    m_WaterShader.bindTexture("uWaveMap0Samp", m_Wave0Tex, 3);
+    m_WaterShader.bindTexture("uWaveMap1Samp", m_Wave1Tex, 4);
     m_WaterPlane.draw();
 }
