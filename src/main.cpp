@@ -102,14 +102,18 @@ private:
     GraphicsTexturePtr m_TexDiffuse;
     GraphicsTexturePtr m_TexNormal;
     GraphicsTexturePtr m_TexDepth;
+    GraphicsTexturePtr m_TexBrickDiffuse;
+    GraphicsTexturePtr m_TexBrickNormal;
+    GraphicsTexturePtr m_TexBrickDepth;
+
 };
 
 CREATE_APPLICATION(LightScattering);
 
 LightScattering::LightScattering() noexcept :
     m_Sphere(32, 1.0e2f),
-    m_SphereMini(48, 2.0f),
-    m_Plane(100.f, 32.f)
+    m_SphereMini(48, 1.0f),
+    m_Plane(50.f, 32.f, 5.f)
 {
     m_DirectionalLight.AmbientIntensity = 0.5f;
     m_DirectionalLight.DiffuseIntensity = 0.9f;
@@ -138,9 +142,10 @@ void LightScattering::startup() noexcept
 	m_Device = createDevice(deviceDesc);
 
     GraphicsTextureDesc textureDesc;
-    textureDesc.setFilename("resources/Parallax/Diffuse.jpg");
     textureDesc.setWrapS(GL_REPEAT);
     textureDesc.setWrapT(GL_REPEAT);
+
+    textureDesc.setFilename("resources/Parallax/Diffuse.jpg");
     m_TexDiffuse = m_Device->createTexture(textureDesc);
 
     textureDesc.setFilename("resources/Parallax/Normal.jpg");
@@ -148,6 +153,15 @@ void LightScattering::startup() noexcept
 
     textureDesc.setFilename("resources/Parallax/Depth.jpg");
     m_TexDepth = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/bricks2.jpg");
+    m_TexBrickDiffuse = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/bricks2_normal.jpg");
+    m_TexBrickNormal = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/bricks2_disp.jpg");
+    m_TexBrickDepth = m_Device->createTexture(textureDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
     m_ShadowMapShader.initialize();
@@ -251,7 +265,7 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, -180.f, 180.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
-            bUpdated |= ImGui::SliderFloat("Water Tex Scale", &m_Settings.WaterTexScale, 1.f, 10.f);
+            bUpdated |= ImGui::Checkbox("Texture Brick", &m_Settings.bTexBrick);
 
             ImGui::ColorWheel("Color:", glm::value_ptr(m_Settings.WaterColor), 0.6f);
             bUpdated |= ImGui::Checkbox("Bound Sphere", &m_Settings.bBoundSphere);
@@ -362,9 +376,12 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& r
         m_ParallaxShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i);
     }
     m_ParallaxShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    m_ParallaxShader.bindTexture("uTexDiffuseMapSamp", m_TexDiffuse, 1);
-    m_ParallaxShader.bindTexture("uTexNormalMapSamp", m_TexNormal, 2);
-    m_ParallaxShader.bindTexture("uTexDepthMapSamp", m_TexDepth, 3);
+    auto& diffuse = m_Settings.bTexBrick? m_TexDiffuse : m_TexBrickDiffuse;
+    auto& normal = m_Settings.bTexBrick ? m_TexNormal: m_TexBrickNormal;
+    auto& depth = m_Settings.bTexBrick ? m_TexDepth : m_TexBrickDepth;
+    m_ParallaxShader.bindTexture("uTexDiffuseMapSamp", diffuse, Graphics::g_NumShadowCascade);
+    m_ParallaxShader.bindTexture("uTexNormalMapSamp", normal, Graphics::g_NumShadowCascade + 1);
+    m_ParallaxShader.bindTexture("uTexDepthMapSamp", depth, Graphics::g_NumShadowCascade + 2);
     gfxContext.SetCullFace(false);
     RenderScene(m_ParallaxShader, reflection);
     gfxContext.SetCullFace(true);
@@ -386,7 +403,7 @@ void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& 
     glm::mat4 model = glm::rotate(reflection, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // rotate the quad to show parallax mapping from multiple directions
     shader.setUniform("uMatModel", model);
     m_Plane.draw();
-    m_SphereMini.draw();
+    // m_SphereMini.draw();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
@@ -426,7 +443,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 1.f, 4000.f);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 0.1f, 100.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 

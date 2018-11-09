@@ -5,6 +5,7 @@
 struct SceneSettings
 {
     float debugType = 0.f;
+    bool bTexBrick = false;
     bool bDebugDepth = false;
     bool bUiChanged = false;
     bool bResized = false;
