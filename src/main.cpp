@@ -93,13 +93,15 @@ private:
     SphereMesh m_SphereMini;
     PlaneMesh m_Plane;
     FullscreenTriangleMesh m_ScreenTraingle;
-    ProgramShader m_LightShader;
+    ProgramShader m_ParallaxShader;
     ProgramShader m_FlatShader;
     ProgramShader m_ShadowMapShader;
     ProgramShader m_DebugDepthShader;
     ProgramShader m_PostProcessHDRShader;
     GraphicsDevicePtr m_Device;
-    GraphicsTexturePtr m_TexWood;
+    GraphicsTexturePtr m_TexDiffuse;
+    GraphicsTexturePtr m_TexNormal;
+    GraphicsTexturePtr m_TexDepth;
 };
 
 CREATE_APPLICATION(LightScattering);
@@ -135,11 +137,17 @@ void LightScattering::startup() noexcept
 #endif
 	m_Device = createDevice(deviceDesc);
 
-    GraphicsTextureDesc woodDesc;
-    woodDesc.setFilename("resources/wood.png");
-    woodDesc.setWrapS(GL_REPEAT);
-    woodDesc.setWrapT(GL_REPEAT);
-    m_TexWood = m_Device->createTexture(woodDesc);
+    GraphicsTextureDesc textureDesc;
+    textureDesc.setFilename("resources/Parallax/Diffuse.jpg");
+    textureDesc.setWrapS(GL_REPEAT);
+    textureDesc.setWrapT(GL_REPEAT);
+    m_TexDiffuse = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/Normal.jpg");
+    m_TexNormal = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/Depth.jpg");
+    m_TexDepth = m_Device->createTexture(textureDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
     m_ShadowMapShader.initialize();
@@ -158,11 +166,11 @@ void LightScattering::startup() noexcept
     m_DebugDepthShader.addShader(GL_FRAGMENT_SHADER, "DebugDepth.Fragment");
     m_DebugDepthShader.link();
 
-    m_LightShader.setDevice(m_Device);
-    m_LightShader.initialize();
-    m_LightShader.addShader(GL_VERTEX_SHADER, "LightingVS.glsl");
-    m_LightShader.addShader(GL_FRAGMENT_SHADER, "LightingPS.glsl");
-    m_LightShader.link();
+    m_ParallaxShader.setDevice(m_Device);
+    m_ParallaxShader.initialize();
+    m_ParallaxShader.addShader(GL_VERTEX_SHADER, "ParallaxVS.glsl");
+    m_ParallaxShader.addShader(GL_FRAGMENT_SHADER, "ParallaxPS.glsl");
+    m_ParallaxShader.link();
 
 	m_PostProcessHDRShader.setDevice(m_Device);
 	m_PostProcessHDRShader.initialize();
@@ -340,23 +348,26 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& r
     glm::mat4 view = m_Camera.getViewMatrix();
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
-    m_LightShader.bind();
-    m_LightShader.setUniform("uDebugType", int32_t(m_Settings.debugType));
-    m_LightShader.setUniform("uDirectionalLight.Base.Color", m_DirectionalLight.Color);
-    m_LightShader.setUniform("uDirectionalLight.Base.AmbientIntensity", m_DirectionalLight.AmbientIntensity);
-    m_LightShader.setUniform("uDirectionalLight.Direction", glm::normalize(m_DirectionalLight.Direction));
-    m_LightShader.setUniform("uDirectionalLight.Base.DiffuseIntensity", m_DirectionalLight.DiffuseIntensity);
-    m_LightShader.setUniform("uMatView", view);
-    m_LightShader.setUniform("uMatProject", project);
+    m_ParallaxShader.bind();
+    m_ParallaxShader.setUniform("uDirectionalLight.Color", m_DirectionalLight.Color);
+    m_ParallaxShader.setUniform("uDirectionalLight.AmbientIntensity", m_DirectionalLight.AmbientIntensity);
+    m_ParallaxShader.setUniform("uDirectionalLight.DiffuseIntensity", m_DirectionalLight.DiffuseIntensity);
+    m_ParallaxShader.setUniform("uLightDirection", glm::normalize(m_DirectionalLight.Direction));
+    m_ParallaxShader.setUniform("uMatView", view);
+    m_ParallaxShader.setUniform("uMatProject", project);
     for (uint32_t i = 0; i < Graphics::g_NumShadowCascade; i++)
     {
-        m_LightShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), m_CascadeEnd[i]);
-        m_LightShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
-        m_LightShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i+1);
+        m_ParallaxShader.setUniform(util::format("uCascadeEndClipSpace[{0}]", i), m_CascadeEnd[i]);
+        m_ParallaxShader.setUniform(util::format("uMatLight[{0}]", i), GetLightSpaceMatrix(i));
+        m_ParallaxShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i);
     }
-    m_LightShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    m_LightShader.bindTexture("uTexWood", m_TexWood, 0);
-    RenderScene(m_LightShader, reflection);
+    m_ParallaxShader.setUniform("uEyePositionWS", m_Camera.getPosition());
+    m_ParallaxShader.bindTexture("uTexDiffuseMapSamp", m_TexDiffuse, 1);
+    m_ParallaxShader.bindTexture("uTexNormalMapSamp", m_TexNormal, 2);
+    m_ParallaxShader.bindTexture("uTexDepthMapSamp", m_TexDepth, 3);
+    gfxContext.SetCullFace(false);
+    RenderScene(m_ParallaxShader, reflection);
+    gfxContext.SetCullFace(true);
 }
 
 void LightScattering::TonemapPass(GraphicsContext& gfxContext)
@@ -372,8 +383,10 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 
 void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& reflection)
 {
-    shader.setUniform("uMatModel", reflection);
+    glm::mat4 model = glm::rotate(reflection, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // rotate the quad to show parallax mapping from multiple directions
+    shader.setUniform("uMatModel", model);
     m_Plane.draw();
+    m_SphereMini.draw();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const

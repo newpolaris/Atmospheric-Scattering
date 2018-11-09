@@ -4,40 +4,31 @@ const int NUM_CASCADES = 4;
 const int MAX_POINT_LIGHTS = 2;                                                     
 const int MAX_SPOT_LIGHTS = 2;                                                      
 
-struct BaseLight
-{
+struct DirectionalLight                                                             
+{   
     vec3 Color;
     float AmbientIntensity;
     float DiffuseIntensity;
-};
-
-struct DirectionalLight                                                             
-{                                                                                   
-    BaseLight Base;                                                          
-    vec3 Direction;                                                                 
 };                                                                                  
 
 // IN
 in float vClipSpacePosZ;
 in vec2 vTexcoords;
 in vec3 vNormalWS;
+in vec3 vViewdirWS;
 in vec3 vPositionWS;
 in vec4 vPositionLS[NUM_CASCADES];
 
 // OUT
 out vec4 FragColor;
 
-uniform int uDebugType = 0;
 uniform vec3 uEyePositionWS;
 uniform float uSpecularPower = 0.f;
 uniform float uMatSpecularIntensity = 0.f;
-
-uniform int uNumPointLights = 0;                                                                
-uniform int uNumSpotLights = 0;                                                                 
+uniform vec3 uLightDirection;
 uniform float uCascadeEndClipSpace[NUM_CASCADES];
 uniform DirectionalLight uDirectionalLight;                                                 
 
-uniform sampler2D uTexWood;
 uniform sampler2D uTexShadowmap[NUM_CASCADES];
 uniform sampler2D uTexDiffuseMapSamp;
 uniform sampler2D uTexNormalMapSamp;
@@ -45,71 +36,75 @@ uniform sampler2D uTexDepthMapSamp;
 
 float CalcShadowFactor(int CascadeIndex, vec4 positionLS, vec3 normal, vec3 lightDirection)
 {
+    const float angleBias = 0.006;
+
     vec3 ProjCoords = positionLS.xyz / positionLS.w;
     vec3 UVCoords = 0.5 * ProjCoords + 0.5;
     float Depth = texture(uTexShadowmap[CascadeIndex], UVCoords.xy).x;
-    float angleBias = 0.006;
     float bias = max(angleBias * (1.0 - dot(normal, -lightDirection)), 0.0008);
     if (UVCoords.z - bias > Depth)
         return 0.5;
     return 1.0;
 }
 
-vec3 DepthPrint(vec3 normal)
+vec3 CalcDirectionalLight(DirectionalLight light, vec3 Direction, vec3 Normal, float ShadowFactor)
 {
-    vec3 color = vec3(0.f);
-    for (int i = 0; i < NUM_CASCADES; i++)
-    {
-        vec4 positionLS = vPositionLS[i];
-        if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
-            vec3 ProjCoords = positionLS.xyz / positionLS.w;
-            vec3 UVCoords = 0.5 * ProjCoords + 0.5;
-            float Depth = texture(uTexShadowmap[i], UVCoords.xy).x;
-            if (uDebugType == 1) 
-                color = vec3(UVCoords.x, 0.0, UVCoords.y);
-            else if (uDebugType == 2)
-                color = vec3(UVCoords.z, 0.0, Depth);
-            else if (UVCoords.x > 1.0 || UVCoords.x < 0.0)
-                color = vec3(1, 0, 1);
-            else if (UVCoords.y > 1.0 || UVCoords.y < 0.0)
-                color = vec3(0, 0, 1);
-            break;
-        }
-    }
-    return color;
-}
+    vec3 AmbientColor = vec3(light.Color * light.AmbientIntensity);
+    float DiffuseFactor = dot(Normal, -Direction);
 
-vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal, float ShadowFactor)
-{
-    vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0);
-    float DiffuseFactor = dot(Normal, -LightDirection);
-
-    vec4 DiffuseColor = vec4(0, 0, 0, 0);
-    vec4 SpecularColor = vec4(0, 0, 0, 0);
+    vec3 DiffuseColor = vec3(0, 0, 0);
+    vec3 SpecularColor = vec3(0, 0, 0);
 
     if (DiffuseFactor > 0) {
-        DiffuseColor = vec4(Light.Color * Light.DiffuseIntensity * DiffuseFactor, 1.0);
+        DiffuseColor = vec3(light.Color * light.DiffuseIntensity * DiffuseFactor);
 
         vec3 VertexToEye = normalize(uEyePositionWS - vPositionWS);
-        vec3 LightReflect = normalize(reflect(LightDirection, Normal));
+        vec3 LightReflect = normalize(reflect(Direction, Normal));
 
         float SpecularFactor = dot(VertexToEye, LightReflect);                                      
         if (SpecularFactor > 0) {                                                           
             SpecularFactor = pow(SpecularFactor, uSpecularPower);                               
-            SpecularColor = vec4(Light.Color, 1.0f) * uMatSpecularIntensity * SpecularFactor;                         
+            SpecularColor = vec3(light.Color) * uMatSpecularIntensity * SpecularFactor;                         
         }                                                                                   
     }
     return (AmbientColor + ShadowFactor * (DiffuseColor + SpecularColor));
 }
 
-vec4 CalcDirectionalLight(DirectionalLight light, vec3 Normal, float ShadowFactor)
+// method used in Ray-MMD
+mat3x3 CalcBumpedNormal(vec3 normal)
 {
-    return CalcLightInternal(light.Base, light.Direction, Normal, ShadowFactor);
+    // get edge vectors of the pixel triangle
+    vec3 dp1 = dFdx(vViewdirWS);
+    vec3 dp2 = dFdy(vViewdirWS);
+    vec3 duv1 = dFdx(vec3(vTexcoords, 0.0));
+    vec3 duv2 = dFdy(vec3(vTexcoords, 0.0));
+
+    // solve the linear system
+    vec3 dp2perp = cross(dp2, normal);
+    vec3 dp1perp = cross(normal, dp1);
+    mat3x3 M = mat3x3(dp1, dp2, normal);
+    mat2x3 I = mat2x3(dp2perp, dp1perp);
+    vec3 T = I*vec2(duv1.x, duv2.x);
+    vec3 B = I*vec2(duv1.y, duv2.y);
+
+    // construct a scale-invariant frame
+    mat3x3 tbnTransform;
+    float scaleT = 1.0 / (dot(T, T) + 1e-6);
+    float scaleB = 1.0 / (dot(B, B) + 1e-6);
+
+    tbnTransform[0] = normalize(T * scaleT);
+    tbnTransform[1] = normalize(B * scaleB);
+    tbnTransform[2] = normal;
+
+    return tbnTransform;
 }
 
 void main()
 {
-    vec3 normal = normalize(vNormalWS);
+    mat3 tbnTransform = transpose(CalcBumpedNormal(normalize(vNormalWS)));
+    vec3 normal = texture2D(uTexNormalMapSamp, vTexcoords).rgb;
+    vec3 normalTS = tbnTransform*normal;
+    vec3 lightdirectionTS = tbnTransform*uLightDirection;
 
     float ShadowFactor = 0.0;
     vec4 CascadeIndicator = vec4(0.3, 0.0, 0.3, 0.0);
@@ -117,7 +112,7 @@ void main()
     for (int i = 0; i < NUM_CASCADES; i++)
     {
         if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
-            ShadowFactor = CalcShadowFactor(i, vPositionLS[i], normal, uDirectionalLight.Direction);
+            ShadowFactor = CalcShadowFactor(i, vPositionLS[i], normalTS, lightdirectionTS);
             if (i == 0)
                 CascadeIndicator = vec4(0.3, 0.0, 0.0, 0.0);
             else if (i == 1)
@@ -128,13 +123,7 @@ void main()
         }
     }
 
-    vec4 sumLight = CalcDirectionalLight(uDirectionalLight, normal, ShadowFactor);
-
-    if (uDebugType > 0)
-        FragColor = vec4(DepthPrint(normal), 1.0);
-    else
-    {
-        vec3 SampledColor = texture2D(uTexWood, vTexcoords).rgb;
-        FragColor = vec4(vec3(sumLight)*SampledColor, 1.0); // + CascadeIndicator;
-    }
+    vec3 sumLight = CalcDirectionalLight(uDirectionalLight, lightdirectionTS, normalTS, ShadowFactor);
+    vec3 SampledColor = texture2D(uTexDiffuseMapSamp, vTexcoords).rgb;
+    FragColor = vec4(vec3(sumLight)*SampledColor, 1.0); // + CascadeIndicator;
 }

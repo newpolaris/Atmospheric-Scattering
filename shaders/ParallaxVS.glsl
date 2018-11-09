@@ -12,9 +12,11 @@ out float vClipSpacePosZ;
 out vec2 vTexcoords;
 out vec3 vNormalWS;
 out vec3 vPositionWS;
+out vec3 vViewdirWS;
 out vec4 vPositionLS[NUM_CASCADES];
 
 // UNIFORM
+uniform vec3 uEyePositionWS;
 uniform mat4 uMatModel;
 uniform mat4 uMatView;
 uniform mat4 uMatProject;
@@ -24,6 +26,7 @@ void main()
 {
     vec4 position = vec4(inPosition, 1.0);
     vTexcoords = inTexcoords;
+    vViewdirWS = uEyePositionWS - inPosition;
     vNormalWS = transpose(inverse(mat3(uMatModel))) * inNormal;
     vPositionWS = vec3(uMatModel * position);
     for (int i = 0; i < NUM_CASCADES; i++)
