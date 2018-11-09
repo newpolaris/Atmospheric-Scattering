@@ -47,7 +47,7 @@ float CalcShadowFactor(int CascadeIndex, vec4 positionLS, vec3 normal, vec3 ligh
     return 1.0;
 }
 
-vec3 CalcDirectionalLight(DirectionalLight light, vec3 Direction, vec3 Normal, float ShadowFactor)
+vec3 CalcDirectionalLight(DirectionalLight light, vec3 cameradireciton, vec3 Direction, vec3 Normal, float ShadowFactor)
 {
     vec3 AmbientColor = vec3(light.Color * light.AmbientIntensity);
     float DiffuseFactor = dot(Normal, -Direction);
@@ -58,10 +58,8 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 Direction, vec3 Normal, f
     if (DiffuseFactor > 0) {
         DiffuseColor = vec3(light.Color * light.DiffuseIntensity * DiffuseFactor);
 
-        vec3 VertexToEye = normalize(uEyePositionWS - vPositionWS);
         vec3 LightReflect = normalize(reflect(Direction, Normal));
-
-        float SpecularFactor = dot(VertexToEye, LightReflect);                                      
+        float SpecularFactor = dot(cameradireciton, LightReflect);                                      
         if (SpecularFactor > 0) {                                                           
             SpecularFactor = pow(SpecularFactor, uSpecularPower);                               
             SpecularColor = vec3(light.Color) * uMatSpecularIntensity * SpecularFactor;                         
@@ -105,6 +103,9 @@ void main()
     vec3 normal = texture2D(uTexNormalMapSamp, vTexcoords).rgb;
     vec3 normalTS = tbnTransform*normal;
     vec3 lightdirectionTS = tbnTransform*uLightDirection;
+    vec3 positionTS = tbnTransform*vPositionWS;
+    vec3 cameraPositionTS = tbnTransform*uEyePositionWS;
+    vec3 cameradirectionTS = normalize(cameraPositionTS - positionTS);
 
     float ShadowFactor = 0.0;
     vec4 CascadeIndicator = vec4(0.3, 0.0, 0.3, 0.0);
@@ -123,7 +124,7 @@ void main()
         }
     }
 
-    vec3 sumLight = CalcDirectionalLight(uDirectionalLight, lightdirectionTS, normalTS, ShadowFactor);
+    vec3 sumLight = CalcDirectionalLight(uDirectionalLight, cameradirectionTS, lightdirectionTS, normalTS, ShadowFactor);
     vec3 SampledColor = texture2D(uTexDiffuseMapSamp, vTexcoords).rgb;
     FragColor = vec4(vec3(sumLight)*SampledColor, 1.0); // + CascadeIndicator;
 }
