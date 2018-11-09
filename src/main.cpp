@@ -400,10 +400,11 @@ void LightScattering::TonemapPass(GraphicsContext& gfxContext)
 
 void LightScattering::RenderScene(const ProgramShader& shader, const glm::mat4& reflection)
 {
-    glm::mat4 model = glm::rotate(reflection, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // rotate the quad to show parallax mapping from multiple directions
+    // const glm::mat4 model = glm::rotate(reflection, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // rotate the quad to show parallax mapping from multiple directions
+    const glm::mat4 model(1.f);
     shader.setUniform("uMatModel", model);
     m_Plane.draw();
-    // m_SphereMini.draw();
+    m_SphereMini.draw();
 }
 
 glm::vec3 LightScattering::GetSunDirection() const
@@ -443,7 +444,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 0.1f, 100.f);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 0.1f, 2000.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 
