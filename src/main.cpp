@@ -444,7 +444,7 @@ void LightScattering::keyboardCallback(uint32_t key, bool isPressed) noexcept
 void LightScattering::framesizeCallback(int32_t width, int32_t height) noexcept
 {
 	float aspectRatio = (float)width/height;
-	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 0.1f, 2000.f);
+	m_Camera.setProjectionParams(m_Settings.fov, aspectRatio, 0.1f, 1500.f);
 
     Graphics::initializeRenderingBuffers(m_Device, width, height); 
     Graphics::resizeDisplayDependentBuffers(width, height); 
