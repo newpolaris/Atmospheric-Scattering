@@ -105,6 +105,9 @@ private:
     GraphicsTexturePtr m_TexBrickDiffuse;
     GraphicsTexturePtr m_TexBrickNormal;
     GraphicsTexturePtr m_TexBrickDepth;
+    GraphicsTexturePtr m_TexMixDiffuse;
+    GraphicsTexturePtr m_TexMixNormal;
+    GraphicsTexturePtr m_TexMixDepth;
 
 };
 
@@ -115,7 +118,7 @@ LightScattering::LightScattering() noexcept :
     m_SphereMini(48, 1.0f),
     m_Plane(50.f, 32.f, 5.f)
 {
-    m_DirectionalLight.AmbientIntensity = 0.5f;
+    m_DirectionalLight.AmbientIntensity = 0.2f;
     m_DirectionalLight.DiffuseIntensity = 0.9f;
     m_DirectionalLight.Color = glm::vec3(1.f, 1.f, 1.f);
     m_DirectionalLight.Direction = GetSunDirection();
@@ -162,6 +165,15 @@ void LightScattering::startup() noexcept
 
     textureDesc.setFilename("resources/Parallax/bricks2_disp.jpg");
     m_TexBrickDepth = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/toy_box_diffuse.png");
+    m_TexMixDiffuse = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/toy_box_normal.png");
+    m_TexMixNormal = m_Device->createTexture(textureDesc);
+
+    textureDesc.setFilename("resources/Parallax/toy_box_disp.png");
+    m_TexMixDepth = m_Device->createTexture(textureDesc);
 
     m_ShadowMapShader.setDevice(m_Device);
     m_ShadowMapShader.initialize();
@@ -265,8 +277,10 @@ void LightScattering::updateHUD() noexcept
         {
             bUpdated |= ImGui::SliderFloat("Sun Angle", &m_Settings.angle, -180.f, 180.f);
             bUpdated |= ImGui::SliderFloat("Fov", &m_Settings.fov, 15.f, 120.f);
-            bUpdated |= ImGui::Checkbox("Texture Brick", &m_Settings.bTexBrick);
-
+            bUpdated |= ImGui::RadioButton("brick", &m_Settings.textureSelect, 0); ImGui::SameLine();
+            bUpdated |= ImGui::RadioButton("spike", &m_Settings.textureSelect, 1); ImGui::SameLine();
+            bUpdated |= ImGui::RadioButton("mix", &m_Settings.textureSelect, 2);
+            bUpdated |= ImGui::SliderFloat("Debug Light type", &m_Settings.parallaxScale , 0.f, 0.2f);
             ImGui::ColorWheel("Color:", glm::value_ptr(m_Settings.WaterColor), 0.6f);
             bUpdated |= ImGui::Checkbox("Bound Sphere", &m_Settings.bBoundSphere);
             bUpdated |= ImGui::Checkbox("Reduce Shimmer", &m_Settings.bReduceShimmer);
@@ -359,6 +373,25 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& r
 {
     skybox::render(gfxContext, m_Camera);
 
+    GraphicsTexturePtr diffuse = m_TexDiffuse;
+    GraphicsTexturePtr normal = m_TexNormal;
+    GraphicsTexturePtr depth = m_TexDepth;
+
+    switch (m_Settings.textureSelect)
+    {
+    case 1:
+        diffuse = m_TexBrickDiffuse;
+        normal = m_TexBrickNormal;
+        depth = m_TexBrickDepth;
+        break;
+
+    case 2:
+        diffuse = m_TexMixDiffuse;
+        normal = m_TexMixNormal;
+        depth = m_TexMixDepth;
+        break;
+    }
+
     glm::mat4 view = m_Camera.getViewMatrix();
     glm::mat4 project = m_Camera.getProjectionMatrix();
 
@@ -376,9 +409,7 @@ void LightScattering::RenderPass(GraphicsContext& gfxContext, const glm::mat4& r
         m_ParallaxShader.bindTexture(util::format("uTexShadowmap[{0}]", i), Graphics::g_ShadowMap[i], i);
     }
     m_ParallaxShader.setUniform("uEyePositionWS", m_Camera.getPosition());
-    auto& diffuse = m_Settings.bTexBrick? m_TexDiffuse : m_TexBrickDiffuse;
-    auto& normal = m_Settings.bTexBrick ? m_TexNormal: m_TexBrickNormal;
-    auto& depth = m_Settings.bTexBrick ? m_TexDepth : m_TexBrickDepth;
+    m_ParallaxShader.setUniform("uHeightScale", m_Settings.parallaxScale);
     m_ParallaxShader.bindTexture("uTexDiffuseMapSamp", diffuse, Graphics::g_NumShadowCascade);
     m_ParallaxShader.bindTexture("uTexNormalMapSamp", normal, Graphics::g_NumShadowCascade + 1);
     m_ParallaxShader.bindTexture("uTexDepthMapSamp", depth, Graphics::g_NumShadowCascade + 2);

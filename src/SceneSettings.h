@@ -5,7 +5,6 @@
 struct SceneSettings
 {
     float debugType = 0.f;
-    bool bTexBrick = false;
     bool bDebugDepth = false;
     bool bUiChanged = false;
     bool bResized = false;
@@ -13,6 +12,8 @@ struct SceneSettings
     bool bBoundSphere = true;
     bool bReduceShimmer = true;
     bool bClipSplitLogUniform = true;
+    int textureSelect = 0;
+    float parallaxScale = 0.1f;
     float depthIndex = 0.f;
 	float lambda = 1.f;
     float angle = 160.f;
