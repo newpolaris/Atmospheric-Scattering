@@ -1,6 +1,7 @@
 #version 450
 
-const int NUM_CASCADES = 4;
+#include "BasicCascadeShader.glsli"
+
 const int MAX_POINT_LIGHTS = 2;                                                     
 const int MAX_SPOT_LIGHTS = 2;                                                      
 
@@ -34,19 +35,6 @@ uniform sampler2D uTexShadowmap[NUM_CASCADES];
 uniform sampler2D uTexDiffuseMapSamp;
 uniform sampler2D uTexNormalMapSamp;
 uniform sampler2D uTexDepthMapSamp;
-
-float CalcShadowFactor(int CascadeIndex, vec4 positionLS, vec3 normal, vec3 lightDirection)
-{
-    const float angleBias = 0.006;
-
-    vec3 ProjCoords = positionLS.xyz / positionLS.w;
-    vec3 UVCoords = 0.5 * ProjCoords + 0.5;
-    float Depth = texture(uTexShadowmap[CascadeIndex], UVCoords.xy).x;
-    float bias = max(angleBias * (1.0 - dot(normal, -lightDirection)), 0.0008);
-    if (UVCoords.z - bias > Depth)
-        return 0.3;
-    return 1.0;
-}
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 cameradireciton, vec3 SunDirection, vec3 Normal, float ShadowFactor)
 {
@@ -128,22 +116,8 @@ void main()
     vec3 cameraPositionTS = tbnTransform*uEyePositionWS;
     vec3 cameradirectionTS = normalize(cameraPositionTS - positionTS);
 
-    float ShadowFactor = 0.0;
     vec4 CascadeIndicator = vec4(0.3, 0.0, 0.3, 0.0);
-
-    for (int i = 0; i < NUM_CASCADES; i++)
-    {
-        if (vClipSpacePosZ <= uCascadeEndClipSpace[i]) {
-            ShadowFactor = CalcShadowFactor(i, vPositionLS[i], normalTS, lightdirectionTS);
-            if (i == 0)
-                CascadeIndicator = vec4(0.3, 0.0, 0.0, 0.0);
-            else if (i == 1)
-                CascadeIndicator = vec4(0.0, 0.3, 0.0, 0.0);
-            else if (i == 2)
-                CascadeIndicator = vec4(0.0, 0.0, 0.3, 0.0);
-            break;
-        }
-    }
+    float ShadowFactor = CalcShadowCascaded(vClipSpacePosZ, uCascadeEndClipSpace, uTexShadowmap, vPositionLS, normalTS, lightdirectionTS, CascadeIndicator);
 
 #if 0
     vec3 sumLight = CalcDirectionalLight(uDirectionalLight, cameradirectionTS, lightdirectionTS, normalTS, ShadowFactor);
