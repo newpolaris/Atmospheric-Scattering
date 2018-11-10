@@ -98,14 +98,33 @@ mat3x3 CalcTBN(vec3 normal)
 
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 {
-    float height = texture2D(uTexDepthMapSamp, texCoords).r;
-    return texCoords - viewDir.xy * (height * uHeightScale);
+    // number of depth layers
+    const float numLayers = mix(64.0, 8.0, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
+
+    // calculate the size of each layer
+    float layerDepth = 1.0 / numLayers;
+    // depth of current layer
+    float currentLayerDepth = 0.0;
+    // the amount to shift the texture coordinates per layer (from vector P)
+    vec2 P = viewDir.xy * uHeightScale / viewDir.z;
+    vec2 deltaTexCoords = P / numLayers;
+
+    vec2 currentTexCoords = texCoords;
+    float currentDepthValue = texture2D(uTexDepthMapSamp, currentTexCoords).r;
+    while (currentLayerDepth < currentDepthValue)
+    {
+        // shift texture coordinates along direction of P
+        currentTexCoords -= deltaTexCoords;
+        currentDepthValue = texture2D(uTexDepthMapSamp, currentTexCoords).r;
+        currentLayerDepth += layerDepth;
+    }
+    return currentTexCoords;
 }
 
 void main()
 {
     mat3 tbnTransform = transpose(CalcTBN(normalize(vNormalWS)));
-    vec3 viewdirTS = tbnTransform*normalize(vViewdirWS);
+    vec3 viewdirTS = normalize(tbnTransform*normalize(vViewdirWS));
     vec2 texCoords = ParallaxMapping(vTexcoords, viewdirTS);
     // can't be used in repeated texture pattern (texcoord range over 1.0)
     // if (texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0) discard;
